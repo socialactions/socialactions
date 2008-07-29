@@ -6,15 +6,24 @@
     %title A Mashup of 29+ Social Action Platforms
     %link{ :rel => 'alternate', :type => 'application/atom+xml', :title => "Social Actions: Results for #{@search.to_s}", :href => feed_url }
     = stylesheet_link_tag 'main', 'facebox'
+    = stylesheet_link_tag 'http://socialactions.com/sites/all/themes/social-actions/social-actions-fixed/style.css'
     = javascript_include_tag 'jquery', 'facebox', 'application'
     = yield :map_headers
-  %body{ map_loader }
-  
-    - if params[:controller] == 'actions' and params[:action] == 'index' and search_params.nil?
-      = render :partial => 'layouts/main_header'
-    - else
+    %style{:type => 'text/css'}
+      body {
+      background-image: url(http://socialactions.com/images/social-actions-2ndlevel-bg.gif);			
+      background-repeat:repeat-x;
+      }
+
+  %body.sidebar-left{ map_loader }
+    #page
       = render :partial => 'layouts/header'
     
-    = yield
+      #container.clear-block
+        #sidebar-left.column.sidebar
+          %p= link_to('Are you reading the Social Actions blog?', 'http://blog.socialactions.com/')
+        #main.column
+          #squeeze
+            = yield
     
-    = render :partial => 'layouts/footer'
+      = render :partial => 'layouts/footer'
