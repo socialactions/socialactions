@@ -22,14 +22,23 @@ p
 
 
 // Search box
-#search_box 
+.search_box 
   :width 700px
   :font-family Arial, Helvetica, sans-serif
   :font-size 14px
   :color #000
   :background-color #e9f3f1
   :padding 10px 10px 30px 10px
+
+  h2
+    :float left
   
+  #firstrow
+    :height 2.73em
+    a
+      :float right
+      :margin .5em 0
+
   table
     td
       :padding-right 5px
@@ -37,6 +46,12 @@ p
     .first
       td
         :padding-top 0
+
+#search_basic
+  form
+    :float left
+  a
+    :float right
 
 .platform_select 
   :width 170px

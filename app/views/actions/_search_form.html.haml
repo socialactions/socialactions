@@ -1,12 +1,22 @@
-#search_box
-  %h2 Find an Action
+#search_basic.search_box
+  - form_for @search, :url => actions_path, :html => {:method => :get} do |f|
+    Search Term:
+    = text_field_tag :keywords, @search.keywords, :size => 22, :id => 'keywords_basic'
+    &nbsp;
+    = submit_tag 'Search'
+  = link_to_function('Advanced search...', '$("#keywords_advanced").val($("#keywords_basic").val()); $("#search_advanced").toggle(); $("#search_basic").toggle();')
+
+#search_advanced.search_box{:style => 'display: none;'}
+  #firstrow
+    %h2 Find an Action
+    = link_to_function('Basic search...', '$("#keywords_basic").val($("#keywords_advanced").val()); $("#search_advanced").toggle(); $("#search_basic").toggle();')
 
   - form_for @search, :url => actions_path, :html => {:method => :get} do |f|
 
     %table{ :border=>"0", :cellpadding=>"0", :cellspacing=>"0" }
       %tr.first
         %td Search Term:
-        %td= text_field_tag :keywords, @search.keywords, :size => 22
+        %td= text_field_tag :keywords, @search.keywords, {:size => 22, :id => 'keywords_advanced'}
         
         %td
           = submit_tag 'Search'
