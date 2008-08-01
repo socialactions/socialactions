@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 15) do
+ActiveRecord::Schema.define(:version => 16) do
 
   create_table "actions", :force => true do |t|
     t.text     "description"
@@ -24,6 +24,8 @@ ActiveRecord::Schema.define(:version => 15) do
     t.integer  "site_id"
     t.string   "action_type"
   end
+
+  add_index "actions", ["url"], :name => "index_actions_on_url"
 
   create_table "feeds", :force => true do |t|
     t.string   "name"
