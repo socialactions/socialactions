@@ -1,0 +1,981 @@
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head><meta content="text/html; charset=utf-8" http-equiv="Content-Type"/><title>Class: Rails::Configuration</title><link type="text/css" href="../.././rdoc-style.css" media="screen" rel="stylesheet"/><script type="text/javascript">
+// Allison template
+// Copyright 2007, 2008 Cloudburst, LLC. Licensed under the AFL 3. See the included LICENSE file.
+
+var href_base = '../.././rdoc-style.css'.replace(/(.*\/).*/, '$1'); // inline js is good for something  
+
+function $(id) {
+    if (document.getElementById)
+      elem = document.getElementById(id);
+    else if ( document.all )
+      elem = eval("document.all." + id);
+    else
+      return false;
+    return elem;
+}
+
+  function toggle(id) {
+    elem = $(id);
+    elemStyle = elem.style;   
+    if (elemStyle.display == "block") {
+      elemStyle.display = "none"
+    } else {
+      elemStyle.display = "block"
+    }
+    return true;
+  }
+
+  function toggleText(id) {
+    elem = $(id)
+    if (m = elem.innerHTML.match(/(Hide)(.*)/)) {
+      elem.innerHTML = "Show" + m[2];
+    } else if (m = elem.innerHTML.match(/(Show)(.*)/)) {
+      elem.innerHTML = "Hide" + m[2];
+    }
+    return true;
+  }
+
+function span(s, klass) {
+  return '<span class="' + klass + '">' + s + '</span>';
+}
+  
+function highlightSymbols() {
+  pres = document.getElementsByTagName('pre');
+  for(var i = 0; i < pres.length; i++) {
+    pre = pres[i];
+    spans = pre.getElementsByTagName('span');
+    for(var k = 0; k < spans.length; k++) {
+      span = spans[k];
+      if (span.className.match(/ruby-identifier/)) {
+        if (span.innerHTML.match(/^:/)) {
+          span.className += " ruby-symbol";
+        }
+      }
+    }
+  }
+}
+
+ function hasClass(obj) {
+     var result = false;
+     if (obj.getAttributeNode("class") != null) {
+         result = obj.getAttributeNode("class").value;
+     }
+     return result;
+  }   
+
+ function stripe() {
+    var even = true;
+    var color = "#e4ebed";
+    var tables = document.getElementsByTagName('table');
+    if (tables.length == 0) { return; }
+    for (var h = 0; h < tables.length; h++) {
+        var trs = tables[h].getElementsByTagName("tr");
+        for (var i = 0; i < trs.length; i++) {
+          var tds = trs[i].getElementsByTagName("td");
+            for (var j = 0; j < tds.length; j++) {       
+              if (hasClass(tds[j]) != "first") {                
+              var mytd = tds[j];
+              if (even) {
+                mytd.style.backgroundColor = color;
+              }         
+            }
+          }
+          even =  ! even;
+      }
+    }
+  }
+  
+function ajaxGet(url) {
+  url = (href_base + url).replace('/./', '/')
+  var req = false;
+
+  if (window.ActiveXObject) {
+    try {
+      // stupid hack because IE7 disables local Ajax with the native xmlhttprequest object
+      // for security purposes. Yet ActiveX still works. Thanks, Microsoft. I hate you. Die.
+      req = new ActiveXObject("MSXML2.XMLHTTP.3.0");
+    } catch (e) {
+      try {
+        /* IE 6 and maybe 5, don't know, don't care */
+        req = new ActiveXObject("Msxml2.XMLHTTP");
+      } catch (e) {
+        try {
+          req = new ActiveXObject("Microsoft.XMLHTTP");
+        } catch (e) {
+          req = false;
+        }
+      }
+    }
+  }
+    
+  /* real browsers */
+  if (!req && window.XMLHttpRequest) {
+    try {
+      req = new XMLHttpRequest();
+    } catch (e) {
+      req = false;
+    }
+  } 
+  
+  if (req) {
+    req.open('GET', url, false);
+    req.send(null);
+    return req.responseText;
+  } else {
+    return "Ajax error";  
+  }
+}
+
+
+function addEvent(elm, evType, fn, useCapture) {
+	if (elm.addEventListener) {
+	  elm.addEventListener(evType, fn, useCapture);  
+  	return true;
+	} else if (elm.attachEvent) {
+  	var r = elm.attachEvent('on' + evType, fn);  
+	  return r;  
+	} else {
+  	elm['on' + evType] = fn;
+	}
+}
+
+function insertIndices() {
+  pages = ["class", "file", "method"]
+  for (x in pages) { 
+    $(pages[x]).innerHTML += ajaxGet('fr_' + pages[x] + '_index.html').replace(/(href=")/g, '$1' + href_base);
+  }
+  /* mouseoverify method links */
+  links = $('method').getElementsByTagName('a');
+  for (var x = 0; x < links.length; x++) {
+    if (m = links[x].innerHTML.match(/(.*)\s\((.*)\)/)) {
+      links[x].innerHTML = m[1] + '<br>';
+      links[x].title = m[2];
+    }
+  }
+  /* this is stupid */
+  $('class').style.display = "block";
+  $('file').style.display = "block";
+  
+  /* has to be here because IE7 does not guarantee the onLoad callback order */
+  abbreviateIndicesInner(["class", "file"], 25, "a");
+  /* same, linkTitle() depends on the class link list */
+  linkTitle();
+}
+
+function abbreviateIndices() {
+  var ids = ["defined_in", "child_of", "includes", "requires", "method", "methods"];
+  abbreviateIndicesInner(ids, 25, 'a');
+  abbreviateIndicesInner(ids, 25, 'span');
+}
+
+function abbreviateIndicesInner(indices, amount, tag) {
+  for (var x = 0; x < indices.length; x++) { 
+    var the_index = $(indices[x]);
+    if (the_index) {
+      links = the_index.getElementsByTagName(tag);
+      for (var y = 0; y < links.length; y++) {
+        var link = links[y];
+        if (link.getElementsByTagName('span').length == 0 && link.getElementsByTagName('a').length == 0) {
+          // avoid nesting
+          link.innerHTML = link.innerHTML.replace(/<br>|\n/gi, '');
+          link.title = link.innerHTML;
+          link.innerHTML = abbreviate(link.innerHTML, amount) + '<br>';
+        }
+      }
+    }
+  }
+}
+
+function linkTitle() {
+  
+  /* grab the correct title element from the index */
+  var index_page = ajaxGet('index.html');
+  title_text = index_page.match(/<title>(.*)<\/title>/m)[1];
+  document.title = title_text + " - " + document.title;
+  var p = $('header').getElementsByTagName('p')[0]
+  if (p.innerHTML.match(/^\s*$/)) {
+    p.innerHTML = title_text;
+  } else {
+    p.innerHTML = title_text + ": " + p.innerHTML;
+  }
+  
+  /* set the link properly */
+  title_link = index_page.match(/<a\s+href="(.*?)"/)[1];
+  var element = $('title');
+  var item_type = "";
+  var item_name = "";
+  if (m = element.innerHTML.match(/(Class:|Module:|File:)\s*(.*)/)) {
+    item_type = m[1];
+    item_name = m[2];
+  } else {
+    item_name = element.innerHTML;
+  }
+  element.innerHTML = '<a href="' + href_base + title_link + '">' + item_type + " " + abbreviate(item_name, 45) + '</a>';
+  element.getElementsByTagName('a')[0].title = item_name
+  
+  /* breadcrumb navigation */
+  items = item_name.split("::");
+  items_new = item_name.split("::");
+  file_links = $('class').getElementsByTagName('a');
+  for (var x = 0; x < items.length - 1; x++ ){
+    var item = items[x];
+    link = ("/classes/" + items.slice(0,x).join("/") + "/" + item + ".html").replace('//', '/');
+    regex = new RegExp(RegExp.escape(link) + '$');
+    for (var y = 0; y < file_links.length; y++) {
+      if (file_links[y].href.match(regex)) {
+         items_new[x] = '<a href="' + href_base + link + '">' + item + '</a>';
+         break;
+      }
+    }  
+  }
+  $('item_name').innerHTML = item_type + ' ' + items_new.join(" :: ");
+}
+
+function abbreviate(s, size) {
+  while (s.length > size) {
+    var old_s = s;
+    s = s.replace(/\s|\n/mg, '');
+    s = s.replace(/([A-Z])[a-z]+/m, '$1');
+    if (!s || old_s == s) {
+      return "..." + s.substring(s.length - size, s.length);
+    }
+  }
+  return s;
+}
+
+function disableSubmit(event) {
+  var keyCode = event.keyCode ? event.keyCode : event.which ? event.which : event.charCode;
+  if (keyCode == 13) {
+    return false;
+  } else {
+    return true;
+  }
+}
+  
+function filterList(id, s, event) {
+  
+  /* some weak escaping */
+  s = s.replace(/[^\w\d\.\_\-\/\:\=\[\]\?\!]/g, '');
+  s = RegExp.escape(s);
+  
+  var show_all = false;
+  if (s.match(/^\s*$/)) {
+    show_all = true;
+  }
+  
+  links = $(id).getElementsByTagName('a')
+  regex = new RegExp(s, 'i');
+  
+  for (var x = 0; x < links.length; x++) {
+    var link = links[x];
+    if (show_all) {
+      link.style.display = 'inline';
+    } else {
+       if (link.innerHTML.match(regex)) {        
+         link.style.display = 'inline';
+       } else {
+         link.style.display = 'none';
+       }
+    }
+  }
+  return true;
+}
+
+RegExp.escape = function(text) {
+  if (!arguments.callee.sRE) {
+    var specials = ['/', '.', '*', '+', '?', '|', '(', ')', '[', ']', '{', '}', '\\'];
+    arguments.callee.sRE = new RegExp(
+      '(\\' + specials.join('|\\') + ')', 'g'
+    );
+  }
+  return text.replace(arguments.callee.sRE, '\\$1');
+}
+
+function hacks() {
+  // show the spacer if necessary, 
+  divs = document.getElementsByTagName('div');
+  for(var x = 0; x < divs.length; x++) {
+    if (divs[x].className && divs[x].className.match(/top/)) {
+      document.getElementById('spacer').style.display = 'block';
+    }
+  }
+  // remove extra colons from tables
+  tds = document.getElementsByTagName('td');
+  for(var x = 0; x < tds.length; x++) {
+    str = tds[x].innerHTML
+    if (str.charAt(str.length - 1) == ":") {
+      tds[x].innerHTML = str.slice(0, str.length - 1)
+    }
+  }
+}
+
+addEvent(window, 'load', insertIndices, false);
+addEvent(window, 'load', abbreviateIndices, false);
+addEvent(window, 'load', stripe, false);
+addEvent(window, 'load', highlightSymbols, false);
+addEvent(window, 'load', hacks, false);
+</script></head><body><div id="container"><div class="curve" id="preheader_curve_0"></div><div class="curve" id="preheader_curve_1"></div><div class="curve" id="preheader_curve_2"></div><div class="curve" id="preheader_curve_3"></div><div class="curve" id="preheader_curve_4"></div><div class="curve" id="preheader_curve_5"></div><div id="header"><p>
+</p><span><h1 id="title">
+Class: Rails::Configuration
+</h1></span>
+</div><div class="clear"></div><div id="left">
+<div class="navigation darker top" id="child_of"><h3>Child of</h3><span>
+
+<a href='../Object.html'>
+Object
+</a>
+</span></div>
+
+<div class="navigation darker top" id="defined_in"><h3>Defined in</h3>
+
+<a href="../../files/vendor/rails/railties/lib/initializer_rb.html">vendor/rails/railties/lib/initializer.rb</a>
+
+</div>
+
+
+
+<div class="navigation top" id="methods"><h3>Methods</h3>
+
+
+<a href='#M001783'>
+after_initialize<br/>
+</a>
+
+
+
+
+<a href='#M001784'>
+after_initialize_blocks<br/>
+</a>
+
+
+
+
+<a href='#M001776'>
+breakpoint_server<br/>
+</a>
+
+
+
+
+<a href='#M001777'>
+breakpoint_server=<br/>
+</a>
+
+
+
+
+<a href='#M001786'>
+builtin_directories<br/>
+</a>
+
+
+
+
+<a href='#M001780'>
+database_configuration<br/>
+</a>
+
+
+
+
+<a href='#M001782'>
+environment<br/>
+</a>
+
+
+
+
+<a href='#M001781'>
+environment_path<br/>
+</a>
+
+
+
+
+<a href='#M001787'>
+framework_paths<br/>
+</a>
+
+
+
+
+<a href='#M001778'>
+new<br/>
+</a>
+
+
+
+
+<a href='#M001775'>
+plugins=<br/>
+</a>
+
+
+
+
+<a href='#M001779'>
+set_root_path!<br/>
+</a>
+
+
+
+
+<a href='#M001785'>
+to_prepare<br/>
+</a>
+
+
+</div>
+<div id="spacer"></div><div class="navigation darker index" id="class_wrapper"><div class="list_header"><h3>All classes</h3></div><div class="list_header_link"><a onclick="toggle('class'); toggleText('class_link'); return false;" href="#" id="class_link">Hide...</a></div><div class="clear"></div><div id="class"><form><label for="filter_class">Filter:&nbsp;&nbsp;</label><input type="text" onKeyUp="return filterList('class', this.value, event);" onKeyPress="return disableSubmit(event);" id="filter_class"></input></form></div></div><div class="navigation darker index" id="file_wrapper"><div class="list_header"><h3>All files</h3></div><div class="list_header_link"><a onclick="toggle('file'); toggleText('file_link'); return false;" href="#" id="file_link">Hide...</a></div><div class="clear"></div><div id="file"><form><label for="filter_file">Filter:&nbsp;&nbsp;</label><input type="text" onKeyUp="return filterList('file', this.value, event);" onKeyPress="return disableSubmit(event);" id="filter_file"></input></form></div></div><div class="navigation darker index" id="method_wrapper"><div class="list_header"><h3>All methods</h3></div><div class="list_header_link"><a onclick="toggle('method'); toggleText('method_link'); return false;" href="#" id="method_link">Show...</a></div><div class="clear"></div><div id="method"><form><label for="filter_method">Filter:&nbsp;&nbsp;</label><input type="text" onKeyUp="return filterList('method', this.value, event);" onKeyPress="return disableSubmit(event);" id="filter_method"></input></form></div></div></div><div id="content">
+<h1 id="item_name">Class: Rails::Configuration</h1>
+
+<div id="description"><p>
+The <a href="Configuration.html">Configuration</a> class holds all the
+parameters for the <a href="Initializer.html">Initializer</a> and ships
+with defaults that suites most <a href="../Rails.html">Rails</a>
+applications. But it&#8216;s possible to overwrite everything. Usually,
+you&#8216;ll create an <a href="Configuration.html">Configuration</a> file
+implicitly through the block running on the <a
+href="Initializer.html">Initializer</a>, but it&#8216;s also possible to
+create the <a href="Configuration.html">Configuration</a> instance in
+advance and pass it in like this:
+</p>
+<pre>
+  config = Rails::Configuration.new
+  Rails::Initializer.run(:process, config)
+</pre>
+</div>
+
+
+
+
+<p></p>
+
+
+
+
+<h1>Attributes</h1><p><table><tr><th>Name</th><th>Read/write?</th></tr>
+<tr>
+<td class="highlight">action_controller</td>
+
+
+
+
+<td class="normal">RW</td>
+</tr>
+<tr>
+<td class="highlight">action_mailer</td>
+
+
+
+
+<td class="normal">RW</td>
+</tr>
+<tr>
+<td class="highlight">action_view</td>
+
+
+
+
+<td class="normal">RW</td>
+</tr>
+<tr>
+<td class="highlight">active_record</td>
+
+
+
+
+<td class="normal">RW</td>
+</tr>
+<tr>
+<td class="highlight">active_resource</td>
+
+
+
+
+<td class="normal">RW</td>
+</tr>
+<tr>
+<td class="highlight">cache_classes</td>
+
+
+
+
+<td class="normal">RW</td>
+</tr>
+<tr>
+<td class="highlight">cache_store</td>
+
+
+
+
+<td class="normal">RW</td>
+</tr>
+<tr>
+<td class="highlight">controller_paths</td>
+
+
+
+
+<td class="normal">RW</td>
+</tr>
+<tr>
+<td class="highlight">database_configuration_file</td>
+
+
+
+
+<td class="normal">RW</td>
+</tr>
+<tr>
+<td class="highlight">frameworks</td>
+
+
+
+
+<td class="normal">RW</td>
+</tr>
+<tr>
+<td class="highlight">load_once_paths</td>
+
+
+
+
+<td class="normal">RW</td>
+</tr>
+<tr>
+<td class="highlight">load_paths</td>
+
+
+
+
+<td class="normal">RW</td>
+</tr>
+<tr>
+<td class="highlight">log_level</td>
+
+
+
+
+<td class="normal">RW</td>
+</tr>
+<tr>
+<td class="highlight">log_path</td>
+
+
+
+
+<td class="normal">RW</td>
+</tr>
+<tr>
+<td class="highlight">logger</td>
+
+
+
+
+<td class="normal">RW</td>
+</tr>
+<tr>
+<td class="highlight">plugin_loader</td>
+
+
+
+
+<td class="normal">RW</td>
+</tr>
+<tr>
+<td class="highlight">plugin_locators</td>
+
+
+
+
+<td class="normal">RW</td>
+</tr>
+<tr>
+<td class="highlight">plugin_paths</td>
+
+
+
+
+<td class="normal">RW</td>
+</tr>
+<tr>
+<td class="highlight">plugins</td>
+
+
+
+
+<td class="normal">R</td>
+</tr>
+<tr>
+<td class="highlight">root_path</td>
+
+
+
+
+<td class="normal">R</td>
+</tr>
+<tr>
+<td class="highlight">time_zone</td>
+
+
+
+
+<td class="normal">RW</td>
+</tr>
+<tr>
+<td class="highlight">view_path</td>
+
+
+
+
+<td class="normal">RW</td>
+</tr>
+<tr>
+<td class="highlight">whiny_nils</td>
+
+
+
+
+<td class="normal">RW</td>
+</tr>
+</table></p>
+
+
+<h1>Public Class Methods</h1>
+
+
+<a class="small" name="M001778"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001778'>
+
+
+new
+
+()
+
+</a>
+</h3>
+<p>
+Create a <a href="Configuration.html#M001778">new</a> <a
+href="Configuration.html">Configuration</a> instance, initialized with the
+default values.
+</p>
+
+<p class="source_link" id="M001778-show-link"><a onclick="toggle('M001778-source'); toggleText('M001778-link'); return false;" href="#" id="M001778-link">Show source...</a></p><div class="source" id="M001778-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/railties/lib/initializer.rb, line 489</span>
+489:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">initialize</span>
+490:       <span class="ruby-identifier">set_root_path!</span>
+491: 
+492:       <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">frameworks</span>                   = <span class="ruby-identifier">default_frameworks</span>
+493:       <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">load_paths</span>                   = <span class="ruby-identifier">default_load_paths</span>
+494:       <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">load_once_paths</span>              = <span class="ruby-identifier">default_load_once_paths</span>
+495:       <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">log_path</span>                     = <span class="ruby-identifier">default_log_path</span>
+496:       <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">log_level</span>                    = <span class="ruby-identifier">default_log_level</span>
+497:       <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">view_path</span>                    = <span class="ruby-identifier">default_view_path</span>
+498:       <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">controller_paths</span>             = <span class="ruby-identifier">default_controller_paths</span>
+499:       <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">cache_classes</span>                = <span class="ruby-identifier">default_cache_classes</span>
+500:       <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">whiny_nils</span>                   = <span class="ruby-identifier">default_whiny_nils</span>
+501:       <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">plugins</span>                      = <span class="ruby-identifier">default_plugins</span>
+502:       <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">plugin_paths</span>                 = <span class="ruby-identifier">default_plugin_paths</span>
+503:       <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">plugin_locators</span>              = <span class="ruby-identifier">default_plugin_locators</span>
+504:       <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">plugin_loader</span>                = <span class="ruby-identifier">default_plugin_loader</span>
+505:       <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">database_configuration_file</span>  = <span class="ruby-identifier">default_database_configuration_file</span>
+506: 
+507:       <span class="ruby-keyword kw">for</span> <span class="ruby-identifier">framework</span> <span class="ruby-keyword kw">in</span> <span class="ruby-identifier">default_frameworks</span>
+508:         <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">send</span>(<span class="ruby-node">&quot;#{framework}=&quot;</span>, <span class="ruby-constant">Rails</span><span class="ruby-operator">::</span><span class="ruby-constant">OrderedOptions</span>.<span class="ruby-identifier">new</span>)
+509:       <span class="ruby-keyword kw">end</span>
+510:     <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+
+<h1>Public Instance Methods</h1>
+
+
+<a class="small" name="M001783"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001783'>
+
+
+after_initialize
+
+(&amp;after_initialize_block)
+
+</a>
+</h3>
+<p>
+Adds a block which will be executed after rails has been fully initialized.
+Useful for per-<a href="Configuration.html#M001782">environment</a>
+configuration which depends on the framework being fully initialized.
+</p>
+
+<p class="source_link" id="M001783-show-link"><a onclick="toggle('M001783-source'); toggleText('M001783-link'); return false;" href="#" id="M001783-link">Show source...</a></p><div class="source" id="M001783-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/railties/lib/initializer.rb, line 554</span>
+554:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">after_initialize</span>(<span class="ruby-operator">&amp;</span><span class="ruby-identifier">after_initialize_block</span>)
+555:       <span class="ruby-identifier">after_initialize_blocks</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-identifier">after_initialize_block</span> <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">after_initialize_block</span>
+556:     <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001784"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001784'>
+
+
+after_initialize_blocks
+
+()
+
+</a>
+</h3>
+<p>
+Returns the blocks added with <a
+href="Configuration.html#M001783">Configuration#after_initialize</a>
+</p>
+
+<p class="source_link" id="M001784-show-link"><a onclick="toggle('M001784-source'); toggleText('M001784-link'); return false;" href="#" id="M001784-link">Show source...</a></p><div class="source" id="M001784-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/railties/lib/initializer.rb, line 559</span>
+559:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">after_initialize_blocks</span>
+560:       <span class="ruby-ivar">@after_initialize_blocks</span> <span class="ruby-operator">||=</span> []
+561:     <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001776"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001776'>
+
+
+breakpoint_server
+
+(_ = nil)
+
+</a>
+</h3>
+<p>
+Deprecated options:
+</p>
+
+<p class="source_link" id="M001776-show-link"><a onclick="toggle('M001776-source'); toggleText('M001776-link'); return false;" href="#" id="M001776-link">Show source...</a></p><div class="source" id="M001776-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/railties/lib/initializer.rb, line 473</span>
+473:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">breakpoint_server</span>(<span class="ruby-identifier">_</span> = <span class="ruby-keyword kw">nil</span>)
+474:       <span class="ruby-identifier">$stderr</span>.<span class="ruby-identifier">puts</span> <span class="ruby-value str">%(
+475:       *******************************************************************
+476:       * config.breakpoint_server has been deprecated and has no effect. *
+477:       *******************************************************************
+478:       )</span>
+479:     <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001777"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001777'>
+
+
+breakpoint_server=
+
+(_ = nil)
+
+</a>
+</h3>
+<p>
+Alias for <a href="Configuration.html#M001776">breakpoint_server</a>
+</p>
+
+</div>
+
+<a class="small" name="M001786"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001786'>
+
+
+builtin_directories
+
+()
+
+</a>
+</h3>
+
+<p class="source_link" id="M001786-show-link"><a onclick="toggle('M001786-source'); toggleText('M001786-link'); return false;" href="#" id="M001786-link">Show source...</a></p><div class="source" id="M001786-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/railties/lib/initializer.rb, line 572</span>
+572:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">builtin_directories</span>
+573:       <span class="ruby-comment cmt"># Include builtins only in the development environment.</span>
+574:       (<span class="ruby-identifier">environment</span> <span class="ruby-operator">==</span> <span class="ruby-value str">'development'</span>) <span class="ruby-operator">?</span> <span class="ruby-constant">Dir</span>[<span class="ruby-node">&quot;#{RAILTIES_PATH}/builtin/*/&quot;</span>] <span class="ruby-operator">:</span> []
+575:     <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001780"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001780'>
+
+
+database_configuration
+
+()
+
+</a>
+</h3>
+<p>
+Loads and returns the contents of the database_configuration_file. The
+contents of the file are processed via <a href="../ERB.html">ERB</a> before
+being sent through YAML::load.
+</p>
+
+<p class="source_link" id="M001780-show-link"><a onclick="toggle('M001780-source'); toggleText('M001780-link'); return false;" href="#" id="M001780-link">Show source...</a></p><div class="source" id="M001780-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/railties/lib/initializer.rb, line 535</span>
+535:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">database_configuration</span>
+536:       <span class="ruby-constant">YAML</span><span class="ruby-operator">::</span><span class="ruby-identifier">load</span>(<span class="ruby-constant">ERB</span>.<span class="ruby-identifier">new</span>(<span class="ruby-constant">IO</span>.<span class="ruby-identifier">read</span>(<span class="ruby-identifier">database_configuration_file</span>)).<span class="ruby-identifier">result</span>)
+537:     <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001782"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001782'>
+
+
+environment
+
+()
+
+</a>
+</h3>
+<p>
+Return the currently selected <a
+href="Configuration.html#M001782">environment</a>. By default, it returns
+the value of the <tt>RAILS_ENV</tt> constant.
+</p>
+
+<p class="source_link" id="M001782-show-link"><a onclick="toggle('M001782-source'); toggleText('M001782-link'); return false;" href="#" id="M001782-link">Show source...</a></p><div class="source" id="M001782-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/railties/lib/initializer.rb, line 547</span>
+547:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">environment</span>
+548:       <span class="ruby-operator">::</span><span class="ruby-constant">RAILS_ENV</span>
+549:     <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001781"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001781'>
+
+
+environment_path
+
+()
+
+</a>
+</h3>
+<p>
+The path to the current <a
+href="Configuration.html#M001782">environment</a>&#8216;s file
+(development.rb, etc.). By default the file is at
+<tt>config/environments/#{<a
+href="Configuration.html#M001782">environment</a>}.rb</tt>.
+</p>
+
+<p class="source_link" id="M001781-show-link"><a onclick="toggle('M001781-source'); toggleText('M001781-link'); return false;" href="#" id="M001781-link">Show source...</a></p><div class="source" id="M001781-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/railties/lib/initializer.rb, line 541</span>
+541:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">environment_path</span>
+542:       <span class="ruby-node">&quot;#{root_path}/config/environments/#{environment}.rb&quot;</span>
+543:     <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001787"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001787'>
+
+
+framework_paths
+
+()
+
+</a>
+</h3>
+
+<p class="source_link" id="M001787-show-link"><a onclick="toggle('M001787-source'); toggleText('M001787-link'); return false;" href="#" id="M001787-link">Show source...</a></p><div class="source" id="M001787-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/railties/lib/initializer.rb, line 577</span>
+577:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">framework_paths</span>
+578:       <span class="ruby-identifier">paths</span> = <span class="ruby-node">%w(railties railties/lib activesupport/lib)</span>
+579:       <span class="ruby-identifier">paths</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-value str">'actionpack/lib'</span> <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">frameworks</span>.<span class="ruby-identifier">include?</span> <span class="ruby-identifier">:action_controller</span> <span class="ruby-keyword kw">or</span> <span class="ruby-identifier">frameworks</span>.<span class="ruby-identifier">include?</span> <span class="ruby-identifier">:action_view</span>
+580:       
+581:       [<span class="ruby-identifier">:active_record</span>, <span class="ruby-identifier">:action_mailer</span>, <span class="ruby-identifier">:active_resource</span>, <span class="ruby-identifier">:action_web_service</span>].<span class="ruby-identifier">each</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">framework</span><span class="ruby-operator">|</span>
+582:         <span class="ruby-identifier">paths</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-node">&quot;#{framework.to_s.gsub('_', '')}/lib&quot;</span> <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">frameworks</span>.<span class="ruby-identifier">include?</span> <span class="ruby-identifier">framework</span>
+583:       <span class="ruby-keyword kw">end</span>
+584:       
+585:       <span class="ruby-identifier">paths</span>.<span class="ruby-identifier">map</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">dir</span><span class="ruby-operator">|</span> <span class="ruby-node">&quot;#{framework_root_path}/#{dir}&quot;</span> }.<span class="ruby-identifier">select</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">dir</span><span class="ruby-operator">|</span> <span class="ruby-constant">File</span>.<span class="ruby-identifier">directory?</span>(<span class="ruby-identifier">dir</span>) }
+586:     <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001775"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001775'>
+
+
+plugins=
+
+(plugins)
+
+</a>
+</h3>
+
+<p class="source_link" id="M001775-show-link"><a onclick="toggle('M001775-source'); toggleText('M001775-link'); return false;" href="#" id="M001775-link">Show source...</a></p><div class="source" id="M001775-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/railties/lib/initializer.rb, line 453</span>
+453:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">plugins=</span>(<span class="ruby-identifier">plugins</span>)
+454:       <span class="ruby-ivar">@plugins</span> = <span class="ruby-identifier">plugins</span>.<span class="ruby-identifier">nil?</span> <span class="ruby-value">? </span><span class="ruby-keyword kw">nil</span> <span class="ruby-operator">:</span> <span class="ruby-identifier">plugins</span>.<span class="ruby-identifier">map</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">p</span><span class="ruby-operator">|</span> <span class="ruby-identifier">p</span>.<span class="ruby-identifier">to_sym</span> }
+455:     <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001779"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001779'>
+
+
+set_root_path!
+
+()
+
+</a>
+</h3>
+<p>
+Set the root_path to RAILS_ROOT and canonicalize it.
+</p>
+
+<p class="source_link" id="M001779-show-link"><a onclick="toggle('M001779-source'); toggleText('M001779-link'); return false;" href="#" id="M001779-link">Show source...</a></p><div class="source" id="M001779-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/railties/lib/initializer.rb, line 513</span>
+513:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">set_root_path!</span>
+514:       <span class="ruby-identifier">raise</span> <span class="ruby-value str">'RAILS_ROOT is not set'</span> <span class="ruby-keyword kw">unless</span> <span class="ruby-keyword kw">defined?</span>(<span class="ruby-operator">::</span><span class="ruby-constant">RAILS_ROOT</span>)
+515:       <span class="ruby-identifier">raise</span> <span class="ruby-value str">'RAILS_ROOT is not a directory'</span> <span class="ruby-keyword kw">unless</span> <span class="ruby-constant">File</span>.<span class="ruby-identifier">directory?</span>(<span class="ruby-operator">::</span><span class="ruby-constant">RAILS_ROOT</span>)
+516: 
+517:       <span class="ruby-ivar">@root_path</span> =
+518:         <span class="ruby-comment cmt"># Pathname is incompatible with Windows, but Windows doesn't have</span>
+519:         <span class="ruby-comment cmt"># real symlinks so File.expand_path is safe.</span>
+520:         <span class="ruby-keyword kw">if</span> <span class="ruby-constant">RUBY_PLATFORM</span> <span class="ruby-operator">=~</span> <span class="ruby-regexp re">/(:?mswin|mingw)/</span>
+521:           <span class="ruby-constant">File</span>.<span class="ruby-identifier">expand_path</span>(<span class="ruby-operator">::</span><span class="ruby-constant">RAILS_ROOT</span>)
+522: 
+523:         <span class="ruby-comment cmt"># Otherwise use Pathname#realpath which respects symlinks.</span>
+524:         <span class="ruby-keyword kw">else</span>
+525:           <span class="ruby-constant">Pathname</span>.<span class="ruby-identifier">new</span>(<span class="ruby-operator">::</span><span class="ruby-constant">RAILS_ROOT</span>).<span class="ruby-identifier">realpath</span>.<span class="ruby-identifier">to_s</span>
+526:         <span class="ruby-keyword kw">end</span>
+527:       
+528:       <span class="ruby-constant">Object</span>.<span class="ruby-identifier">const_set</span>(<span class="ruby-identifier">:RELATIVE_RAILS_ROOT</span>, <span class="ruby-operator">::</span><span class="ruby-constant">RAILS_ROOT</span>.<span class="ruby-identifier">dup</span>) <span class="ruby-keyword kw">unless</span> <span class="ruby-keyword kw">defined?</span>(<span class="ruby-operator">::</span><span class="ruby-constant">RELATIVE_RAILS_ROOT</span>)
+529:       <span class="ruby-operator">::</span><span class="ruby-constant">RAILS_ROOT</span>.<span class="ruby-identifier">replace</span> <span class="ruby-ivar">@root_path</span>
+530:     <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001785"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001785'>
+
+
+to_prepare
+
+(&amp;callback)
+
+</a>
+</h3>
+<p>
+Add a preparation callback that will run before every request in
+development mode, or before the first request in production.
+</p>
+<p>
+See Dispatcher#to_prepare.
+</p>
+
+<p class="source_link" id="M001785-show-link"><a onclick="toggle('M001785-source'); toggleText('M001785-link'); return false;" href="#" id="M001785-link">Show source...</a></p><div class="source" id="M001785-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/railties/lib/initializer.rb, line 567</span>
+567:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">to_prepare</span>(<span class="ruby-operator">&amp;</span><span class="ruby-identifier">callback</span>)
+568:       <span class="ruby-identifier">require</span> <span class="ruby-value str">'dispatcher'</span> <span class="ruby-keyword kw">unless</span> <span class="ruby-keyword kw">defined?</span>(<span class="ruby-operator">::</span><span class="ruby-constant">Dispatcher</span>)
+569:       <span class="ruby-constant">Dispatcher</span>.<span class="ruby-identifier">to_prepare</span>(<span class="ruby-operator">&amp;</span><span class="ruby-identifier">callback</span>)
+570:     <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+
+
+
+
+</div><div class="clear" id="footer">Generated on Jan 21, 2008 / Allison 2 &copy; 2007 <a href="http://cloudbur.st">Cloudburst, LLC</a></div></div></body></html>

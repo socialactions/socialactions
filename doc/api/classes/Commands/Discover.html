@@ -1,0 +1,540 @@
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head><meta content="text/html; charset=utf-8" http-equiv="Content-Type"/><title>Class: Commands::Discover</title><link type="text/css" href="../.././rdoc-style.css" media="screen" rel="stylesheet"/><script type="text/javascript">
+// Allison template
+// Copyright 2007, 2008 Cloudburst, LLC. Licensed under the AFL 3. See the included LICENSE file.
+
+var href_base = '../.././rdoc-style.css'.replace(/(.*\/).*/, '$1'); // inline js is good for something  
+
+function $(id) {
+    if (document.getElementById)
+      elem = document.getElementById(id);
+    else if ( document.all )
+      elem = eval("document.all." + id);
+    else
+      return false;
+    return elem;
+}
+
+  function toggle(id) {
+    elem = $(id);
+    elemStyle = elem.style;   
+    if (elemStyle.display == "block") {
+      elemStyle.display = "none"
+    } else {
+      elemStyle.display = "block"
+    }
+    return true;
+  }
+
+  function toggleText(id) {
+    elem = $(id)
+    if (m = elem.innerHTML.match(/(Hide)(.*)/)) {
+      elem.innerHTML = "Show" + m[2];
+    } else if (m = elem.innerHTML.match(/(Show)(.*)/)) {
+      elem.innerHTML = "Hide" + m[2];
+    }
+    return true;
+  }
+
+function span(s, klass) {
+  return '<span class="' + klass + '">' + s + '</span>';
+}
+  
+function highlightSymbols() {
+  pres = document.getElementsByTagName('pre');
+  for(var i = 0; i < pres.length; i++) {
+    pre = pres[i];
+    spans = pre.getElementsByTagName('span');
+    for(var k = 0; k < spans.length; k++) {
+      span = spans[k];
+      if (span.className.match(/ruby-identifier/)) {
+        if (span.innerHTML.match(/^:/)) {
+          span.className += " ruby-symbol";
+        }
+      }
+    }
+  }
+}
+
+ function hasClass(obj) {
+     var result = false;
+     if (obj.getAttributeNode("class") != null) {
+         result = obj.getAttributeNode("class").value;
+     }
+     return result;
+  }   
+
+ function stripe() {
+    var even = true;
+    var color = "#e4ebed";
+    var tables = document.getElementsByTagName('table');
+    if (tables.length == 0) { return; }
+    for (var h = 0; h < tables.length; h++) {
+        var trs = tables[h].getElementsByTagName("tr");
+        for (var i = 0; i < trs.length; i++) {
+          var tds = trs[i].getElementsByTagName("td");
+            for (var j = 0; j < tds.length; j++) {       
+              if (hasClass(tds[j]) != "first") {                
+              var mytd = tds[j];
+              if (even) {
+                mytd.style.backgroundColor = color;
+              }         
+            }
+          }
+          even =  ! even;
+      }
+    }
+  }
+  
+function ajaxGet(url) {
+  url = (href_base + url).replace('/./', '/')
+  var req = false;
+
+  if (window.ActiveXObject) {
+    try {
+      // stupid hack because IE7 disables local Ajax with the native xmlhttprequest object
+      // for security purposes. Yet ActiveX still works. Thanks, Microsoft. I hate you. Die.
+      req = new ActiveXObject("MSXML2.XMLHTTP.3.0");
+    } catch (e) {
+      try {
+        /* IE 6 and maybe 5, don't know, don't care */
+        req = new ActiveXObject("Msxml2.XMLHTTP");
+      } catch (e) {
+        try {
+          req = new ActiveXObject("Microsoft.XMLHTTP");
+        } catch (e) {
+          req = false;
+        }
+      }
+    }
+  }
+    
+  /* real browsers */
+  if (!req && window.XMLHttpRequest) {
+    try {
+      req = new XMLHttpRequest();
+    } catch (e) {
+      req = false;
+    }
+  } 
+  
+  if (req) {
+    req.open('GET', url, false);
+    req.send(null);
+    return req.responseText;
+  } else {
+    return "Ajax error";  
+  }
+}
+
+
+function addEvent(elm, evType, fn, useCapture) {
+	if (elm.addEventListener) {
+	  elm.addEventListener(evType, fn, useCapture);  
+  	return true;
+	} else if (elm.attachEvent) {
+  	var r = elm.attachEvent('on' + evType, fn);  
+	  return r;  
+	} else {
+  	elm['on' + evType] = fn;
+	}
+}
+
+function insertIndices() {
+  pages = ["class", "file", "method"]
+  for (x in pages) { 
+    $(pages[x]).innerHTML += ajaxGet('fr_' + pages[x] + '_index.html').replace(/(href=")/g, '$1' + href_base);
+  }
+  /* mouseoverify method links */
+  links = $('method').getElementsByTagName('a');
+  for (var x = 0; x < links.length; x++) {
+    if (m = links[x].innerHTML.match(/(.*)\s\((.*)\)/)) {
+      links[x].innerHTML = m[1] + '<br>';
+      links[x].title = m[2];
+    }
+  }
+  /* this is stupid */
+  $('class').style.display = "block";
+  $('file').style.display = "block";
+  
+  /* has to be here because IE7 does not guarantee the onLoad callback order */
+  abbreviateIndicesInner(["class", "file"], 25, "a");
+  /* same, linkTitle() depends on the class link list */
+  linkTitle();
+}
+
+function abbreviateIndices() {
+  var ids = ["defined_in", "child_of", "includes", "requires", "method", "methods"];
+  abbreviateIndicesInner(ids, 25, 'a');
+  abbreviateIndicesInner(ids, 25, 'span');
+}
+
+function abbreviateIndicesInner(indices, amount, tag) {
+  for (var x = 0; x < indices.length; x++) { 
+    var the_index = $(indices[x]);
+    if (the_index) {
+      links = the_index.getElementsByTagName(tag);
+      for (var y = 0; y < links.length; y++) {
+        var link = links[y];
+        if (link.getElementsByTagName('span').length == 0 && link.getElementsByTagName('a').length == 0) {
+          // avoid nesting
+          link.innerHTML = link.innerHTML.replace(/<br>|\n/gi, '');
+          link.title = link.innerHTML;
+          link.innerHTML = abbreviate(link.innerHTML, amount) + '<br>';
+        }
+      }
+    }
+  }
+}
+
+function linkTitle() {
+  
+  /* grab the correct title element from the index */
+  var index_page = ajaxGet('index.html');
+  title_text = index_page.match(/<title>(.*)<\/title>/m)[1];
+  document.title = title_text + " - " + document.title;
+  var p = $('header').getElementsByTagName('p')[0]
+  if (p.innerHTML.match(/^\s*$/)) {
+    p.innerHTML = title_text;
+  } else {
+    p.innerHTML = title_text + ": " + p.innerHTML;
+  }
+  
+  /* set the link properly */
+  title_link = index_page.match(/<a\s+href="(.*?)"/)[1];
+  var element = $('title');
+  var item_type = "";
+  var item_name = "";
+  if (m = element.innerHTML.match(/(Class:|Module:|File:)\s*(.*)/)) {
+    item_type = m[1];
+    item_name = m[2];
+  } else {
+    item_name = element.innerHTML;
+  }
+  element.innerHTML = '<a href="' + href_base + title_link + '">' + item_type + " " + abbreviate(item_name, 45) + '</a>';
+  element.getElementsByTagName('a')[0].title = item_name
+  
+  /* breadcrumb navigation */
+  items = item_name.split("::");
+  items_new = item_name.split("::");
+  file_links = $('class').getElementsByTagName('a');
+  for (var x = 0; x < items.length - 1; x++ ){
+    var item = items[x];
+    link = ("/classes/" + items.slice(0,x).join("/") + "/" + item + ".html").replace('//', '/');
+    regex = new RegExp(RegExp.escape(link) + '$');
+    for (var y = 0; y < file_links.length; y++) {
+      if (file_links[y].href.match(regex)) {
+         items_new[x] = '<a href="' + href_base + link + '">' + item + '</a>';
+         break;
+      }
+    }  
+  }
+  $('item_name').innerHTML = item_type + ' ' + items_new.join(" :: ");
+}
+
+function abbreviate(s, size) {
+  while (s.length > size) {
+    var old_s = s;
+    s = s.replace(/\s|\n/mg, '');
+    s = s.replace(/([A-Z])[a-z]+/m, '$1');
+    if (!s || old_s == s) {
+      return "..." + s.substring(s.length - size, s.length);
+    }
+  }
+  return s;
+}
+
+function disableSubmit(event) {
+  var keyCode = event.keyCode ? event.keyCode : event.which ? event.which : event.charCode;
+  if (keyCode == 13) {
+    return false;
+  } else {
+    return true;
+  }
+}
+  
+function filterList(id, s, event) {
+  
+  /* some weak escaping */
+  s = s.replace(/[^\w\d\.\_\-\/\:\=\[\]\?\!]/g, '');
+  s = RegExp.escape(s);
+  
+  var show_all = false;
+  if (s.match(/^\s*$/)) {
+    show_all = true;
+  }
+  
+  links = $(id).getElementsByTagName('a')
+  regex = new RegExp(s, 'i');
+  
+  for (var x = 0; x < links.length; x++) {
+    var link = links[x];
+    if (show_all) {
+      link.style.display = 'inline';
+    } else {
+       if (link.innerHTML.match(regex)) {        
+         link.style.display = 'inline';
+       } else {
+         link.style.display = 'none';
+       }
+    }
+  }
+  return true;
+}
+
+RegExp.escape = function(text) {
+  if (!arguments.callee.sRE) {
+    var specials = ['/', '.', '*', '+', '?', '|', '(', ')', '[', ']', '{', '}', '\\'];
+    arguments.callee.sRE = new RegExp(
+      '(\\' + specials.join('|\\') + ')', 'g'
+    );
+  }
+  return text.replace(arguments.callee.sRE, '\\$1');
+}
+
+function hacks() {
+  // show the spacer if necessary, 
+  divs = document.getElementsByTagName('div');
+  for(var x = 0; x < divs.length; x++) {
+    if (divs[x].className && divs[x].className.match(/top/)) {
+      document.getElementById('spacer').style.display = 'block';
+    }
+  }
+  // remove extra colons from tables
+  tds = document.getElementsByTagName('td');
+  for(var x = 0; x < tds.length; x++) {
+    str = tds[x].innerHTML
+    if (str.charAt(str.length - 1) == ":") {
+      tds[x].innerHTML = str.slice(0, str.length - 1)
+    }
+  }
+}
+
+addEvent(window, 'load', insertIndices, false);
+addEvent(window, 'load', abbreviateIndices, false);
+addEvent(window, 'load', stripe, false);
+addEvent(window, 'load', highlightSymbols, false);
+addEvent(window, 'load', hacks, false);
+</script></head><body><div id="container"><div class="curve" id="preheader_curve_0"></div><div class="curve" id="preheader_curve_1"></div><div class="curve" id="preheader_curve_2"></div><div class="curve" id="preheader_curve_3"></div><div class="curve" id="preheader_curve_4"></div><div class="curve" id="preheader_curve_5"></div><div id="header"><p>
+</p><span><h1 id="title">
+Class: Commands::Discover
+</h1></span>
+</div><div class="clear"></div><div id="left">
+<div class="navigation darker top" id="child_of"><h3>Child of</h3><span>
+
+<a href='../Object.html'>
+Object
+</a>
+</span></div>
+
+<div class="navigation darker top" id="defined_in"><h3>Defined in</h3>
+
+<a href="../../files/vendor/rails/railties/lib/commands/plugin_rb.html">vendor/rails/railties/lib/commands/plugin.rb</a>
+
+</div>
+
+
+
+<div class="navigation top" id="methods"><h3>Methods</h3>
+
+
+<a href='#M000521'>
+extract_repository_uri<br/>
+</a>
+
+
+
+
+<a href='#M000517'>
+new<br/>
+</a>
+
+
+
+
+<a href='#M000518'>
+options<br/>
+</a>
+
+
+
+
+<a href='#M000519'>
+parse!<br/>
+</a>
+
+
+
+
+<a href='#M000520'>
+scrape<br/>
+</a>
+
+
+</div>
+<div id="spacer"></div><div class="navigation darker index" id="class_wrapper"><div class="list_header"><h3>All classes</h3></div><div class="list_header_link"><a onclick="toggle('class'); toggleText('class_link'); return false;" href="#" id="class_link">Hide...</a></div><div class="clear"></div><div id="class"><form><label for="filter_class">Filter:&nbsp;&nbsp;</label><input type="text" onKeyUp="return filterList('class', this.value, event);" onKeyPress="return disableSubmit(event);" id="filter_class"></input></form></div></div><div class="navigation darker index" id="file_wrapper"><div class="list_header"><h3>All files</h3></div><div class="list_header_link"><a onclick="toggle('file'); toggleText('file_link'); return false;" href="#" id="file_link">Hide...</a></div><div class="clear"></div><div id="file"><form><label for="filter_file">Filter:&nbsp;&nbsp;</label><input type="text" onKeyUp="return filterList('file', this.value, event);" onKeyPress="return disableSubmit(event);" id="filter_file"></input></form></div></div><div class="navigation darker index" id="method_wrapper"><div class="list_header"><h3>All methods</h3></div><div class="list_header_link"><a onclick="toggle('method'); toggleText('method_link'); return false;" href="#" id="method_link">Show...</a></div><div class="clear"></div><div id="method"><form><label for="filter_method">Filter:&nbsp;&nbsp;</label><input type="text" onKeyUp="return filterList('method', this.value, event);" onKeyPress="return disableSubmit(event);" id="filter_method"></input></form></div></div></div><div id="content">
+<h1 id="item_name">Class: Commands::Discover</h1>
+
+
+
+
+
+<p></p>
+
+
+
+
+
+
+<h1>Public Class Methods</h1>
+
+
+<a class="small" name="M000517"><br/></a>
+<div class="method_block"><h3>
+<a href='#M000517'>
+
+
+new
+
+(base_command)
+
+</a>
+</h3>
+
+<p class="source_link" id="M000517-show-link"><a onclick="toggle('M000517-source'); toggleText('M000517-link'); return false;" href="#" id="M000517-link">Show source...</a></p><div class="source" id="M000517-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/railties/lib/commands/plugin.rb, line 637</span>
+637:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">base_command</span>)
+638:       <span class="ruby-ivar">@base_command</span> = <span class="ruby-identifier">base_command</span>
+639:       <span class="ruby-ivar">@list</span> = <span class="ruby-keyword kw">false</span>
+640:       <span class="ruby-ivar">@prompt</span> = <span class="ruby-keyword kw">true</span>
+641:     <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+
+<h1>Public Instance Methods</h1>
+
+
+<a class="small" name="M000521"><br/></a>
+<div class="method_block"><h3>
+<a href='#M000521'>
+
+
+extract_repository_uri
+
+(uri)
+
+</a>
+</h3>
+
+<p class="source_link" id="M000521-show-link"><a onclick="toggle('M000521-source'); toggleText('M000521-link'); return false;" href="#" id="M000521-link">Show source...</a></p><div class="source" id="M000521-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/railties/lib/commands/plugin.rb, line 704</span>
+704:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">extract_repository_uri</span>(<span class="ruby-identifier">uri</span>)
+705:       <span class="ruby-identifier">uri</span>.<span class="ruby-identifier">match</span>(<span class="ruby-regexp re">/(svn|https?):.*\/plugins\//i</span>)[<span class="ruby-value">0</span>]
+706:     <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M000518"><br/></a>
+<div class="method_block"><h3>
+<a href='#M000518'>
+
+
+options
+
+()
+
+</a>
+</h3>
+
+<p class="source_link" id="M000518-show-link"><a onclick="toggle('M000518-source'); toggleText('M000518-link'); return false;" href="#" id="M000518-link">Show source...</a></p><div class="source" id="M000518-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/railties/lib/commands/plugin.rb, line 643</span>
+643:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">options</span>
+644:       <span class="ruby-constant">OptionParser</span>.<span class="ruby-identifier">new</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">o</span><span class="ruby-operator">|</span>
+645:         <span class="ruby-identifier">o</span>.<span class="ruby-identifier">set_summary_indent</span>(<span class="ruby-value str">'  '</span>)
+646:         <span class="ruby-identifier">o</span>.<span class="ruby-identifier">banner</span> =    <span class="ruby-node">&quot;Usage: #{@base_command.script_name} discover URI [URI [URI]...]&quot;</span>
+647:         <span class="ruby-identifier">o</span>.<span class="ruby-identifier">define_head</span> <span class="ruby-value str">&quot;Discover repositories referenced on a page.&quot;</span>
+648:         <span class="ruby-identifier">o</span>.<span class="ruby-identifier">separator</span>   <span class="ruby-value str">&quot;&quot;</span>        
+649:         <span class="ruby-identifier">o</span>.<span class="ruby-identifier">separator</span>   <span class="ruby-value str">&quot;Options:&quot;</span>
+650:         <span class="ruby-identifier">o</span>.<span class="ruby-identifier">separator</span>   <span class="ruby-value str">&quot;&quot;</span>
+651:         <span class="ruby-identifier">o</span>.<span class="ruby-identifier">on</span>(         <span class="ruby-value str">&quot;-l&quot;</span>, <span class="ruby-value str">&quot;--list&quot;</span>, 
+652:                       <span class="ruby-value str">&quot;List but don't prompt or add discovered repositories.&quot;</span>) { <span class="ruby-operator">|</span><span class="ruby-ivar">@list</span><span class="ruby-operator">|</span> <span class="ruby-ivar">@prompt</span> = <span class="ruby-operator">!</span><span class="ruby-ivar">@list</span> }
+653:         <span class="ruby-identifier">o</span>.<span class="ruby-identifier">on</span>(         <span class="ruby-value str">&quot;-n&quot;</span>, <span class="ruby-value str">&quot;--no-prompt&quot;</span>, 
+654:                       <span class="ruby-value str">&quot;Add all new repositories without prompting.&quot;</span>) { <span class="ruby-operator">|</span><span class="ruby-identifier">v</span><span class="ruby-operator">|</span> <span class="ruby-ivar">@prompt</span> = <span class="ruby-operator">!</span><span class="ruby-identifier">v</span> }
+655:       <span class="ruby-keyword kw">end</span>
+656:     <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M000519"><br/></a>
+<div class="method_block"><h3>
+<a href='#M000519'>
+
+
+parse!
+
+(args)
+
+</a>
+</h3>
+
+<p class="source_link" id="M000519-show-link"><a onclick="toggle('M000519-source'); toggleText('M000519-link'); return false;" href="#" id="M000519-link">Show source...</a></p><div class="source" id="M000519-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/railties/lib/commands/plugin.rb, line 658</span>
+658:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">parse!</span>(<span class="ruby-identifier">args</span>)
+659:       <span class="ruby-identifier">options</span>.<span class="ruby-identifier">parse!</span>(<span class="ruby-identifier">args</span>)
+660:       <span class="ruby-identifier">args</span> = [<span class="ruby-value str">'http://wiki.rubyonrails.org/rails/pages/Plugins'</span>] <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">args</span>.<span class="ruby-identifier">empty?</span>
+661:       <span class="ruby-identifier">args</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">uri</span><span class="ruby-operator">|</span>
+662:         <span class="ruby-identifier">scrape</span>(<span class="ruby-identifier">uri</span>) <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">repo_uri</span><span class="ruby-operator">|</span>
+663:           <span class="ruby-identifier">catch</span>(<span class="ruby-identifier">:next_uri</span>) <span class="ruby-keyword kw">do</span>
+664:             <span class="ruby-keyword kw">if</span> <span class="ruby-ivar">@prompt</span>
+665:               <span class="ruby-keyword kw">begin</span>
+666:                 <span class="ruby-identifier">$stdout</span>.<span class="ruby-identifier">print</span> <span class="ruby-node">&quot;Add #{repo_uri}? [Y/n] &quot;</span>
+667:                 <span class="ruby-identifier">throw</span> <span class="ruby-identifier">:next_uri</span> <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">$stdin</span>.<span class="ruby-identifier">gets</span> <span class="ruby-operator">!~</span> <span class="ruby-regexp re">/^y?$/i</span>
+668:               <span class="ruby-keyword kw">rescue</span> <span class="ruby-constant">Interrupt</span>
+669:                 <span class="ruby-identifier">$stdout</span>.<span class="ruby-identifier">puts</span>
+670:                 <span class="ruby-identifier">exit</span> <span class="ruby-value">1</span>
+671:               <span class="ruby-keyword kw">end</span>
+672:             <span class="ruby-keyword kw">elsif</span> <span class="ruby-ivar">@list</span>
+673:               <span class="ruby-identifier">puts</span> <span class="ruby-identifier">repo_uri</span>
+674:               <span class="ruby-identifier">throw</span> <span class="ruby-identifier">:next_uri</span>
+675:             <span class="ruby-keyword kw">end</span>
+676:             <span class="ruby-constant">Repositories</span>.<span class="ruby-identifier">instance</span>.<span class="ruby-identifier">add</span>(<span class="ruby-identifier">repo_uri</span>)
+677:             <span class="ruby-identifier">puts</span> <span class="ruby-node">&quot;discovered: #{repo_uri}&quot;</span> <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">$verbose</span> <span class="ruby-keyword kw">or</span> <span class="ruby-operator">!</span><span class="ruby-ivar">@prompt</span>
+678:           <span class="ruby-keyword kw">end</span>
+679:         <span class="ruby-keyword kw">end</span>
+680:       <span class="ruby-keyword kw">end</span>
+681:       <span class="ruby-constant">Repositories</span>.<span class="ruby-identifier">instance</span>.<span class="ruby-identifier">save</span>
+682:     <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M000520"><br/></a>
+<div class="method_block"><h3>
+<a href='#M000520'>
+
+
+scrape
+
+(uri) {|uri unless dupes.include?(uri) || Repositories.instance.exist?(uri)| ...}
+
+</a>
+</h3>
+
+<p class="source_link" id="M000520-show-link"><a onclick="toggle('M000520-source'); toggleText('M000520-link'); return false;" href="#" id="M000520-link">Show source...</a></p><div class="source" id="M000520-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/railties/lib/commands/plugin.rb, line 684</span>
+684:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">scrape</span>(<span class="ruby-identifier">uri</span>)
+685:       <span class="ruby-identifier">require</span> <span class="ruby-value str">'open-uri'</span>
+686:       <span class="ruby-identifier">puts</span> <span class="ruby-node">&quot;Scraping #{uri}&quot;</span> <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">$verbose</span>
+687:       <span class="ruby-identifier">dupes</span> = []
+688:       <span class="ruby-identifier">content</span> = <span class="ruby-identifier">open</span>(<span class="ruby-identifier">uri</span>).<span class="ruby-identifier">each</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">line</span><span class="ruby-operator">|</span>
+689:         <span class="ruby-keyword kw">begin</span>
+690:           <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">line</span> <span class="ruby-operator">=~</span> <span class="ruby-regexp re">/&lt;a[^&gt;]*href=['&quot;]([^'&quot;]*)['&quot;]/</span> <span class="ruby-operator">||</span> <span class="ruby-identifier">line</span> <span class="ruby-operator">=~</span> <span class="ruby-regexp re">/(svn:\/\/[^&lt;|\n]*)/</span>
+691:             <span class="ruby-identifier">uri</span> = <span class="ruby-identifier">$1</span>
+692:             <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">uri</span> <span class="ruby-operator">=~</span> <span class="ruby-regexp re">/^\w+:\/\//</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">uri</span> <span class="ruby-operator">=~</span> <span class="ruby-regexp re">/\/plugins\//</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">uri</span> <span class="ruby-operator">!~</span> <span class="ruby-regexp re">/\/browser\//</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">uri</span> <span class="ruby-operator">!~</span> <span class="ruby-regexp re">/^http:\/\/wiki\.rubyonrails/</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">uri</span> <span class="ruby-operator">!~</span> <span class="ruby-regexp re">/http:\/\/instiki/</span>
+693:               <span class="ruby-identifier">uri</span> = <span class="ruby-identifier">extract_repository_uri</span>(<span class="ruby-identifier">uri</span>)
+694:               <span class="ruby-keyword kw">yield</span> <span class="ruby-identifier">uri</span> <span class="ruby-keyword kw">unless</span> <span class="ruby-identifier">dupes</span>.<span class="ruby-identifier">include?</span>(<span class="ruby-identifier">uri</span>) <span class="ruby-operator">||</span> <span class="ruby-constant">Repositories</span>.<span class="ruby-identifier">instance</span>.<span class="ruby-identifier">exist?</span>(<span class="ruby-identifier">uri</span>)
+695:               <span class="ruby-identifier">dupes</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-identifier">uri</span>
+696:             <span class="ruby-keyword kw">end</span>
+697:           <span class="ruby-keyword kw">end</span>
+698:         <span class="ruby-keyword kw">rescue</span>
+699:           <span class="ruby-identifier">puts</span> <span class="ruby-node">&quot;Problems scraping '#{uri}': #{$!.to_s}&quot;</span>
+700:         <span class="ruby-keyword kw">end</span>
+701:       <span class="ruby-keyword kw">end</span>
+702:     <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+
+
+
+
+</div><div class="clear" id="footer">Generated on Jan 21, 2008 / Allison 2 &copy; 2007 <a href="http://cloudbur.st">Cloudburst, LLC</a></div></div></body></html>

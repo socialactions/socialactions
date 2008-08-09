@@ -1,10 +1,11 @@
 = render :partial => 'search_form'
 
 #search_results
-  %h2 Results
-  = page_entries_info @actions
+  - if @search.q
+    %h2 Results
+  = page_entries_info @search.paginate_object if @search.q
   = render :partial => 'action', :collection => @actions
-  = will_paginate @actions
+  = will_paginate @search.paginate_object
 
       
 

@@ -1,0 +1,1216 @@
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head><meta content="text/html; charset=utf-8" http-equiv="Content-Type"/><title>Module: ActionController::Assertions::SelectorAssertions</title><link type="text/css" href="../../.././rdoc-style.css" media="screen" rel="stylesheet"/><script type="text/javascript">
+// Allison template
+// Copyright 2007, 2008 Cloudburst, LLC. Licensed under the AFL 3. See the included LICENSE file.
+
+var href_base = '../../.././rdoc-style.css'.replace(/(.*\/).*/, '$1'); // inline js is good for something  
+
+function $(id) {
+    if (document.getElementById)
+      elem = document.getElementById(id);
+    else if ( document.all )
+      elem = eval("document.all." + id);
+    else
+      return false;
+    return elem;
+}
+
+  function toggle(id) {
+    elem = $(id);
+    elemStyle = elem.style;   
+    if (elemStyle.display == "block") {
+      elemStyle.display = "none"
+    } else {
+      elemStyle.display = "block"
+    }
+    return true;
+  }
+
+  function toggleText(id) {
+    elem = $(id)
+    if (m = elem.innerHTML.match(/(Hide)(.*)/)) {
+      elem.innerHTML = "Show" + m[2];
+    } else if (m = elem.innerHTML.match(/(Show)(.*)/)) {
+      elem.innerHTML = "Hide" + m[2];
+    }
+    return true;
+  }
+
+function span(s, klass) {
+  return '<span class="' + klass + '">' + s + '</span>';
+}
+  
+function highlightSymbols() {
+  pres = document.getElementsByTagName('pre');
+  for(var i = 0; i < pres.length; i++) {
+    pre = pres[i];
+    spans = pre.getElementsByTagName('span');
+    for(var k = 0; k < spans.length; k++) {
+      span = spans[k];
+      if (span.className.match(/ruby-identifier/)) {
+        if (span.innerHTML.match(/^:/)) {
+          span.className += " ruby-symbol";
+        }
+      }
+    }
+  }
+}
+
+ function hasClass(obj) {
+     var result = false;
+     if (obj.getAttributeNode("class") != null) {
+         result = obj.getAttributeNode("class").value;
+     }
+     return result;
+  }   
+
+ function stripe() {
+    var even = true;
+    var color = "#e4ebed";
+    var tables = document.getElementsByTagName('table');
+    if (tables.length == 0) { return; }
+    for (var h = 0; h < tables.length; h++) {
+        var trs = tables[h].getElementsByTagName("tr");
+        for (var i = 0; i < trs.length; i++) {
+          var tds = trs[i].getElementsByTagName("td");
+            for (var j = 0; j < tds.length; j++) {       
+              if (hasClass(tds[j]) != "first") {                
+              var mytd = tds[j];
+              if (even) {
+                mytd.style.backgroundColor = color;
+              }         
+            }
+          }
+          even =  ! even;
+      }
+    }
+  }
+  
+function ajaxGet(url) {
+  url = (href_base + url).replace('/./', '/')
+  var req = false;
+
+  if (window.ActiveXObject) {
+    try {
+      // stupid hack because IE7 disables local Ajax with the native xmlhttprequest object
+      // for security purposes. Yet ActiveX still works. Thanks, Microsoft. I hate you. Die.
+      req = new ActiveXObject("MSXML2.XMLHTTP.3.0");
+    } catch (e) {
+      try {
+        /* IE 6 and maybe 5, don't know, don't care */
+        req = new ActiveXObject("Msxml2.XMLHTTP");
+      } catch (e) {
+        try {
+          req = new ActiveXObject("Microsoft.XMLHTTP");
+        } catch (e) {
+          req = false;
+        }
+      }
+    }
+  }
+    
+  /* real browsers */
+  if (!req && window.XMLHttpRequest) {
+    try {
+      req = new XMLHttpRequest();
+    } catch (e) {
+      req = false;
+    }
+  } 
+  
+  if (req) {
+    req.open('GET', url, false);
+    req.send(null);
+    return req.responseText;
+  } else {
+    return "Ajax error";  
+  }
+}
+
+
+function addEvent(elm, evType, fn, useCapture) {
+	if (elm.addEventListener) {
+	  elm.addEventListener(evType, fn, useCapture);  
+  	return true;
+	} else if (elm.attachEvent) {
+  	var r = elm.attachEvent('on' + evType, fn);  
+	  return r;  
+	} else {
+  	elm['on' + evType] = fn;
+	}
+}
+
+function insertIndices() {
+  pages = ["class", "file", "method"]
+  for (x in pages) { 
+    $(pages[x]).innerHTML += ajaxGet('fr_' + pages[x] + '_index.html').replace(/(href=")/g, '$1' + href_base);
+  }
+  /* mouseoverify method links */
+  links = $('method').getElementsByTagName('a');
+  for (var x = 0; x < links.length; x++) {
+    if (m = links[x].innerHTML.match(/(.*)\s\((.*)\)/)) {
+      links[x].innerHTML = m[1] + '<br>';
+      links[x].title = m[2];
+    }
+  }
+  /* this is stupid */
+  $('class').style.display = "block";
+  $('file').style.display = "block";
+  
+  /* has to be here because IE7 does not guarantee the onLoad callback order */
+  abbreviateIndicesInner(["class", "file"], 25, "a");
+  /* same, linkTitle() depends on the class link list */
+  linkTitle();
+}
+
+function abbreviateIndices() {
+  var ids = ["defined_in", "child_of", "includes", "requires", "method", "methods"];
+  abbreviateIndicesInner(ids, 25, 'a');
+  abbreviateIndicesInner(ids, 25, 'span');
+}
+
+function abbreviateIndicesInner(indices, amount, tag) {
+  for (var x = 0; x < indices.length; x++) { 
+    var the_index = $(indices[x]);
+    if (the_index) {
+      links = the_index.getElementsByTagName(tag);
+      for (var y = 0; y < links.length; y++) {
+        var link = links[y];
+        if (link.getElementsByTagName('span').length == 0 && link.getElementsByTagName('a').length == 0) {
+          // avoid nesting
+          link.innerHTML = link.innerHTML.replace(/<br>|\n/gi, '');
+          link.title = link.innerHTML;
+          link.innerHTML = abbreviate(link.innerHTML, amount) + '<br>';
+        }
+      }
+    }
+  }
+}
+
+function linkTitle() {
+  
+  /* grab the correct title element from the index */
+  var index_page = ajaxGet('index.html');
+  title_text = index_page.match(/<title>(.*)<\/title>/m)[1];
+  document.title = title_text + " - " + document.title;
+  var p = $('header').getElementsByTagName('p')[0]
+  if (p.innerHTML.match(/^\s*$/)) {
+    p.innerHTML = title_text;
+  } else {
+    p.innerHTML = title_text + ": " + p.innerHTML;
+  }
+  
+  /* set the link properly */
+  title_link = index_page.match(/<a\s+href="(.*?)"/)[1];
+  var element = $('title');
+  var item_type = "";
+  var item_name = "";
+  if (m = element.innerHTML.match(/(Class:|Module:|File:)\s*(.*)/)) {
+    item_type = m[1];
+    item_name = m[2];
+  } else {
+    item_name = element.innerHTML;
+  }
+  element.innerHTML = '<a href="' + href_base + title_link + '">' + item_type + " " + abbreviate(item_name, 45) + '</a>';
+  element.getElementsByTagName('a')[0].title = item_name
+  
+  /* breadcrumb navigation */
+  items = item_name.split("::");
+  items_new = item_name.split("::");
+  file_links = $('class').getElementsByTagName('a');
+  for (var x = 0; x < items.length - 1; x++ ){
+    var item = items[x];
+    link = ("/classes/" + items.slice(0,x).join("/") + "/" + item + ".html").replace('//', '/');
+    regex = new RegExp(RegExp.escape(link) + '$');
+    for (var y = 0; y < file_links.length; y++) {
+      if (file_links[y].href.match(regex)) {
+         items_new[x] = '<a href="' + href_base + link + '">' + item + '</a>';
+         break;
+      }
+    }  
+  }
+  $('item_name').innerHTML = item_type + ' ' + items_new.join(" :: ");
+}
+
+function abbreviate(s, size) {
+  while (s.length > size) {
+    var old_s = s;
+    s = s.replace(/\s|\n/mg, '');
+    s = s.replace(/([A-Z])[a-z]+/m, '$1');
+    if (!s || old_s == s) {
+      return "..." + s.substring(s.length - size, s.length);
+    }
+  }
+  return s;
+}
+
+function disableSubmit(event) {
+  var keyCode = event.keyCode ? event.keyCode : event.which ? event.which : event.charCode;
+  if (keyCode == 13) {
+    return false;
+  } else {
+    return true;
+  }
+}
+  
+function filterList(id, s, event) {
+  
+  /* some weak escaping */
+  s = s.replace(/[^\w\d\.\_\-\/\:\=\[\]\?\!]/g, '');
+  s = RegExp.escape(s);
+  
+  var show_all = false;
+  if (s.match(/^\s*$/)) {
+    show_all = true;
+  }
+  
+  links = $(id).getElementsByTagName('a')
+  regex = new RegExp(s, 'i');
+  
+  for (var x = 0; x < links.length; x++) {
+    var link = links[x];
+    if (show_all) {
+      link.style.display = 'inline';
+    } else {
+       if (link.innerHTML.match(regex)) {        
+         link.style.display = 'inline';
+       } else {
+         link.style.display = 'none';
+       }
+    }
+  }
+  return true;
+}
+
+RegExp.escape = function(text) {
+  if (!arguments.callee.sRE) {
+    var specials = ['/', '.', '*', '+', '?', '|', '(', ')', '[', ']', '{', '}', '\\'];
+    arguments.callee.sRE = new RegExp(
+      '(\\' + specials.join('|\\') + ')', 'g'
+    );
+  }
+  return text.replace(arguments.callee.sRE, '\\$1');
+}
+
+function hacks() {
+  // show the spacer if necessary, 
+  divs = document.getElementsByTagName('div');
+  for(var x = 0; x < divs.length; x++) {
+    if (divs[x].className && divs[x].className.match(/top/)) {
+      document.getElementById('spacer').style.display = 'block';
+    }
+  }
+  // remove extra colons from tables
+  tds = document.getElementsByTagName('td');
+  for(var x = 0; x < tds.length; x++) {
+    str = tds[x].innerHTML
+    if (str.charAt(str.length - 1) == ":") {
+      tds[x].innerHTML = str.slice(0, str.length - 1)
+    }
+  }
+}
+
+addEvent(window, 'load', insertIndices, false);
+addEvent(window, 'load', abbreviateIndices, false);
+addEvent(window, 'load', stripe, false);
+addEvent(window, 'load', highlightSymbols, false);
+addEvent(window, 'load', hacks, false);
+</script></head><body><div id="container"><div class="curve" id="preheader_curve_0"></div><div class="curve" id="preheader_curve_1"></div><div class="curve" id="preheader_curve_2"></div><div class="curve" id="preheader_curve_3"></div><div class="curve" id="preheader_curve_4"></div><div class="curve" id="preheader_curve_5"></div><div id="header"><p>
+</p><span><h1 id="title">
+Module: ActionController::Assertions::SelectorAssertions
+</h1></span>
+</div><div class="clear"></div><div id="left">
+
+<div class="navigation darker top" id="defined_in"><h3>Defined in</h3>
+
+<a href="../../../files/vendor/rails/actionpack/lib/action_controller/assertions/selector_assertions_rb.html">vendor/rails/actionpack/lib/action_controller/assertions/selector_assertions.rb</a>
+
+</div>
+
+
+
+<div class="navigation top" id="methods"><h3>Methods</h3>
+
+
+<a href='#M000380'>
+assert_select<br/>
+</a>
+
+
+
+
+<a href='#M000383'>
+assert_select_email<br/>
+</a>
+
+
+
+
+<a href='#M000382'>
+assert_select_encoded<br/>
+</a>
+
+
+
+
+<a href='#M000381'>
+assert_select_rjs<br/>
+</a>
+
+
+
+
+<a href='#M000379'>
+css_select<br/>
+</a>
+
+
+
+
+<a href='#M000384'>
+response_from_page_or_rjs<br/>
+</a>
+
+
+
+
+<a href='#M000385'>
+unescape_rjs<br/>
+</a>
+
+
+</div>
+<div id="spacer"></div><div class="navigation darker index" id="class_wrapper"><div class="list_header"><h3>All classes</h3></div><div class="list_header_link"><a onclick="toggle('class'); toggleText('class_link'); return false;" href="#" id="class_link">Hide...</a></div><div class="clear"></div><div id="class"><form><label for="filter_class">Filter:&nbsp;&nbsp;</label><input type="text" onKeyUp="return filterList('class', this.value, event);" onKeyPress="return disableSubmit(event);" id="filter_class"></input></form></div></div><div class="navigation darker index" id="file_wrapper"><div class="list_header"><h3>All files</h3></div><div class="list_header_link"><a onclick="toggle('file'); toggleText('file_link'); return false;" href="#" id="file_link">Hide...</a></div><div class="clear"></div><div id="file"><form><label for="filter_file">Filter:&nbsp;&nbsp;</label><input type="text" onKeyUp="return filterList('file', this.value, event);" onKeyPress="return disableSubmit(event);" id="filter_file"></input></form></div></div><div class="navigation darker index" id="method_wrapper"><div class="list_header"><h3>All methods</h3></div><div class="list_header_link"><a onclick="toggle('method'); toggleText('method_link'); return false;" href="#" id="method_link">Show...</a></div><div class="clear"></div><div id="method"><form><label for="filter_method">Filter:&nbsp;&nbsp;</label><input type="text" onKeyUp="return filterList('method', this.value, event);" onKeyPress="return disableSubmit(event);" id="filter_method"></input></form></div></div></div><div id="content">
+<h1 id="item_name">Module: ActionController::Assertions::SelectorAssertions</h1>
+
+<div id="description"><p>
+Adds the <a href="SelectorAssertions.html#M000380">assert_select</a> method
+for use in <a href="../../Rails.html">Rails</a> functional test cases,
+which can be used to make assertions on the response HTML of a controller
+action. You can also call <a
+href="SelectorAssertions.html#M000380">assert_select</a> within another <a
+href="SelectorAssertions.html#M000380">assert_select</a> to make assertions
+on elements selected by the enclosing assertion.
+</p>
+<p>
+Use <a href="SelectorAssertions.html#M000379">css_select</a> to select
+elements without making an assertions, either from the response HTML or
+elements selected by the enclosing assertion.
+</p>
+<p>
+In addition to HTML responses, you can make the following assertions:
+</p>
+<ul>
+<li><a href="SelectorAssertions.html#M000381">assert_select_rjs</a> &#8212; <a
+href="../Assertions.html">Assertions</a> on HTML content of RJS update and
+
+<pre>
+  insertion operations.
+</pre>
+</li>
+<li><a href="SelectorAssertions.html#M000382">assert_select_encoded</a> &#8212;
+<a href="../Assertions.html">Assertions</a> on HTML encoded inside XML,
+
+<pre>
+  for example for dealing with feed item descriptions.
+</pre>
+</li>
+<li><a href="SelectorAssertions.html#M000383">assert_select_email</a> &#8212;
+<a href="../Assertions.html">Assertions</a> on the HTML body of an e-mail.
+
+</li>
+</ul>
+<p>
+Also see <a href="../../HTML/Selector.html">HTML::Selector</a> to learn how
+to use selectors.
+</p>
+</div>
+
+
+
+
+<p></p>
+
+
+<h1>Constants</h1><p><table><tr><th>Name</th><th>Value</th></tr>
+<tr>
+<td class="highlight">RJS_STATEMENTS</td>
+
+<td class="normal">{             :replace              =&gt; /Element\.replace/,             :replace_html         =&gt; /Element\.update/,             :chained_replace      =&gt; /\.replace/,             :chained_replace_html =&gt; /\.update/,             :remove               =&gt; /Element\.remove/,             :show                 =&gt; /Element\.show/,             :hide                 =&gt; /Element\.hide/,             :toggle                 =&gt; /Element\.toggle/</td>
+
+
+
+</tr>
+<tr>
+<td class="highlight">RJS_INSERTIONS</td>
+
+<td class="normal">[:top, :bottom, :before, :after]</td>
+
+
+
+</tr>
+<tr>
+<td class="highlight">RJS_PATTERN_HTML</td>
+
+<td class="normal">/&quot;((\\&quot;|[^&quot;])*)&quot;/</td>
+
+
+
+</tr>
+<tr>
+<td class="highlight">RJS_PATTERN_EVERYTHING</td>
+
+<td class="normal">Regexp.new(&quot;#{RJS_STATEMENTS[:any]}\\(\&quot;([^\&quot;]*)\&quot;, #{RJS_PATTERN_HTML}\\)&quot;,                                               Regexp::MULTILINE)</td>
+
+
+
+</tr>
+<tr>
+<td class="highlight">RJS_PATTERN_UNICODE_ESCAPED_CHAR</td>
+
+<td class="normal">/\\u([0-9a-zA-Z]{4})/</td>
+
+
+
+</tr>
+</table></p>
+
+
+
+
+<h1>Public Instance Methods</h1>
+
+
+<a class="small" name="M000380"><br/></a>
+<div class="method_block"><h3>
+<a href='#M000380'>
+
+assert_select(selector, equality?, message?)<br />
+assert_select(element, selector, equality?, message?)<br />
+
+
+
+
+</a>
+</h3>
+<p>
+An assertion that selects elements and makes one or more equality tests.
+</p>
+<p>
+If the first argument is an element, selects all matching elements starting
+from (and including) that element and all its children in depth-first
+order.
+</p>
+<p>
+If no element if specified, calling <a
+href="SelectorAssertions.html#M000380">assert_select</a> will select from
+the response HTML. Calling <a
+href="SelectorAssertions.html#M000380">assert_select</a> inside an <a
+href="SelectorAssertions.html#M000380">assert_select</a> block will run the
+assertion for each element selected by the enclosing assertion.
+</p>
+<h4>Example</h4>
+<pre>
+  assert_select &quot;ol&gt;li&quot; do |elements|
+    elements.each do |element|
+      assert_select element, &quot;li&quot;
+    end
+  end
+</pre>
+<p>
+Or for short:
+</p>
+<pre>
+  assert_select &quot;ol&gt;li&quot; do
+    assert_select &quot;li&quot;
+  end
+</pre>
+<p>
+The selector may be a CSS selector expression (<tt>String</tt>), an
+expression with substitution values, or an <a
+href="../../HTML/Selector.html">HTML::Selector</a> object.
+</p>
+<h3>Equality Tests</h3>
+<p>
+The equality test may be one of the following:
+</p>
+<ul>
+<li><tt>true</tt> &#8212; Assertion is true if at least one element selected.
+
+</li>
+<li><tt>false</tt> &#8212; Assertion is true if no element selected.
+
+</li>
+<li><tt>String/Regexp</tt> &#8212; Assertion is true if the text value of at
+least one element matches the string or regular expression.
+
+</li>
+<li><tt>Integer</tt> &#8212; Assertion is true if exactly that number of
+elements are selected.
+
+</li>
+<li><tt>Range</tt> &#8212; Assertion is true if the number of selected elements
+fit the range.
+
+</li>
+</ul>
+<p>
+If no equality test specified, the assertion is true if at least one
+element selected.
+</p>
+<p>
+To perform more than one equality tests, use a hash with the following
+keys:
+</p>
+<ul>
+<li><tt>:text</tt> &#8212; Narrow the selection to elements that have this text
+value (string or regexp).
+
+</li>
+<li><tt>:html</tt> &#8212; Narrow the selection to elements that have this HTML
+content (string or regexp).
+
+</li>
+<li><tt>:count</tt> &#8212; Assertion is true if the number of selected
+elements is equal to this value.
+
+</li>
+<li><tt>:minimum</tt> &#8212; Assertion is true if the number of selected
+elements is at least this value.
+
+</li>
+<li><tt>:maximum</tt> &#8212; Assertion is true if the number of selected
+elements is at most this value.
+
+</li>
+</ul>
+<p>
+If the method is called with a block, once all equality tests are evaluated
+the block is called with an array of all matched elements.
+</p>
+<h4>Examples</h4>
+<pre>
+  # At least one form element
+  assert_select &quot;form&quot;
+
+  # Form element includes four input fields
+  assert_select &quot;form input&quot;, 4
+
+  # Page title is &quot;Welcome&quot;
+  assert_select &quot;title&quot;, &quot;Welcome&quot;
+
+  # Page title is &quot;Welcome&quot; and there is only one title element
+  assert_select &quot;title&quot;, {:count=&gt;1, :text=&gt;&quot;Welcome&quot;},
+      &quot;Wrong title or more than one title element&quot;
+
+  # Page contains no forms
+  assert_select &quot;form&quot;, false, &quot;This page must contain no forms&quot;
+
+  # Test the content and style
+  assert_select &quot;body div.header ul.menu&quot;
+
+  # Use substitution values
+  assert_select &quot;ol&gt;li#?&quot;, /item-\d+/
+
+  # All input fields in the form have a name
+  assert_select &quot;form input&quot; do
+    assert_select &quot;[name=?]&quot;, /.+/  # Not empty
+  end
+</pre>
+
+<p class="source_link" id="M000380-show-link"><a onclick="toggle('M000380-source'); toggleText('M000380-link'); return false;" href="#" id="M000380-link">Show source...</a></p><div class="source" id="M000380-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/actionpack/lib/action_controller/assertions/selector_assertions.rb, line 193</span>
+193:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">assert_select</span>(<span class="ruby-operator">*</span><span class="ruby-identifier">args</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
+194:         <span class="ruby-comment cmt"># Start with optional element followed by mandatory selector.</span>
+195:         <span class="ruby-identifier">arg</span> = <span class="ruby-identifier">args</span>.<span class="ruby-identifier">shift</span>
+196: 
+197:         <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">arg</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">HTML</span><span class="ruby-operator">::</span><span class="ruby-constant">Node</span>)
+198:           <span class="ruby-comment cmt"># First argument is a node (tag or text, but also HTML root),</span>
+199:           <span class="ruby-comment cmt"># so we know what we're selecting from.</span>
+200:           <span class="ruby-identifier">root</span> = <span class="ruby-identifier">arg</span>
+201:           <span class="ruby-identifier">arg</span> = <span class="ruby-identifier">args</span>.<span class="ruby-identifier">shift</span>
+202:         <span class="ruby-keyword kw">elsif</span> <span class="ruby-identifier">arg</span> <span class="ruby-operator">==</span> <span class="ruby-keyword kw">nil</span>
+203:           <span class="ruby-comment cmt"># This usually happens when passing a node/element that</span>
+204:           <span class="ruby-comment cmt"># happens to be nil.</span>
+205:           <span class="ruby-identifier">raise</span> <span class="ruby-constant">ArgumentError</span>, <span class="ruby-value str">&quot;First argument is either selector or element to select, but nil found. Perhaps you called assert_select with an element that does not exist?&quot;</span>
+206:         <span class="ruby-keyword kw">elsif</span> <span class="ruby-ivar">@selected</span>
+207:           <span class="ruby-identifier">root</span> = <span class="ruby-constant">HTML</span><span class="ruby-operator">::</span><span class="ruby-constant">Node</span>.<span class="ruby-identifier">new</span>(<span class="ruby-keyword kw">nil</span>)
+208:           <span class="ruby-identifier">root</span>.<span class="ruby-identifier">children</span>.<span class="ruby-identifier">concat</span> <span class="ruby-ivar">@selected</span>
+209:         <span class="ruby-keyword kw">else</span>
+210:           <span class="ruby-comment cmt"># Otherwise just operate on the response document.</span>
+211:           <span class="ruby-identifier">root</span> = <span class="ruby-identifier">response_from_page_or_rjs</span>
+212:         <span class="ruby-keyword kw">end</span>
+213:         
+214:         <span class="ruby-comment cmt"># First or second argument is the selector: string and we pass</span>
+215:         <span class="ruby-comment cmt"># all remaining arguments. Array and we pass the argument. Also</span>
+216:         <span class="ruby-comment cmt"># accepts selector itself.</span>
+217:         <span class="ruby-keyword kw">case</span> <span class="ruby-identifier">arg</span>
+218:           <span class="ruby-keyword kw">when</span> <span class="ruby-constant">String</span>
+219:             <span class="ruby-identifier">selector</span> = <span class="ruby-constant">HTML</span><span class="ruby-operator">::</span><span class="ruby-constant">Selector</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">arg</span>, <span class="ruby-identifier">args</span>)
+220:           <span class="ruby-keyword kw">when</span> <span class="ruby-constant">Array</span>
+221:             <span class="ruby-identifier">selector</span> = <span class="ruby-constant">HTML</span><span class="ruby-operator">::</span><span class="ruby-constant">Selector</span>.<span class="ruby-identifier">new</span>(<span class="ruby-operator">*</span><span class="ruby-identifier">arg</span>)
+222:           <span class="ruby-keyword kw">when</span> <span class="ruby-constant">HTML</span><span class="ruby-operator">::</span><span class="ruby-constant">Selector</span>
+223:             <span class="ruby-identifier">selector</span> = <span class="ruby-identifier">arg</span>
+224:           <span class="ruby-keyword kw">else</span> <span class="ruby-identifier">raise</span> <span class="ruby-constant">ArgumentError</span>, <span class="ruby-value str">&quot;Expecting a selector as the first argument&quot;</span>
+225:         <span class="ruby-keyword kw">end</span>
+226:         
+227:         <span class="ruby-comment cmt"># Next argument is used for equality tests.</span>
+228:         <span class="ruby-identifier">equals</span> = {}
+229:         <span class="ruby-keyword kw">case</span> <span class="ruby-identifier">arg</span> = <span class="ruby-identifier">args</span>.<span class="ruby-identifier">shift</span>
+230:           <span class="ruby-keyword kw">when</span> <span class="ruby-constant">Hash</span>
+231:             <span class="ruby-identifier">equals</span> = <span class="ruby-identifier">arg</span>
+232:           <span class="ruby-keyword kw">when</span> <span class="ruby-constant">String</span>, <span class="ruby-constant">Regexp</span>
+233:             <span class="ruby-identifier">equals</span>[<span class="ruby-identifier">:text</span>] = <span class="ruby-identifier">arg</span>
+234:           <span class="ruby-keyword kw">when</span> <span class="ruby-constant">Integer</span>
+235:             <span class="ruby-identifier">equals</span>[<span class="ruby-identifier">:count</span>] = <span class="ruby-identifier">arg</span>
+236:           <span class="ruby-keyword kw">when</span> <span class="ruby-constant">Range</span>
+237:             <span class="ruby-identifier">equals</span>[<span class="ruby-identifier">:minimum</span>] = <span class="ruby-identifier">arg</span>.<span class="ruby-identifier">begin</span>
+238:             <span class="ruby-identifier">equals</span>[<span class="ruby-identifier">:maximum</span>] = <span class="ruby-identifier">arg</span>.<span class="ruby-identifier">end</span>
+239:           <span class="ruby-keyword kw">when</span> <span class="ruby-constant">FalseClass</span>
+240:             <span class="ruby-identifier">equals</span>[<span class="ruby-identifier">:count</span>] = <span class="ruby-value">0</span>
+241:           <span class="ruby-keyword kw">when</span> <span class="ruby-constant">NilClass</span>, <span class="ruby-constant">TrueClass</span>
+242:             <span class="ruby-identifier">equals</span>[<span class="ruby-identifier">:minimum</span>] = <span class="ruby-value">1</span>
+243:           <span class="ruby-keyword kw">else</span> <span class="ruby-identifier">raise</span> <span class="ruby-constant">ArgumentError</span>, <span class="ruby-value str">&quot;I don't understand what you're trying to match&quot;</span>
+244:         <span class="ruby-keyword kw">end</span>
+245: 
+246:         <span class="ruby-comment cmt"># By default we're looking for at least one match.</span>
+247:         <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">equals</span>[<span class="ruby-identifier">:count</span>]
+248:           <span class="ruby-identifier">equals</span>[<span class="ruby-identifier">:minimum</span>] = <span class="ruby-identifier">equals</span>[<span class="ruby-identifier">:maximum</span>] = <span class="ruby-identifier">equals</span>[<span class="ruby-identifier">:count</span>]
+249:         <span class="ruby-keyword kw">else</span>
+250:           <span class="ruby-identifier">equals</span>[<span class="ruby-identifier">:minimum</span>] = <span class="ruby-value">1</span> <span class="ruby-keyword kw">unless</span> <span class="ruby-identifier">equals</span>[<span class="ruby-identifier">:minimum</span>]
+251:         <span class="ruby-keyword kw">end</span>
+252: 
+253:         <span class="ruby-comment cmt"># Last argument is the message we use if the assertion fails.</span>
+254:         <span class="ruby-identifier">message</span> = <span class="ruby-identifier">args</span>.<span class="ruby-identifier">shift</span>
+255:         <span class="ruby-comment cmt">#- message = &quot;No match made with selector #{selector.inspect}&quot; unless message</span>
+256:         <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">args</span>.<span class="ruby-identifier">shift</span>
+257:           <span class="ruby-identifier">raise</span> <span class="ruby-constant">ArgumentError</span>, <span class="ruby-value str">&quot;Not expecting that last argument, you either have too many arguments, or they're the wrong type&quot;</span>
+258:         <span class="ruby-keyword kw">end</span>
+259: 
+260:         <span class="ruby-identifier">matches</span> = <span class="ruby-identifier">selector</span>.<span class="ruby-identifier">select</span>(<span class="ruby-identifier">root</span>)
+261:         <span class="ruby-comment cmt"># If text/html, narrow down to those elements that match it.</span>
+262:         <span class="ruby-identifier">content_mismatch</span> = <span class="ruby-keyword kw">nil</span>
+263:         <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">match_with</span> = <span class="ruby-identifier">equals</span>[<span class="ruby-identifier">:text</span>]
+264:           <span class="ruby-identifier">matches</span>.<span class="ruby-identifier">delete_if</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">match</span><span class="ruby-operator">|</span>
+265:             <span class="ruby-identifier">text</span> = <span class="ruby-value str">&quot;&quot;</span>
+266:             <span class="ruby-identifier">stack</span> = <span class="ruby-identifier">match</span>.<span class="ruby-identifier">children</span>.<span class="ruby-identifier">reverse</span>
+267:             <span class="ruby-keyword kw">while</span> <span class="ruby-identifier">node</span> = <span class="ruby-identifier">stack</span>.<span class="ruby-identifier">pop</span>
+268:               <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">node</span>.<span class="ruby-identifier">tag?</span>
+269:                 <span class="ruby-identifier">stack</span>.<span class="ruby-identifier">concat</span> <span class="ruby-identifier">node</span>.<span class="ruby-identifier">children</span>.<span class="ruby-identifier">reverse</span>
+270:               <span class="ruby-keyword kw">else</span>
+271:                 <span class="ruby-identifier">text</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-identifier">node</span>.<span class="ruby-identifier">content</span>
+272:               <span class="ruby-keyword kw">end</span>
+273:             <span class="ruby-keyword kw">end</span>
+274:             <span class="ruby-identifier">text</span>.<span class="ruby-identifier">strip!</span> <span class="ruby-keyword kw">unless</span> <span class="ruby-constant">NO_STRIP</span>.<span class="ruby-identifier">include?</span>(<span class="ruby-identifier">match</span>.<span class="ruby-identifier">name</span>)
+275:             <span class="ruby-keyword kw">unless</span> <span class="ruby-identifier">match_with</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">Regexp</span>) <span class="ruby-operator">?</span> (<span class="ruby-identifier">text</span> <span class="ruby-operator">=~</span> <span class="ruby-identifier">match_with</span>) <span class="ruby-operator">:</span> (<span class="ruby-identifier">text</span> <span class="ruby-operator">==</span> <span class="ruby-identifier">match_with</span>.<span class="ruby-identifier">to_s</span>)
+276:               <span class="ruby-identifier">content_mismatch</span> <span class="ruby-operator">||=</span> <span class="ruby-identifier">build_message</span>(<span class="ruby-identifier">message</span>, <span class="ruby-value str">&quot;&lt;?&gt; expected but was\n&lt;?&gt;.&quot;</span>, <span class="ruby-identifier">match_with</span>, <span class="ruby-identifier">text</span>)
+277:               <span class="ruby-keyword kw">true</span>
+278:             <span class="ruby-keyword kw">end</span>
+279:           <span class="ruby-keyword kw">end</span>
+280:         <span class="ruby-keyword kw">elsif</span> <span class="ruby-identifier">match_with</span> = <span class="ruby-identifier">equals</span>[<span class="ruby-identifier">:html</span>]
+281:           <span class="ruby-identifier">matches</span>.<span class="ruby-identifier">delete_if</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">match</span><span class="ruby-operator">|</span>
+282:             <span class="ruby-identifier">html</span> = <span class="ruby-identifier">match</span>.<span class="ruby-identifier">children</span>.<span class="ruby-identifier">map</span>(<span class="ruby-operator">&amp;</span><span class="ruby-identifier">:to_s</span>).<span class="ruby-identifier">join</span>
+283:             <span class="ruby-identifier">html</span>.<span class="ruby-identifier">strip!</span> <span class="ruby-keyword kw">unless</span> <span class="ruby-constant">NO_STRIP</span>.<span class="ruby-identifier">include?</span>(<span class="ruby-identifier">match</span>.<span class="ruby-identifier">name</span>)
+284:             <span class="ruby-keyword kw">unless</span> <span class="ruby-identifier">match_with</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">Regexp</span>) <span class="ruby-operator">?</span> (<span class="ruby-identifier">html</span> <span class="ruby-operator">=~</span> <span class="ruby-identifier">match_with</span>) <span class="ruby-operator">:</span> (<span class="ruby-identifier">html</span> <span class="ruby-operator">==</span> <span class="ruby-identifier">match_with</span>.<span class="ruby-identifier">to_s</span>)
+285:               <span class="ruby-identifier">content_mismatch</span> <span class="ruby-operator">||=</span> <span class="ruby-identifier">build_message</span>(<span class="ruby-identifier">message</span>, <span class="ruby-value str">&quot;&lt;?&gt; expected but was\n&lt;?&gt;.&quot;</span>, <span class="ruby-identifier">match_with</span>, <span class="ruby-identifier">html</span>)
+286:               <span class="ruby-keyword kw">true</span>
+287:             <span class="ruby-keyword kw">end</span>
+288:           <span class="ruby-keyword kw">end</span>
+289:         <span class="ruby-keyword kw">end</span>
+290:         <span class="ruby-comment cmt"># Expecting foo found bar element only if found zero, not if</span>
+291:         <span class="ruby-comment cmt"># found one but expecting two.</span>
+292:         <span class="ruby-identifier">message</span> <span class="ruby-operator">||=</span> <span class="ruby-identifier">content_mismatch</span> <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">matches</span>.<span class="ruby-identifier">empty?</span>
+293:         <span class="ruby-comment cmt"># Test minimum/maximum occurrence.</span>
+294:         <span class="ruby-identifier">min</span>, <span class="ruby-identifier">max</span> = <span class="ruby-identifier">equals</span>[<span class="ruby-identifier">:minimum</span>], <span class="ruby-identifier">equals</span>[<span class="ruby-identifier">:maximum</span>]
+295:         <span class="ruby-identifier">message</span> = <span class="ruby-identifier">message</span> <span class="ruby-operator">||</span> <span class="ruby-node">%(Expected #{count_description(min, max)} matching &quot;#{selector.to_s}&quot;, found #{matches.size}.)</span>
+296:         <span class="ruby-identifier">assert</span> <span class="ruby-identifier">matches</span>.<span class="ruby-identifier">size</span> <span class="ruby-operator">&gt;=</span> <span class="ruby-identifier">min</span>, <span class="ruby-identifier">message</span> <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">min</span>
+297:         <span class="ruby-identifier">assert</span> <span class="ruby-identifier">matches</span>.<span class="ruby-identifier">size</span> <span class="ruby-operator">&lt;=</span> <span class="ruby-identifier">max</span>, <span class="ruby-identifier">message</span> <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">max</span>
+298: 
+299:         <span class="ruby-comment cmt"># If a block is given call that block. Set @selected to allow</span>
+300:         <span class="ruby-comment cmt"># nested assert_select, which can be nested several levels deep.</span>
+301:         <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">block_given?</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-operator">!</span><span class="ruby-identifier">matches</span>.<span class="ruby-identifier">empty?</span>
+302:           <span class="ruby-keyword kw">begin</span>
+303:             <span class="ruby-identifier">in_scope</span>, <span class="ruby-ivar">@selected</span> = <span class="ruby-ivar">@selected</span>, <span class="ruby-identifier">matches</span>
+304:             <span class="ruby-keyword kw">yield</span> <span class="ruby-identifier">matches</span>
+305:           <span class="ruby-keyword kw">ensure</span>
+306:             <span class="ruby-ivar">@selected</span> = <span class="ruby-identifier">in_scope</span>
+307:           <span class="ruby-keyword kw">end</span>
+308:         <span class="ruby-keyword kw">end</span>
+309: 
+310:         <span class="ruby-comment cmt"># Returns all matches elements.</span>
+311:         <span class="ruby-identifier">matches</span>
+312:       <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M000383"><br/></a>
+<div class="method_block"><h3>
+<a href='#M000383'>
+
+assert_select_email { }<br />
+
+
+
+
+</a>
+</h3>
+<p>
+Extracts the body of an email and runs nested assertions on it.
+</p>
+<p>
+You must enable deliveries for this assertion to work, use:
+</p>
+<pre>
+  ActionMailer::Base.perform_deliveries = true
+</pre>
+<h4>Examples</h4>
+<pre>
+ assert_select_email do
+   assert_select &quot;h1&quot;, &quot;Email alert&quot;
+ end
+
+ assert_select_email do
+   items = assert_select &quot;ol&gt;li&quot;
+   items.each do
+      # Work with items here...
+   end
+ end
+</pre>
+
+<p class="source_link" id="M000383-show-link"><a onclick="toggle('M000383-source'); toggleText('M000383-link'); return false;" href="#" id="M000383-link">Show source...</a></p><div class="source" id="M000383-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/actionpack/lib/action_controller/assertions/selector_assertions.rb, line 561</span>
+561:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">assert_select_email</span>(<span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
+562:         <span class="ruby-identifier">deliveries</span> = <span class="ruby-constant">ActionMailer</span><span class="ruby-operator">::</span><span class="ruby-constant">Base</span>.<span class="ruby-identifier">deliveries</span>
+563:         <span class="ruby-identifier">assert</span> <span class="ruby-operator">!</span><span class="ruby-identifier">deliveries</span>.<span class="ruby-identifier">empty?</span>, <span class="ruby-value str">&quot;No e-mail in delivery list&quot;</span>
+564: 
+565:         <span class="ruby-keyword kw">for</span> <span class="ruby-identifier">delivery</span> <span class="ruby-keyword kw">in</span> <span class="ruby-identifier">deliveries</span>
+566:           <span class="ruby-keyword kw">for</span> <span class="ruby-identifier">part</span> <span class="ruby-keyword kw">in</span> <span class="ruby-identifier">delivery</span>.<span class="ruby-identifier">parts</span>
+567:             <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">part</span>[<span class="ruby-value str">&quot;Content-Type&quot;</span>].<span class="ruby-identifier">to_s</span> <span class="ruby-operator">=~</span> <span class="ruby-regexp re">/^text\/html\W/</span>
+568:               <span class="ruby-identifier">root</span> = <span class="ruby-constant">HTML</span><span class="ruby-operator">::</span><span class="ruby-constant">Document</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">part</span>.<span class="ruby-identifier">body</span>).<span class="ruby-identifier">root</span>
+569:               <span class="ruby-identifier">assert_select</span> <span class="ruby-identifier">root</span>, <span class="ruby-value str">&quot;:root&quot;</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>
+570:             <span class="ruby-keyword kw">end</span>
+571:           <span class="ruby-keyword kw">end</span>
+572:         <span class="ruby-keyword kw">end</span>
+573:       <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M000382"><br/></a>
+<div class="method_block"><h3>
+<a href='#M000382'>
+
+assert_select_encoded(element?) { |elements| ... }<br />
+
+
+
+
+</a>
+</h3>
+<p>
+Extracts the content of an element, treats it as encoded HTML and runs
+nested assertion on it.
+</p>
+<p>
+You typically call this method within another assertion to operate on all
+currently selected elements. You can also pass an element or array of
+elements.
+</p>
+<p>
+The content of each element is un-encoded, and wrapped in the root element
+<tt>encoded</tt>. It then calls the block with all un-encoded elements.
+</p>
+<h4>Examples</h4>
+<pre>
+  # Selects all bold tags from within the title of an ATOM feed's entries (perhaps to nab a section name prefix)
+  assert_select_feed :atom, 1.0 do
+    # Select each entry item and then the title item
+    assert_select &quot;entry&gt;title&quot; do
+      # Run assertions on the encoded title elements
+      assert_select_encoded do
+        assert_select &quot;b&quot;
+      end
+    end
+  end
+
+  # Selects all paragraph tags from within the description of an RSS feed
+  assert_select_feed :rss, 2.0 do
+    # Select description element of each feed item.
+    assert_select &quot;channel&gt;item&gt;description&quot; do
+      # Run assertions on the encoded elements.
+      assert_select_encoded do
+        assert_select &quot;p&quot;
+      end
+    end
+  end
+</pre>
+
+<p class="source_link" id="M000382-show-link"><a onclick="toggle('M000382-source'); toggleText('M000382-link'); return false;" href="#" id="M000382-link">Show source...</a></p><div class="source" id="M000382-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/actionpack/lib/action_controller/assertions/selector_assertions.rb, line 507</span>
+507:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">assert_select_encoded</span>(<span class="ruby-identifier">element</span> = <span class="ruby-keyword kw">nil</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
+508:         <span class="ruby-keyword kw">case</span> <span class="ruby-identifier">element</span>
+509:           <span class="ruby-keyword kw">when</span> <span class="ruby-constant">Array</span>
+510:             <span class="ruby-identifier">elements</span> = <span class="ruby-identifier">element</span>
+511:           <span class="ruby-keyword kw">when</span> <span class="ruby-constant">HTML</span><span class="ruby-operator">::</span><span class="ruby-constant">Node</span>
+512:             <span class="ruby-identifier">elements</span> = [<span class="ruby-identifier">element</span>]
+513:           <span class="ruby-keyword kw">when</span> <span class="ruby-keyword kw">nil</span>
+514:             <span class="ruby-keyword kw">unless</span> <span class="ruby-identifier">elements</span> = <span class="ruby-ivar">@selected</span>
+515:               <span class="ruby-identifier">raise</span> <span class="ruby-constant">ArgumentError</span>, <span class="ruby-value str">&quot;First argument is optional, but must be called from a nested assert_select&quot;</span>
+516:             <span class="ruby-keyword kw">end</span>
+517:           <span class="ruby-keyword kw">else</span>
+518:             <span class="ruby-identifier">raise</span> <span class="ruby-constant">ArgumentError</span>, <span class="ruby-value str">&quot;Argument is optional, and may be node or array of nodes&quot;</span>
+519:         <span class="ruby-keyword kw">end</span>
+520: 
+521:         <span class="ruby-identifier">fix_content</span> = <span class="ruby-identifier">lambda</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">node</span><span class="ruby-operator">|</span>
+522:           <span class="ruby-comment cmt"># Gets around a bug in the Rails 1.1 HTML parser.</span>
+523:           <span class="ruby-identifier">node</span>.<span class="ruby-identifier">content</span>.<span class="ruby-identifier">gsub</span>(<span class="ruby-regexp re">/&lt;!\[CDATA\[(.*)(\]\]&gt;)?/</span><span class="ruby-identifier">m</span>) { <span class="ruby-constant">CGI</span>.<span class="ruby-identifier">escapeHTML</span>(<span class="ruby-identifier">$1</span>) }
+524:         <span class="ruby-keyword kw">end</span>
+525: 
+526:         <span class="ruby-identifier">selected</span> = <span class="ruby-identifier">elements</span>.<span class="ruby-identifier">map</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">element</span><span class="ruby-operator">|</span>
+527:           <span class="ruby-identifier">text</span> = <span class="ruby-identifier">element</span>.<span class="ruby-identifier">children</span>.<span class="ruby-identifier">select</span>{ <span class="ruby-operator">|</span><span class="ruby-identifier">c</span><span class="ruby-operator">|</span> <span class="ruby-keyword kw">not</span> <span class="ruby-identifier">c</span>.<span class="ruby-identifier">tag?</span> }.<span class="ruby-identifier">map</span>{ <span class="ruby-operator">|</span><span class="ruby-identifier">c</span><span class="ruby-operator">|</span> <span class="ruby-identifier">fix_content</span>[<span class="ruby-identifier">c</span>] }.<span class="ruby-identifier">join</span>
+528:           <span class="ruby-identifier">root</span> = <span class="ruby-constant">HTML</span><span class="ruby-operator">::</span><span class="ruby-constant">Document</span>.<span class="ruby-identifier">new</span>(<span class="ruby-constant">CGI</span>.<span class="ruby-identifier">unescapeHTML</span>(<span class="ruby-node">&quot;&lt;encoded&gt;#{text}&lt;/encoded&gt;&quot;</span>)).<span class="ruby-identifier">root</span>
+529:           <span class="ruby-identifier">css_select</span>(<span class="ruby-identifier">root</span>, <span class="ruby-value str">&quot;encoded:root&quot;</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)[<span class="ruby-value">0</span>]
+530:         <span class="ruby-keyword kw">end</span>
+531: 
+532:         <span class="ruby-keyword kw">begin</span>
+533:           <span class="ruby-identifier">old_selected</span>, <span class="ruby-ivar">@selected</span> = <span class="ruby-ivar">@selected</span>, <span class="ruby-identifier">selected</span>
+534:           <span class="ruby-identifier">assert_select</span> <span class="ruby-value str">&quot;:root&quot;</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>
+535:         <span class="ruby-keyword kw">ensure</span>
+536:           <span class="ruby-ivar">@selected</span> = <span class="ruby-identifier">old_selected</span>
+537:         <span class="ruby-keyword kw">end</span>
+538:       <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M000381"><br/></a>
+<div class="method_block"><h3>
+<a href='#M000381'>
+
+assert_select_rjs(id?) { |elements| ... }<br />
+assert_select_rjs(statement, id?) { |elements| ... }<br />
+assert_select_rjs(:insert, position, id?) { |elements| ... }<br />
+
+
+
+
+</a>
+</h3>
+<p>
+Selects content from the RJS response.
+</p>
+<h3>Narrowing down</h3>
+<p>
+With no arguments, asserts that one or more elements are updated or
+inserted by RJS statements.
+</p>
+<p>
+Use the <tt>id</tt> argument to narrow down the assertion to only
+statements that update or insert an element with that identifier.
+</p>
+<p>
+Use the first argument to narrow down assertions to only statements of that
+type. Possible values are <tt>:replace</tt>, <tt>:replace_html</tt>,
+<tt>:show</tt>, <tt>:hide</tt>, <tt>:toggle</tt>, <tt>:remove</tt> and
+<tt>:insert_html</tt>.
+</p>
+<p>
+Use the argument <tt>:insert</tt> followed by an insertion position to
+narrow down the assertion to only statements that insert elements in that
+position. Possible values are <tt>:top</tt>, <tt>:bottom</tt>,
+<tt>:before</tt> and <tt>:after</tt>.
+</p>
+<p>
+Using the <tt>:remove</tt> statement, you will be able to pass a block, but
+it will be ignored as there is no HTML passed for this statement.
+</p>
+<h3>Using blocks</h3>
+<p>
+Without a block, <a
+href="SelectorAssertions.html#M000381">assert_select_rjs</a> merely asserts
+that the response contains one or more RJS statements that replace or
+update content.
+</p>
+<p>
+With a block, <a
+href="SelectorAssertions.html#M000381">assert_select_rjs</a> also selects
+all elements used in these statements and passes them to the block. Nested
+assertions are supported.
+</p>
+<p>
+Calling <a href="SelectorAssertions.html#M000381">assert_select_rjs</a>
+with no arguments and using nested asserts asserts that the HTML content is
+returned by one or more RJS statements. Using <a
+href="SelectorAssertions.html#M000380">assert_select</a> directly makes the
+same assertion on the content, but without distinguishing whether the
+content is returned in an HTML or JavaScript.
+</p>
+<h4>Examples</h4>
+<pre>
+  # Replacing the element foo.
+  # page.replace 'foo', ...
+  assert_select_rjs :replace, &quot;foo&quot;
+
+  # Replacing with the chained RJS proxy.
+  # page[:foo].replace ...
+  assert_select_rjs :chained_replace, 'foo'
+
+  # Inserting into the element bar, top position.
+  assert_select_rjs :insert, :top, &quot;bar&quot;
+
+  # Remove the element bar
+  assert_select_rjs :remove, &quot;bar&quot;
+
+  # Changing the element foo, with an image.
+  assert_select_rjs &quot;foo&quot; do
+    assert_select &quot;img[src=/images/logo.gif&quot;&quot;
+  end
+
+  # RJS inserts or updates a list with four items.
+  assert_select_rjs do
+    assert_select &quot;ol&gt;li&quot;, 4
+  end
+
+  # The same, but shorter.
+  assert_select &quot;ol&gt;li&quot;, 4
+</pre>
+
+<p class="source_link" id="M000381-show-link"><a onclick="toggle('M000381-source'); toggleText('M000381-link'); return false;" href="#" id="M000381-link">Show source...</a></p><div class="source" id="M000381-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/actionpack/lib/action_controller/assertions/selector_assertions.rb, line 397</span>
+397:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">assert_select_rjs</span>(<span class="ruby-operator">*</span><span class="ruby-identifier">args</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
+398:         <span class="ruby-identifier">rjs_type</span> = <span class="ruby-keyword kw">nil</span>
+399:         <span class="ruby-identifier">arg</span>      = <span class="ruby-identifier">args</span>.<span class="ruby-identifier">shift</span>
+400: 
+401:         <span class="ruby-comment cmt"># If the first argument is a symbol, it's the type of RJS statement we're looking</span>
+402:         <span class="ruby-comment cmt"># for (update, replace, insertion, etc). Otherwise, we're looking for just about</span>
+403:         <span class="ruby-comment cmt"># any RJS statement.</span>
+404:         <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">arg</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">Symbol</span>)
+405:           <span class="ruby-identifier">rjs_type</span> = <span class="ruby-identifier">arg</span>
+406: 
+407:           <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">rjs_type</span> <span class="ruby-operator">==</span> <span class="ruby-identifier">:insert</span>
+408:             <span class="ruby-identifier">arg</span> = <span class="ruby-identifier">args</span>.<span class="ruby-identifier">shift</span>
+409:             <span class="ruby-identifier">insertion</span> = <span class="ruby-node">&quot;insert_#{arg}&quot;</span>.<span class="ruby-identifier">to_sym</span>
+410:             <span class="ruby-identifier">raise</span> <span class="ruby-constant">ArgumentError</span>, <span class="ruby-node">&quot;Unknown RJS insertion type #{arg}&quot;</span> <span class="ruby-keyword kw">unless</span> <span class="ruby-constant">RJS_STATEMENTS</span>[<span class="ruby-identifier">insertion</span>]
+411:             <span class="ruby-identifier">statement</span> = <span class="ruby-node">&quot;(#{RJS_STATEMENTS[insertion]})&quot;</span>
+412:           <span class="ruby-keyword kw">else</span>
+413:             <span class="ruby-identifier">raise</span> <span class="ruby-constant">ArgumentError</span>, <span class="ruby-node">&quot;Unknown RJS statement type #{rjs_type}&quot;</span> <span class="ruby-keyword kw">unless</span> <span class="ruby-constant">RJS_STATEMENTS</span>[<span class="ruby-identifier">rjs_type</span>]
+414:             <span class="ruby-identifier">statement</span> = <span class="ruby-node">&quot;(#{RJS_STATEMENTS[rjs_type]})&quot;</span>
+415:           <span class="ruby-keyword kw">end</span>
+416:           <span class="ruby-identifier">arg</span> = <span class="ruby-identifier">args</span>.<span class="ruby-identifier">shift</span>
+417:         <span class="ruby-keyword kw">else</span>
+418:           <span class="ruby-identifier">statement</span> = <span class="ruby-node">&quot;#{RJS_STATEMENTS[:any]}&quot;</span>
+419:         <span class="ruby-keyword kw">end</span>
+420: 
+421:         <span class="ruby-comment cmt"># Next argument we're looking for is the element identifier. If missing, we pick</span>
+422:         <span class="ruby-comment cmt"># any element.</span>
+423:         <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">arg</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">String</span>)
+424:           <span class="ruby-identifier">id</span> = <span class="ruby-constant">Regexp</span>.<span class="ruby-identifier">quote</span>(<span class="ruby-identifier">arg</span>)
+425:           <span class="ruby-identifier">arg</span> = <span class="ruby-identifier">args</span>.<span class="ruby-identifier">shift</span>
+426:         <span class="ruby-keyword kw">else</span>
+427:           <span class="ruby-identifier">id</span> = <span class="ruby-value str">&quot;[^\&quot;]*&quot;</span>
+428:         <span class="ruby-keyword kw">end</span>
+429: 
+430:         <span class="ruby-identifier">pattern</span> =
+431:           <span class="ruby-keyword kw">case</span> <span class="ruby-identifier">rjs_type</span>
+432:             <span class="ruby-keyword kw">when</span> <span class="ruby-identifier">:chained_replace</span>, <span class="ruby-identifier">:chained_replace_html</span>
+433:               <span class="ruby-constant">Regexp</span>.<span class="ruby-identifier">new</span>(<span class="ruby-node">&quot;\\$\\(\&quot;#{id}\&quot;\\)#{statement}\\(#{RJS_PATTERN_HTML}\\)&quot;</span>, <span class="ruby-constant">Regexp</span><span class="ruby-operator">::</span><span class="ruby-constant">MULTILINE</span>)
+434:             <span class="ruby-keyword kw">when</span> <span class="ruby-identifier">:remove</span>, <span class="ruby-identifier">:show</span>, <span class="ruby-identifier">:hide</span>, <span class="ruby-identifier">:toggle</span>
+435:               <span class="ruby-constant">Regexp</span>.<span class="ruby-identifier">new</span>(<span class="ruby-node">&quot;#{statement}\\(\&quot;#{id}\&quot;\\)&quot;</span>)
+436:             <span class="ruby-keyword kw">else</span>
+437:               <span class="ruby-constant">Regexp</span>.<span class="ruby-identifier">new</span>(<span class="ruby-node">&quot;#{statement}\\(\&quot;#{id}\&quot;, #{RJS_PATTERN_HTML}\\)&quot;</span>, <span class="ruby-constant">Regexp</span><span class="ruby-operator">::</span><span class="ruby-constant">MULTILINE</span>)
+438:           <span class="ruby-keyword kw">end</span>
+439: 
+440:         <span class="ruby-comment cmt"># Duplicate the body since the next step involves destroying it.</span>
+441:         <span class="ruby-identifier">matches</span> = <span class="ruby-keyword kw">nil</span>
+442:         <span class="ruby-keyword kw">case</span> <span class="ruby-identifier">rjs_type</span>
+443:           <span class="ruby-keyword kw">when</span> <span class="ruby-identifier">:remove</span>, <span class="ruby-identifier">:show</span>, <span class="ruby-identifier">:hide</span>, <span class="ruby-identifier">:toggle</span>
+444:             <span class="ruby-identifier">matches</span> = <span class="ruby-ivar">@response</span>.<span class="ruby-identifier">body</span>.<span class="ruby-identifier">match</span>(<span class="ruby-identifier">pattern</span>)
+445:           <span class="ruby-keyword kw">else</span>
+446:             <span class="ruby-ivar">@response</span>.<span class="ruby-identifier">body</span>.<span class="ruby-identifier">gsub</span>(<span class="ruby-identifier">pattern</span>) <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">match</span><span class="ruby-operator">|</span>
+447:               <span class="ruby-identifier">html</span> = <span class="ruby-identifier">unescape_rjs</span>(<span class="ruby-identifier">$2</span>)
+448:               <span class="ruby-identifier">matches</span> <span class="ruby-operator">||=</span> []
+449:               <span class="ruby-identifier">matches</span>.<span class="ruby-identifier">concat</span> <span class="ruby-constant">HTML</span><span class="ruby-operator">::</span><span class="ruby-constant">Document</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">html</span>).<span class="ruby-identifier">root</span>.<span class="ruby-identifier">children</span>.<span class="ruby-identifier">select</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">n</span><span class="ruby-operator">|</span> <span class="ruby-identifier">n</span>.<span class="ruby-identifier">tag?</span> }
+450:               <span class="ruby-value str">&quot;&quot;</span>
+451:             <span class="ruby-keyword kw">end</span>
+452:         <span class="ruby-keyword kw">end</span>
+453: 
+454:         <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">matches</span>
+455:           <span class="ruby-identifier">assert_block</span>(<span class="ruby-value str">&quot;&quot;</span>) { <span class="ruby-keyword kw">true</span> } <span class="ruby-comment cmt"># to count the assertion</span>
+456:           <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">block_given?</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-operator">!</span>([<span class="ruby-identifier">:remove</span>, <span class="ruby-identifier">:show</span>, <span class="ruby-identifier">:hide</span>, <span class="ruby-identifier">:toggle</span>].<span class="ruby-identifier">include?</span> <span class="ruby-identifier">rjs_type</span>)
+457:             <span class="ruby-keyword kw">begin</span>
+458:               <span class="ruby-identifier">in_scope</span>, <span class="ruby-ivar">@selected</span> = <span class="ruby-ivar">@selected</span>, <span class="ruby-identifier">matches</span>
+459:               <span class="ruby-keyword kw">yield</span> <span class="ruby-identifier">matches</span>
+460:             <span class="ruby-keyword kw">ensure</span>
+461:               <span class="ruby-ivar">@selected</span> = <span class="ruby-identifier">in_scope</span>
+462:             <span class="ruby-keyword kw">end</span>
+463:           <span class="ruby-keyword kw">end</span>
+464:           <span class="ruby-identifier">matches</span>
+465:         <span class="ruby-keyword kw">else</span>
+466:           <span class="ruby-comment cmt"># RJS statement not found.</span>
+467:           <span class="ruby-identifier">flunk</span> <span class="ruby-identifier">args</span>.<span class="ruby-identifier">shift</span> <span class="ruby-operator">||</span> <span class="ruby-value str">&quot;No RJS statement that replaces or inserts HTML content.&quot;</span>
+468:         <span class="ruby-keyword kw">end</span>
+469:       <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M000379"><br/></a>
+<div class="method_block"><h3>
+<a href='#M000379'>
+
+css_select(selector) => array<br />
+css_select(element, selector) => array<br />
+
+
+
+
+</a>
+</h3>
+<p>
+Select and return all matching elements.
+</p>
+<p>
+If called with a single argument, uses that argument as a selector to match
+all elements of the current page. Returns an empty array if no match is
+found.
+</p>
+<p>
+If called with two arguments, uses the first argument as the base element
+and the second argument as the selector. Attempts to match the base element
+and any of its children. Returns an empty array if no match is found.
+</p>
+<p>
+The selector may be a CSS selector expression (<tt>String</tt>), an
+expression with substitution values (<tt>Array</tt>) or an <a
+href="../../HTML/Selector.html">HTML::Selector</a> object.
+</p>
+<h4>Examples</h4>
+<pre>
+  # Selects all div tags
+  divs = css_select(&quot;div&quot;)
+
+  # Selects all paragraph tags and does something interesting
+  pars = css_select(&quot;p&quot;)
+  pars.each do |par|
+    # Do something fun with paragraphs here...
+  end
+
+  # Selects all list items in unordered lists
+  items = css_select(&quot;ul&gt;li&quot;)
+
+  # Selects all form tags and then all inputs inside the form
+  forms = css_select(&quot;form&quot;)
+  forms.each do |form|
+    inputs = css_select(form, &quot;input&quot;)
+    ...
+  end
+</pre>
+
+<p class="source_link" id="M000379-show-link"><a onclick="toggle('M000379-source'); toggleText('M000379-link'); return false;" href="#" id="M000379-link">Show source...</a></p><div class="source" id="M000379-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/actionpack/lib/action_controller/assertions/selector_assertions.rb, line 70</span>
+ 70:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">css_select</span>(<span class="ruby-operator">*</span><span class="ruby-identifier">args</span>)
+ 71:         <span class="ruby-comment cmt"># See assert_select to understand what's going on here.</span>
+ 72:         <span class="ruby-identifier">arg</span> = <span class="ruby-identifier">args</span>.<span class="ruby-identifier">shift</span>
+ 73: 
+ 74:         <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">arg</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">HTML</span><span class="ruby-operator">::</span><span class="ruby-constant">Node</span>)
+ 75:           <span class="ruby-identifier">root</span> = <span class="ruby-identifier">arg</span>
+ 76:           <span class="ruby-identifier">arg</span> = <span class="ruby-identifier">args</span>.<span class="ruby-identifier">shift</span>
+ 77:         <span class="ruby-keyword kw">elsif</span> <span class="ruby-identifier">arg</span> <span class="ruby-operator">==</span> <span class="ruby-keyword kw">nil</span>
+ 78:           <span class="ruby-identifier">raise</span> <span class="ruby-constant">ArgumentError</span>, <span class="ruby-value str">&quot;First argument is either selector or element to select, but nil found. Perhaps you called assert_select with an element that does not exist?&quot;</span>
+ 79:         <span class="ruby-keyword kw">elsif</span> <span class="ruby-ivar">@selected</span>
+ 80:           <span class="ruby-identifier">matches</span> = []
+ 81: 
+ 82:           <span class="ruby-ivar">@selected</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">selected</span><span class="ruby-operator">|</span>
+ 83:             <span class="ruby-identifier">subset</span> = <span class="ruby-identifier">css_select</span>(<span class="ruby-identifier">selected</span>, <span class="ruby-constant">HTML</span><span class="ruby-operator">::</span><span class="ruby-constant">Selector</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">arg</span>.<span class="ruby-identifier">dup</span>, <span class="ruby-identifier">args</span>.<span class="ruby-identifier">dup</span>))
+ 84:             <span class="ruby-identifier">subset</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">match</span><span class="ruby-operator">|</span>
+ 85:               <span class="ruby-identifier">matches</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-identifier">match</span> <span class="ruby-keyword kw">unless</span> <span class="ruby-identifier">matches</span>.<span class="ruby-identifier">any?</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">m</span><span class="ruby-operator">|</span> <span class="ruby-identifier">m</span>.<span class="ruby-identifier">equal?</span>(<span class="ruby-identifier">match</span>) }
+ 86:             <span class="ruby-keyword kw">end</span>
+ 87:           <span class="ruby-keyword kw">end</span>
+ 88: 
+ 89:           <span class="ruby-keyword kw">return</span> <span class="ruby-identifier">matches</span>
+ 90:         <span class="ruby-keyword kw">else</span>
+ 91:           <span class="ruby-identifier">root</span> = <span class="ruby-identifier">response_from_page_or_rjs</span>
+ 92:         <span class="ruby-keyword kw">end</span>
+ 93: 
+ 94:         <span class="ruby-keyword kw">case</span> <span class="ruby-identifier">arg</span>
+ 95:           <span class="ruby-keyword kw">when</span> <span class="ruby-constant">String</span>
+ 96:             <span class="ruby-identifier">selector</span> = <span class="ruby-constant">HTML</span><span class="ruby-operator">::</span><span class="ruby-constant">Selector</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">arg</span>, <span class="ruby-identifier">args</span>)
+ 97:           <span class="ruby-keyword kw">when</span> <span class="ruby-constant">Array</span>
+ 98:             <span class="ruby-identifier">selector</span> = <span class="ruby-constant">HTML</span><span class="ruby-operator">::</span><span class="ruby-constant">Selector</span>.<span class="ruby-identifier">new</span>(<span class="ruby-operator">*</span><span class="ruby-identifier">arg</span>)
+ 99:           <span class="ruby-keyword kw">when</span> <span class="ruby-constant">HTML</span><span class="ruby-operator">::</span><span class="ruby-constant">Selector</span>
+100:             <span class="ruby-identifier">selector</span> = <span class="ruby-identifier">arg</span>
+101:           <span class="ruby-keyword kw">else</span> <span class="ruby-identifier">raise</span> <span class="ruby-constant">ArgumentError</span>, <span class="ruby-value str">&quot;Expecting a selector as the first argument&quot;</span>
+102:         <span class="ruby-keyword kw">end</span>
+103: 
+104:         <span class="ruby-identifier">selector</span>.<span class="ruby-identifier">select</span>(<span class="ruby-identifier">root</span>)
+105:       <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+
+<h1>Protected Instance Methods</h1>
+
+
+<a class="small" name="M000384"><br/></a>
+<div class="method_block"><h3>
+<a href='#M000384'>
+
+
+response_from_page_or_rjs
+
+()
+
+</a>
+</h3>
+<p>
+<a href="SelectorAssertions.html#M000380">assert_select</a> and <a
+href="SelectorAssertions.html#M000379">css_select</a> call this to obtain
+the content in the HTML page, or from all the RJS statements, depending on
+the type of response.
+</p>
+
+<p class="source_link" id="M000384-show-link"><a onclick="toggle('M000384-source'); toggleText('M000384-link'); return false;" href="#" id="M000384-link">Show source...</a></p><div class="source" id="M000384-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/actionpack/lib/action_controller/assertions/selector_assertions.rb, line 603</span>
+603:         <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">response_from_page_or_rjs</span>()
+604:           <span class="ruby-identifier">content_type</span> = <span class="ruby-ivar">@response</span>.<span class="ruby-identifier">content_type</span>
+605: 
+606:           <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">content_type</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">content_type</span> <span class="ruby-operator">=~</span> <span class="ruby-regexp re">/text\/javascript/</span>
+607:             <span class="ruby-identifier">body</span> = <span class="ruby-ivar">@response</span>.<span class="ruby-identifier">body</span>.<span class="ruby-identifier">dup</span>
+608:             <span class="ruby-identifier">root</span> = <span class="ruby-constant">HTML</span><span class="ruby-operator">::</span><span class="ruby-constant">Node</span>.<span class="ruby-identifier">new</span>(<span class="ruby-keyword kw">nil</span>)
+609: 
+610:             <span class="ruby-keyword kw">while</span> <span class="ruby-keyword kw">true</span>
+611:               <span class="ruby-keyword kw">next</span> <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">body</span>.<span class="ruby-identifier">sub!</span>(<span class="ruby-constant">RJS_PATTERN_EVERYTHING</span>) <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">match</span><span class="ruby-operator">|</span>
+612:                 <span class="ruby-identifier">html</span> = <span class="ruby-identifier">unescape_rjs</span>(<span class="ruby-identifier">$3</span>)
+613:                 <span class="ruby-identifier">matches</span> = <span class="ruby-constant">HTML</span><span class="ruby-operator">::</span><span class="ruby-constant">Document</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">html</span>).<span class="ruby-identifier">root</span>.<span class="ruby-identifier">children</span>.<span class="ruby-identifier">select</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">n</span><span class="ruby-operator">|</span> <span class="ruby-identifier">n</span>.<span class="ruby-identifier">tag?</span> }
+614:                 <span class="ruby-identifier">root</span>.<span class="ruby-identifier">children</span>.<span class="ruby-identifier">concat</span> <span class="ruby-identifier">matches</span>
+615:                 <span class="ruby-value str">&quot;&quot;</span>
+616:               <span class="ruby-keyword kw">end</span>
+617:               <span class="ruby-keyword kw">break</span>
+618:             <span class="ruby-keyword kw">end</span>
+619: 
+620:             <span class="ruby-identifier">root</span>
+621:           <span class="ruby-keyword kw">else</span>
+622:             <span class="ruby-identifier">html_document</span>.<span class="ruby-identifier">root</span>
+623:           <span class="ruby-keyword kw">end</span>
+624:         <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M000385"><br/></a>
+<div class="method_block"><h3>
+<a href='#M000385'>
+
+
+unescape_rjs
+
+(rjs_string)
+
+</a>
+</h3>
+<p>
+Unescapes a RJS string.
+</p>
+
+<p class="source_link" id="M000385-show-link"><a onclick="toggle('M000385-source'); toggleText('M000385-link'); return false;" href="#" id="M000385-link">Show source...</a></p><div class="source" id="M000385-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/actionpack/lib/action_controller/assertions/selector_assertions.rb, line 627</span>
+627:         <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">unescape_rjs</span>(<span class="ruby-identifier">rjs_string</span>)
+628:           <span class="ruby-comment cmt"># RJS encodes double quotes and line breaks.</span>
+629:           <span class="ruby-identifier">unescaped</span>= <span class="ruby-identifier">rjs_string</span>.<span class="ruby-identifier">gsub</span>(<span class="ruby-value str">'\&quot;'</span>, <span class="ruby-value str">'&quot;'</span>)
+630:           <span class="ruby-identifier">unescaped</span>.<span class="ruby-identifier">gsub!</span>(<span class="ruby-regexp re">/\\\//</span>, <span class="ruby-value str">'/'</span>)
+631:           <span class="ruby-identifier">unescaped</span>.<span class="ruby-identifier">gsub!</span>(<span class="ruby-value str">'\n'</span>, <span class="ruby-value str">&quot;\n&quot;</span>)
+632:           <span class="ruby-identifier">unescaped</span>.<span class="ruby-identifier">gsub!</span>(<span class="ruby-value str">'\076'</span>, <span class="ruby-value str">'&gt;'</span>)
+633:           <span class="ruby-identifier">unescaped</span>.<span class="ruby-identifier">gsub!</span>(<span class="ruby-value str">'\074'</span>, <span class="ruby-value str">'&lt;'</span>)
+634:           <span class="ruby-comment cmt"># RJS encodes non-ascii characters.</span>
+635:           <span class="ruby-identifier">unescaped</span>.<span class="ruby-identifier">gsub!</span>(<span class="ruby-constant">RJS_PATTERN_UNICODE_ESCAPED_CHAR</span>) {<span class="ruby-operator">|</span><span class="ruby-identifier">u</span><span class="ruby-operator">|</span> [<span class="ruby-identifier">$1</span>.<span class="ruby-identifier">hex</span>].<span class="ruby-identifier">pack</span>(<span class="ruby-value str">'U*'</span>)}
+636:           <span class="ruby-identifier">unescaped</span>
+637:         <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+
+
+
+
+</div><div class="clear" id="footer">Generated on Jan 21, 2008 / Allison 2 &copy; 2007 <a href="http://cloudbur.st">Cloudburst, LLC</a></div></div></body></html>

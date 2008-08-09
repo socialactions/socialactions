@@ -1,30 +1,73 @@
 class Search < ActiveRecord::BaseWithoutTable
-  column :keywords, :string
+  column :q, :string
   column :action_type, :string
   column :created, :integer
   attr_accessor :sites, :kind, :ip_address
   
   validates_inclusion_of :created, :in => %w{ 30 14 7 2 1 }
+  
+  Ultrasphinx::Search.excerpting_options = HashWithIndifferentAccess.new({
+    :before_match => '<strong style="color:red">',
+    :after_match => '</strong>',
+    :chunk_separator => "...",
+    :limit => 1024,
+    :around => 3,
+    :content_methods => [['title'],['description']]
+  })
 
   def results(page)
     if kind == 'map'
-      Action.find(:all, :origin => [current_latitude, current_longitude], :conditions => build_conditions)
+      @search = Action.find(:all, :origin => [current_latitude, current_longitude], :conditions => build_conditions)
     else
-      Action.paginate(:all, :page => page, :order => build_order, :conditions => build_conditions)
+      #Action.paginate(:all, :page => page, :order => build_order, :conditions => build_conditions)
+      # TODO figure out random for sort_by, figure out filter by created_at > created.days.ago
+      @search = Ultrasphinx::Search.new(
+                :query => build_query,
+                :per_page => 10,
+                :page => page || 1,
+                :sort_mode => 'descending',
+                :sort_by => 'created_at',
+                :filters => build_filters,
+                :facets => ['action_type']
+                #, :weights => {}
+      )
+      #TODO do we want excerpt to be conditional in whether we're on web site or not?
+      @search.excerpt
+      @search.results
     end
+  end
+  
+  def paginate_object
+    @search
   end
   
   def to_s
     output = []
-    output << "Keywords: #{keywords}" if keywords?
+    output << "Query: #{q}" if q?
     output << "Created: #{created}" if created?
     output << "Action Type: #{action_type}" if action_type?
     output.join(', ')
   end
+  
+  def build_query
+    unless action_type.nil? or action_type == 'all'
+      "action_type:\"#{action_type}\" AND (#{q})"
+    else
+      q  
+    end
+  end
+  
+  def build_filters
+    unless sites.length == 0
+      {'site_id' => sites}
+    else
+      {}
+    end
+  end
 
   def build_conditions
     reset_conditions
-    add_keywords
+    add_q
     add_action_type
     add_sites
     add_created
@@ -53,10 +96,10 @@ class Search < ActiveRecord::BaseWithoutTable
     @conditions ||= []
   end
 
-  def add_keywords
-    unless keywords.nil? or keywords.empty?
+  def add_q
+    unless q.nil? or q.empty?
       keyword_conditions = []
-      keywords.split(' ').each do |keyword|
+      q.split(' ').each do |keyword|
         keyword_conditions << sanitize(["(description LIKE ? OR title LIKE ?)", "%#{keyword}%", "%#{keyword}%"])
       end
       conditions << "(" + keyword_conditions.join(' OR ') + ")"
@@ -91,7 +134,6 @@ class Search < ActiveRecord::BaseWithoutTable
     ActiveRecord::Base.send(:sanitize_sql, arg)
   end
   
-  
   def current_latitude
     current_location.lat || 21.98
   end
@@ -117,6 +159,5 @@ class Search < ActiveRecord::BaseWithoutTable
   #     return 41.98, -87.90 # Chicago, an estimate
   #   end
   # end
-  
   
 end

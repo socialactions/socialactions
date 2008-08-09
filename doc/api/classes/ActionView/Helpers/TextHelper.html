@@ -1,0 +1,1075 @@
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head><meta content="text/html; charset=utf-8" http-equiv="Content-Type"/><title>Module: ActionView::Helpers::TextHelper</title><link type="text/css" href="../../.././rdoc-style.css" media="screen" rel="stylesheet"/><script type="text/javascript">
+// Allison template
+// Copyright 2007, 2008 Cloudburst, LLC. Licensed under the AFL 3. See the included LICENSE file.
+
+var href_base = '../../.././rdoc-style.css'.replace(/(.*\/).*/, '$1'); // inline js is good for something  
+
+function $(id) {
+    if (document.getElementById)
+      elem = document.getElementById(id);
+    else if ( document.all )
+      elem = eval("document.all." + id);
+    else
+      return false;
+    return elem;
+}
+
+  function toggle(id) {
+    elem = $(id);
+    elemStyle = elem.style;   
+    if (elemStyle.display == "block") {
+      elemStyle.display = "none"
+    } else {
+      elemStyle.display = "block"
+    }
+    return true;
+  }
+
+  function toggleText(id) {
+    elem = $(id)
+    if (m = elem.innerHTML.match(/(Hide)(.*)/)) {
+      elem.innerHTML = "Show" + m[2];
+    } else if (m = elem.innerHTML.match(/(Show)(.*)/)) {
+      elem.innerHTML = "Hide" + m[2];
+    }
+    return true;
+  }
+
+function span(s, klass) {
+  return '<span class="' + klass + '">' + s + '</span>';
+}
+  
+function highlightSymbols() {
+  pres = document.getElementsByTagName('pre');
+  for(var i = 0; i < pres.length; i++) {
+    pre = pres[i];
+    spans = pre.getElementsByTagName('span');
+    for(var k = 0; k < spans.length; k++) {
+      span = spans[k];
+      if (span.className.match(/ruby-identifier/)) {
+        if (span.innerHTML.match(/^:/)) {
+          span.className += " ruby-symbol";
+        }
+      }
+    }
+  }
+}
+
+ function hasClass(obj) {
+     var result = false;
+     if (obj.getAttributeNode("class") != null) {
+         result = obj.getAttributeNode("class").value;
+     }
+     return result;
+  }   
+
+ function stripe() {
+    var even = true;
+    var color = "#e4ebed";
+    var tables = document.getElementsByTagName('table');
+    if (tables.length == 0) { return; }
+    for (var h = 0; h < tables.length; h++) {
+        var trs = tables[h].getElementsByTagName("tr");
+        for (var i = 0; i < trs.length; i++) {
+          var tds = trs[i].getElementsByTagName("td");
+            for (var j = 0; j < tds.length; j++) {       
+              if (hasClass(tds[j]) != "first") {                
+              var mytd = tds[j];
+              if (even) {
+                mytd.style.backgroundColor = color;
+              }         
+            }
+          }
+          even =  ! even;
+      }
+    }
+  }
+  
+function ajaxGet(url) {
+  url = (href_base + url).replace('/./', '/')
+  var req = false;
+
+  if (window.ActiveXObject) {
+    try {
+      // stupid hack because IE7 disables local Ajax with the native xmlhttprequest object
+      // for security purposes. Yet ActiveX still works. Thanks, Microsoft. I hate you. Die.
+      req = new ActiveXObject("MSXML2.XMLHTTP.3.0");
+    } catch (e) {
+      try {
+        /* IE 6 and maybe 5, don't know, don't care */
+        req = new ActiveXObject("Msxml2.XMLHTTP");
+      } catch (e) {
+        try {
+          req = new ActiveXObject("Microsoft.XMLHTTP");
+        } catch (e) {
+          req = false;
+        }
+      }
+    }
+  }
+    
+  /* real browsers */
+  if (!req && window.XMLHttpRequest) {
+    try {
+      req = new XMLHttpRequest();
+    } catch (e) {
+      req = false;
+    }
+  } 
+  
+  if (req) {
+    req.open('GET', url, false);
+    req.send(null);
+    return req.responseText;
+  } else {
+    return "Ajax error";  
+  }
+}
+
+
+function addEvent(elm, evType, fn, useCapture) {
+	if (elm.addEventListener) {
+	  elm.addEventListener(evType, fn, useCapture);  
+  	return true;
+	} else if (elm.attachEvent) {
+  	var r = elm.attachEvent('on' + evType, fn);  
+	  return r;  
+	} else {
+  	elm['on' + evType] = fn;
+	}
+}
+
+function insertIndices() {
+  pages = ["class", "file", "method"]
+  for (x in pages) { 
+    $(pages[x]).innerHTML += ajaxGet('fr_' + pages[x] + '_index.html').replace(/(href=")/g, '$1' + href_base);
+  }
+  /* mouseoverify method links */
+  links = $('method').getElementsByTagName('a');
+  for (var x = 0; x < links.length; x++) {
+    if (m = links[x].innerHTML.match(/(.*)\s\((.*)\)/)) {
+      links[x].innerHTML = m[1] + '<br>';
+      links[x].title = m[2];
+    }
+  }
+  /* this is stupid */
+  $('class').style.display = "block";
+  $('file').style.display = "block";
+  
+  /* has to be here because IE7 does not guarantee the onLoad callback order */
+  abbreviateIndicesInner(["class", "file"], 25, "a");
+  /* same, linkTitle() depends on the class link list */
+  linkTitle();
+}
+
+function abbreviateIndices() {
+  var ids = ["defined_in", "child_of", "includes", "requires", "method", "methods"];
+  abbreviateIndicesInner(ids, 25, 'a');
+  abbreviateIndicesInner(ids, 25, 'span');
+}
+
+function abbreviateIndicesInner(indices, amount, tag) {
+  for (var x = 0; x < indices.length; x++) { 
+    var the_index = $(indices[x]);
+    if (the_index) {
+      links = the_index.getElementsByTagName(tag);
+      for (var y = 0; y < links.length; y++) {
+        var link = links[y];
+        if (link.getElementsByTagName('span').length == 0 && link.getElementsByTagName('a').length == 0) {
+          // avoid nesting
+          link.innerHTML = link.innerHTML.replace(/<br>|\n/gi, '');
+          link.title = link.innerHTML;
+          link.innerHTML = abbreviate(link.innerHTML, amount) + '<br>';
+        }
+      }
+    }
+  }
+}
+
+function linkTitle() {
+  
+  /* grab the correct title element from the index */
+  var index_page = ajaxGet('index.html');
+  title_text = index_page.match(/<title>(.*)<\/title>/m)[1];
+  document.title = title_text + " - " + document.title;
+  var p = $('header').getElementsByTagName('p')[0]
+  if (p.innerHTML.match(/^\s*$/)) {
+    p.innerHTML = title_text;
+  } else {
+    p.innerHTML = title_text + ": " + p.innerHTML;
+  }
+  
+  /* set the link properly */
+  title_link = index_page.match(/<a\s+href="(.*?)"/)[1];
+  var element = $('title');
+  var item_type = "";
+  var item_name = "";
+  if (m = element.innerHTML.match(/(Class:|Module:|File:)\s*(.*)/)) {
+    item_type = m[1];
+    item_name = m[2];
+  } else {
+    item_name = element.innerHTML;
+  }
+  element.innerHTML = '<a href="' + href_base + title_link + '">' + item_type + " " + abbreviate(item_name, 45) + '</a>';
+  element.getElementsByTagName('a')[0].title = item_name
+  
+  /* breadcrumb navigation */
+  items = item_name.split("::");
+  items_new = item_name.split("::");
+  file_links = $('class').getElementsByTagName('a');
+  for (var x = 0; x < items.length - 1; x++ ){
+    var item = items[x];
+    link = ("/classes/" + items.slice(0,x).join("/") + "/" + item + ".html").replace('//', '/');
+    regex = new RegExp(RegExp.escape(link) + '$');
+    for (var y = 0; y < file_links.length; y++) {
+      if (file_links[y].href.match(regex)) {
+         items_new[x] = '<a href="' + href_base + link + '">' + item + '</a>';
+         break;
+      }
+    }  
+  }
+  $('item_name').innerHTML = item_type + ' ' + items_new.join(" :: ");
+}
+
+function abbreviate(s, size) {
+  while (s.length > size) {
+    var old_s = s;
+    s = s.replace(/\s|\n/mg, '');
+    s = s.replace(/([A-Z])[a-z]+/m, '$1');
+    if (!s || old_s == s) {
+      return "..." + s.substring(s.length - size, s.length);
+    }
+  }
+  return s;
+}
+
+function disableSubmit(event) {
+  var keyCode = event.keyCode ? event.keyCode : event.which ? event.which : event.charCode;
+  if (keyCode == 13) {
+    return false;
+  } else {
+    return true;
+  }
+}
+  
+function filterList(id, s, event) {
+  
+  /* some weak escaping */
+  s = s.replace(/[^\w\d\.\_\-\/\:\=\[\]\?\!]/g, '');
+  s = RegExp.escape(s);
+  
+  var show_all = false;
+  if (s.match(/^\s*$/)) {
+    show_all = true;
+  }
+  
+  links = $(id).getElementsByTagName('a')
+  regex = new RegExp(s, 'i');
+  
+  for (var x = 0; x < links.length; x++) {
+    var link = links[x];
+    if (show_all) {
+      link.style.display = 'inline';
+    } else {
+       if (link.innerHTML.match(regex)) {        
+         link.style.display = 'inline';
+       } else {
+         link.style.display = 'none';
+       }
+    }
+  }
+  return true;
+}
+
+RegExp.escape = function(text) {
+  if (!arguments.callee.sRE) {
+    var specials = ['/', '.', '*', '+', '?', '|', '(', ')', '[', ']', '{', '}', '\\'];
+    arguments.callee.sRE = new RegExp(
+      '(\\' + specials.join('|\\') + ')', 'g'
+    );
+  }
+  return text.replace(arguments.callee.sRE, '\\$1');
+}
+
+function hacks() {
+  // show the spacer if necessary, 
+  divs = document.getElementsByTagName('div');
+  for(var x = 0; x < divs.length; x++) {
+    if (divs[x].className && divs[x].className.match(/top/)) {
+      document.getElementById('spacer').style.display = 'block';
+    }
+  }
+  // remove extra colons from tables
+  tds = document.getElementsByTagName('td');
+  for(var x = 0; x < tds.length; x++) {
+    str = tds[x].innerHTML
+    if (str.charAt(str.length - 1) == ":") {
+      tds[x].innerHTML = str.slice(0, str.length - 1)
+    }
+  }
+}
+
+addEvent(window, 'load', insertIndices, false);
+addEvent(window, 'load', abbreviateIndices, false);
+addEvent(window, 'load', stripe, false);
+addEvent(window, 'load', highlightSymbols, false);
+addEvent(window, 'load', hacks, false);
+</script></head><body><div id="container"><div class="curve" id="preheader_curve_0"></div><div class="curve" id="preheader_curve_1"></div><div class="curve" id="preheader_curve_2"></div><div class="curve" id="preheader_curve_3"></div><div class="curve" id="preheader_curve_4"></div><div class="curve" id="preheader_curve_5"></div><div id="header"><p>
+</p><span><h1 id="title">
+Module: ActionView::Helpers::TextHelper
+</h1></span>
+</div><div class="clear"></div><div id="left">
+
+<div class="navigation darker top" id="defined_in"><h3>Defined in</h3>
+
+<a href="../../../files/vendor/rails/actionpack/lib/action_view/helpers/text_helper_rb.html">vendor/rails/actionpack/lib/action_view/helpers/text_helper.rb</a>
+
+</div>
+
+
+
+<div class="navigation top" id="methods"><h3>Methods</h3>
+
+
+<a href='#M001221'>
+auto_link<br/>
+</a>
+
+
+
+
+<a href='#M001211'>
+concat<br/>
+</a>
+
+
+
+
+<a href='#M001222'>
+cycle<br/>
+</a>
+
+
+
+
+<a href='#M001214'>
+excerpt<br/>
+</a>
+
+
+
+
+<a href='#M001213'>
+highlight<br/>
+</a>
+
+
+
+
+<a href='#M001219'>
+markdown<br/>
+</a>
+
+
+
+
+<a href='#M001215'>
+pluralize<br/>
+</a>
+
+
+
+
+<a href='#M001223'>
+reset_cycle<br/>
+</a>
+
+
+
+
+<a href='#M001220'>
+simple_format<br/>
+</a>
+
+
+
+
+<a href='#M001217'>
+textilize<br/>
+</a>
+
+
+
+
+<a href='#M001218'>
+textilize_without_paragraph<br/>
+</a>
+
+
+
+
+<a href='#M001212'>
+truncate<br/>
+</a>
+
+
+
+
+<a href='#M001216'>
+word_wrap<br/>
+</a>
+
+
+</div>
+<div id="spacer"></div><div class="navigation darker index" id="class_wrapper"><div class="list_header"><h3>All classes</h3></div><div class="list_header_link"><a onclick="toggle('class'); toggleText('class_link'); return false;" href="#" id="class_link">Hide...</a></div><div class="clear"></div><div id="class"><form><label for="filter_class">Filter:&nbsp;&nbsp;</label><input type="text" onKeyUp="return filterList('class', this.value, event);" onKeyPress="return disableSubmit(event);" id="filter_class"></input></form></div></div><div class="navigation darker index" id="file_wrapper"><div class="list_header"><h3>All files</h3></div><div class="list_header_link"><a onclick="toggle('file'); toggleText('file_link'); return false;" href="#" id="file_link">Hide...</a></div><div class="clear"></div><div id="file"><form><label for="filter_file">Filter:&nbsp;&nbsp;</label><input type="text" onKeyUp="return filterList('file', this.value, event);" onKeyPress="return disableSubmit(event);" id="filter_file"></input></form></div></div><div class="navigation darker index" id="method_wrapper"><div class="list_header"><h3>All methods</h3></div><div class="list_header_link"><a onclick="toggle('method'); toggleText('method_link'); return false;" href="#" id="method_link">Show...</a></div><div class="clear"></div><div id="method"><form><label for="filter_method">Filter:&nbsp;&nbsp;</label><input type="text" onKeyUp="return filterList('method', this.value, event);" onKeyPress="return disableSubmit(event);" id="filter_method"></input></form></div></div></div><div id="content">
+<h1 id="item_name">Module: ActionView::Helpers::TextHelper</h1>
+
+<div id="description"><p>
+The <a href="TextHelper.html">TextHelper</a> module provides a set of
+methods for filtering, formatting and transforming strings, which can
+reduce the amount of inline Ruby code in your views. These helper methods
+extend ActionView making them callable within your template files.
+</p>
+</div>
+
+
+
+
+<p></p>
+
+
+<h1>Constants</h1><p><table><tr><th>Name</th><th>Value</th></tr>
+<tr>
+<td class="highlight">AUTO_LINK_RE</td>
+
+<td class="normal">%r{                         (                          # leading text                           &lt;\w+.*?&gt;|                # leading HTML tag, or                           [^=!:'&quot;/]|               # leading punctuation, or                            ^                        # beginning of line                         )                         (                           (?:https?://)|           # protocol spec, or                           (?:www\.)                # www.*                         )                          (                           [-\w]+                   # subdomain or domain                           (?:\.[-\w]+)*            # remaining subdomains or domain                           (?::\d+)?                # port                           (?:/(?:(?:[~\w\+@%=-]|(?:[,.;:][^\s$]))+)?)* # path                           (?:\?[\w\+@%&amp;=.;-]+)?     # query string                           (?:\#[\w\-]*)?           # trailing anchor                         )                         ([[:punct:]]|\s|&lt;|$)       # trailing text                        }x unless const_defined?(:AUTO_LINK_RE)</td>
+
+
+
+</tr>
+</table></p>
+
+
+
+
+<h1>Public Instance Methods</h1>
+
+
+<a class="small" name="M001221"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001221'>
+
+
+auto_link
+
+(text, link = :all, href_options = {}, &amp;block)
+
+</a>
+</h3>
+<p>
+Turns all URLs and e-mail addresses into clickable links. The <tt>link</tt>
+parameter will limit what should be linked. You can add HTML attributes to
+the links using <tt>href_options</tt>. Options for <tt>link</tt> are
+<tt>:all</tt> (default), <tt>:email_addresses</tt>, and <tt>:urls</tt>. If
+a block is given, each URL and e-mail address is yielded and the result is
+used as the link text.
+</p>
+<h4>Examples</h4>
+<pre>
+  auto_link(&quot;Go to http://www.rubyonrails.org and say hello to david@loudthinking.com&quot;)
+  # =&gt; &quot;Go to &lt;a href=\&quot;http://www.rubyonrails.org\&quot;&gt;http://www.rubyonrails.org&lt;/a&gt; and
+  #     say hello to &lt;a href=\&quot;mailto:david@loudthinking.com\&quot;&gt;david@loudthinking.com&lt;/a&gt;&quot;
+
+  auto_link(&quot;Visit http://www.loudthinking.com/ or e-mail david@loudthinking.com&quot;, :urls)
+  # =&gt; &quot;Visit &lt;a href=\&quot;http://www.loudthinking.com/\&quot;&gt;http://www.loudthinking.com/&lt;/a&gt;
+  #     or e-mail david@loudthinking.com&quot;
+
+  auto_link(&quot;Visit http://www.loudthinking.com/ or e-mail david@loudthinking.com&quot;, :email_addresses)
+  # =&gt; &quot;Visit http://www.loudthinking.com/ or e-mail &lt;a href=\&quot;mailto:david@loudthinking.com\&quot;&gt;david@loudthinking.com&lt;/a&gt;&quot;
+
+  post_body = &quot;Welcome to my new blog at http://www.myblog.com/.  Please e-mail me at me@email.com.&quot;
+  auto_link(post_body, :all, :target =&gt; '_blank') do |text|
+    truncate(text, 15)
+  end
+  # =&gt; &quot;Welcome to my new blog at &lt;a href=\&quot;http://www.myblog.com/\&quot; target=\&quot;_blank\&quot;&gt;http://www.m...&lt;/a&gt;.
+        Please e-mail me at &lt;a href=\&quot;mailto:me@email.com\&quot;&gt;me@email.com&lt;/a&gt;.&quot;
+</pre>
+
+<p class="source_link" id="M001221-show-link"><a onclick="toggle('M001221-source'); toggleText('M001221-link'); return false;" href="#" id="M001221-link">Show source...</a></p><div class="source" id="M001221-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/actionpack/lib/action_view/helpers/text_helper.rb, line 336</span>
+336:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">auto_link</span>(<span class="ruby-identifier">text</span>, <span class="ruby-identifier">link</span> = <span class="ruby-identifier">:all</span>, <span class="ruby-identifier">href_options</span> = {}, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
+337:         <span class="ruby-keyword kw">return</span> <span class="ruby-value str">''</span> <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">text</span>.<span class="ruby-identifier">blank?</span>
+338:         <span class="ruby-keyword kw">case</span> <span class="ruby-identifier">link</span>
+339:           <span class="ruby-keyword kw">when</span> <span class="ruby-identifier">:all</span>             <span class="ruby-keyword kw">then</span> <span class="ruby-identifier">auto_link_email_addresses</span>(<span class="ruby-identifier">auto_link_urls</span>(<span class="ruby-identifier">text</span>, <span class="ruby-identifier">href_options</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>), <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
+340:           <span class="ruby-keyword kw">when</span> <span class="ruby-identifier">:email_addresses</span> <span class="ruby-keyword kw">then</span> <span class="ruby-identifier">auto_link_email_addresses</span>(<span class="ruby-identifier">text</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
+341:           <span class="ruby-keyword kw">when</span> <span class="ruby-identifier">:urls</span>            <span class="ruby-keyword kw">then</span> <span class="ruby-identifier">auto_link_urls</span>(<span class="ruby-identifier">text</span>, <span class="ruby-identifier">href_options</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
+342:         <span class="ruby-keyword kw">end</span>
+343:       <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001211"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001211'>
+
+
+concat
+
+(string, binding)
+
+</a>
+</h3>
+<p>
+The preferred method of outputting text in your views is to use the &lt;%=
+&quot;text&quot; %&gt; eRuby syntax. The regular <em>puts</em> and
+<em>print</em> methods do not operate as expected in an eRuby code block.
+If you absolutely must output text within a non-output code block (i.e.,
+&lt;% %&gt;), you can use the <a href="TextHelper.html#M001211">concat</a>
+method.
+</p>
+<h4>Examples</h4>
+<pre>
+  &lt;%
+      concat &quot;hello&quot;, binding
+      # is the equivalent of &lt;%= &quot;hello&quot; %&gt;
+
+      if (logged_in == true):
+        concat &quot;Logged in!&quot;, binding
+      else
+        concat link_to('login', :action =&gt; login), binding
+      end
+      # will either display &quot;Logged in!&quot; or a login link
+  %&gt;
+</pre>
+
+<p class="source_link" id="M001211-show-link"><a onclick="toggle('M001211-source'); toggleText('M001211-link'); return false;" href="#" id="M001211-link">Show source...</a></p><div class="source" id="M001211-source"><pre>    <span class="ruby-comment cmt"># File vendor/rails/actionpack/lib/action_view/helpers/text_helper.rb, line 28</span>
+28:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">concat</span>(<span class="ruby-identifier">string</span>, <span class="ruby-identifier">binding</span>)
+29:         <span class="ruby-identifier">eval</span>(<span class="ruby-constant">ActionView</span><span class="ruby-operator">::</span><span class="ruby-constant">Base</span>.<span class="ruby-identifier">erb_variable</span>, <span class="ruby-identifier">binding</span>) <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-identifier">string</span>
+30:       <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001222"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001222'>
+
+
+cycle
+
+(first_value, *values)
+
+</a>
+</h3>
+<p>
+Creates a Cycle object whose <em>to_s</em> method cycles through elements
+of an array every time it is called. This can be used for example, to
+alternate classes for table rows. You can use named cycles to allow nesting
+in loops. Passing a Hash as the last parameter with a <tt>:name</tt> key
+will create a named <a href="TextHelper.html#M001222">cycle</a>. You can
+manually reset a <a href="TextHelper.html#M001222">cycle</a> by calling <a
+href="TextHelper.html#M001223">reset_cycle</a> and passing the name of the
+<a href="TextHelper.html#M001222">cycle</a>.
+</p>
+<h4>Examples</h4>
+<pre>
+  # Alternate CSS classes for even and odd numbers...
+  @items = [1,2,3,4]
+  &lt;table&gt;
+  &lt;% @items.each do |item| %&gt;
+    &lt;tr class=&quot;&lt;%= cycle(&quot;even&quot;, &quot;odd&quot;) -%&gt;&quot;&gt;
+      &lt;td&gt;item&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;% end %&gt;
+  &lt;/table&gt;
+
+  # Cycle CSS classes for rows, and text colors for values within each row
+  @items = x = [{:first =&gt; 'Robert', :middle =&gt; 'Daniel', :last =&gt; 'James'},
+               {:first =&gt; 'Emily', :middle =&gt; 'Shannon', :maiden =&gt; 'Pike', :last =&gt; 'Hicks'},
+              {:first =&gt; 'June', :middle =&gt; 'Dae', :last =&gt; 'Jones'}]
+  &lt;% @items.each do |item| %&gt;
+    &lt;tr class=&quot;&lt;%= cycle(&quot;even&quot;, &quot;odd&quot;, :name =&gt; &quot;row_class&quot;) -%&gt;&quot;&gt;
+      &lt;td&gt;
+        &lt;% item.values.each do |value| %&gt;
+          &lt;%# Create a named cycle &quot;colors&quot; %&gt;
+          &lt;span style=&quot;color:&lt;%= cycle(&quot;red&quot;, &quot;green&quot;, &quot;blue&quot;, :name =&gt; &quot;colors&quot;) -%&gt;&quot;&gt;
+            &lt;%= value %&gt;
+          &lt;/span&gt;
+        &lt;% end %&gt;
+        &lt;% reset_cycle(&quot;colors&quot;) %&gt;
+      &lt;/td&gt;
+   &lt;/tr&gt;
+ &lt;% end %&gt;
+</pre>
+
+<p class="source_link" id="M001222-show-link"><a onclick="toggle('M001222-source'); toggleText('M001222-link'); return false;" href="#" id="M001222-link">Show source...</a></p><div class="source" id="M001222-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/actionpack/lib/action_view/helpers/text_helper.rb, line 381</span>
+381:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">cycle</span>(<span class="ruby-identifier">first_value</span>, <span class="ruby-operator">*</span><span class="ruby-identifier">values</span>)
+382:         <span class="ruby-keyword kw">if</span> (<span class="ruby-identifier">values</span>.<span class="ruby-identifier">last</span>.<span class="ruby-identifier">instance_of?</span> <span class="ruby-constant">Hash</span>)
+383:           <span class="ruby-identifier">params</span> = <span class="ruby-identifier">values</span>.<span class="ruby-identifier">pop</span>
+384:           <span class="ruby-identifier">name</span> = <span class="ruby-identifier">params</span>[<span class="ruby-identifier">:name</span>]
+385:         <span class="ruby-keyword kw">else</span>
+386:           <span class="ruby-identifier">name</span> = <span class="ruby-value str">&quot;default&quot;</span>
+387:         <span class="ruby-keyword kw">end</span>
+388:         <span class="ruby-identifier">values</span>.<span class="ruby-identifier">unshift</span>(<span class="ruby-identifier">first_value</span>)
+389: 
+390:         <span class="ruby-identifier">cycle</span> = <span class="ruby-identifier">get_cycle</span>(<span class="ruby-identifier">name</span>)
+391:         <span class="ruby-keyword kw">if</span> (<span class="ruby-identifier">cycle</span>.<span class="ruby-identifier">nil?</span> <span class="ruby-operator">||</span> <span class="ruby-identifier">cycle</span>.<span class="ruby-identifier">values</span> <span class="ruby-operator">!=</span> <span class="ruby-identifier">values</span>)
+392:           <span class="ruby-identifier">cycle</span> = <span class="ruby-identifier">set_cycle</span>(<span class="ruby-identifier">name</span>, <span class="ruby-constant">Cycle</span>.<span class="ruby-identifier">new</span>(<span class="ruby-operator">*</span><span class="ruby-identifier">values</span>))
+393:         <span class="ruby-keyword kw">end</span>
+394:         <span class="ruby-keyword kw">return</span> <span class="ruby-identifier">cycle</span>.<span class="ruby-identifier">to_s</span>
+395:       <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001214"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001214'>
+
+
+excerpt
+
+(text, phrase, radius = 100, excerpt_string = &quot;...&quot;)
+
+</a>
+</h3>
+<p>
+Extracts an <a href="TextHelper.html#M001214">excerpt</a> from
+<tt>text</tt> that matches the first instance of <tt>phrase</tt>. The
+<tt>radius</tt> expands the <a href="TextHelper.html#M001214">excerpt</a>
+on each side of the first occurrence of <tt>phrase</tt> by the number of
+characters defined in <tt>radius</tt> (which defaults to 100). If the <a
+href="TextHelper.html#M001214">excerpt</a> radius overflows the beginning
+or end of the <tt>text</tt>, then the <tt>excerpt_string</tt> will be
+prepended/appended accordingly. The resulting string will be stripped in
+any case. If the <tt>phrase</tt> isn&#8216;t found, nil is returned.
+</p>
+<h4>Examples</h4>
+<pre>
+  excerpt('This is an example', 'an', 5)
+  # =&gt; &quot;...s is an exam...&quot;
+
+  excerpt('This is an example', 'is', 5)
+  # =&gt; &quot;This is a...&quot;
+
+  excerpt('This is an example', 'is')
+  # =&gt; &quot;This is an example&quot;
+
+  excerpt('This next thing is an example', 'ex', 2)
+  # =&gt; &quot;...next...&quot;
+
+  excerpt('This is also an example', 'an', 8, '&lt;chop&gt; ')
+  # =&gt; &quot;&lt;chop&gt; is also an example&quot;
+</pre>
+
+<p class="source_link" id="M001214-show-link"><a onclick="toggle('M001214-source'); toggleText('M001214-link'); return false;" href="#" id="M001214-link">Show source...</a></p><div class="source" id="M001214-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/actionpack/lib/action_view/helpers/text_helper.rb, line 113</span>
+113:         <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">excerpt</span>(<span class="ruby-identifier">text</span>, <span class="ruby-identifier">phrase</span>, <span class="ruby-identifier">radius</span> = <span class="ruby-value">100</span>, <span class="ruby-identifier">excerpt_string</span> = <span class="ruby-value str">&quot;...&quot;</span>)
+114:           <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">text</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">phrase</span>
+115:             <span class="ruby-identifier">phrase</span> = <span class="ruby-constant">Regexp</span>.<span class="ruby-identifier">escape</span>(<span class="ruby-identifier">phrase</span>)
+116: 
+117:             <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">found_pos</span> = <span class="ruby-identifier">text</span>.<span class="ruby-identifier">chars</span> <span class="ruby-operator">=~</span> <span class="ruby-node">/(#{phrase})/i</span>
+118:               <span class="ruby-identifier">start_pos</span> = [ <span class="ruby-identifier">found_pos</span> <span class="ruby-operator">-</span> <span class="ruby-identifier">radius</span>, <span class="ruby-value">0</span> ].<span class="ruby-identifier">max</span>
+119:               <span class="ruby-identifier">end_pos</span>   = [ [ <span class="ruby-identifier">found_pos</span> <span class="ruby-operator">+</span> <span class="ruby-identifier">phrase</span>.<span class="ruby-identifier">chars</span>.<span class="ruby-identifier">length</span> <span class="ruby-operator">+</span> <span class="ruby-identifier">radius</span> <span class="ruby-operator">-</span> <span class="ruby-value">1</span>, <span class="ruby-value">0</span>].<span class="ruby-identifier">max</span>, <span class="ruby-identifier">text</span>.<span class="ruby-identifier">chars</span>.<span class="ruby-identifier">length</span> ].<span class="ruby-identifier">min</span>
+120: 
+121:               <span class="ruby-identifier">prefix</span>  = <span class="ruby-identifier">start_pos</span> <span class="ruby-operator">&gt;</span> <span class="ruby-value">0</span> <span class="ruby-operator">?</span> <span class="ruby-identifier">excerpt_string</span> <span class="ruby-operator">:</span> <span class="ruby-value str">&quot;&quot;</span>
+122:               <span class="ruby-identifier">postfix</span> = <span class="ruby-identifier">end_pos</span> <span class="ruby-operator">&lt;</span> <span class="ruby-identifier">text</span>.<span class="ruby-identifier">chars</span>.<span class="ruby-identifier">length</span> <span class="ruby-operator">-</span> <span class="ruby-value">1</span> <span class="ruby-operator">?</span> <span class="ruby-identifier">excerpt_string</span> <span class="ruby-operator">:</span> <span class="ruby-value str">&quot;&quot;</span>
+123: 
+124:               <span class="ruby-identifier">prefix</span> <span class="ruby-operator">+</span> <span class="ruby-identifier">text</span>.<span class="ruby-identifier">chars</span>[<span class="ruby-identifier">start_pos</span><span class="ruby-operator">..</span><span class="ruby-identifier">end_pos</span>].<span class="ruby-identifier">strip</span> <span class="ruby-operator">+</span> <span class="ruby-identifier">postfix</span>
+125:             <span class="ruby-keyword kw">else</span>
+126:               <span class="ruby-keyword kw">nil</span>
+127:             <span class="ruby-keyword kw">end</span>
+128:           <span class="ruby-keyword kw">end</span>
+129:         <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001213"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001213'>
+
+
+highlight
+
+(text, phrases, highlighter = '&lt;strong class=&quot;highlight&quot;&gt;\1&lt;/strong&gt;')
+
+</a>
+</h3>
+<p>
+Highlights one or more <tt>phrases</tt> everywhere in <tt>text</tt> by
+inserting it into a <tt>highlighter</tt> string. The highlighter can be
+specialized by passing <tt>highlighter</tt> as a single-quoted string with
+\1 where the phrase is to be inserted (defaults to &#8217;&lt;strong
+class=&quot;<a
+href="TextHelper.html#M001213">highlight</a>&quot;&gt;\1&lt;/strong&gt;&#8217;)
+</p>
+<h4>Examples</h4>
+<pre>
+  highlight('You searched for: rails', 'rails')
+  # =&gt; You searched for: &lt;strong class=&quot;highlight&quot;&gt;rails&lt;/strong&gt;
+
+  highlight('You searched for: ruby, rails, dhh', 'actionpack')
+  # =&gt; You searched for: ruby, rails, dhh
+
+  highlight('You searched for: rails', ['for', 'rails'], '&lt;em&gt;\1&lt;/em&gt;')
+  # =&gt; You searched &lt;em&gt;for&lt;/em&gt;: &lt;em&gt;rails&lt;/em&gt;
+
+  highlight('You searched for: rails', 'rails', &quot;&lt;a href='search?q=\1'&gt;\1&lt;/a&gt;&quot;)
+  # =&gt; You searched for: &lt;a href='search?q=rails&gt;rails&lt;/a&gt;
+</pre>
+
+<p class="source_link" id="M001213-show-link"><a onclick="toggle('M001213-source'); toggleText('M001213-link'); return false;" href="#" id="M001213-link">Show source...</a></p><div class="source" id="M001213-source"><pre>    <span class="ruby-comment cmt"># File vendor/rails/actionpack/lib/action_view/helpers/text_helper.rb, line 82</span>
+82:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">highlight</span>(<span class="ruby-identifier">text</span>, <span class="ruby-identifier">phrases</span>, <span class="ruby-identifier">highlighter</span> = <span class="ruby-value str">'&lt;strong class=&quot;highlight&quot;&gt;\1&lt;/strong&gt;'</span>)
+83:         <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">text</span>.<span class="ruby-identifier">blank?</span> <span class="ruby-operator">||</span> <span class="ruby-identifier">phrases</span>.<span class="ruby-identifier">blank?</span>
+84:           <span class="ruby-identifier">text</span>
+85:         <span class="ruby-keyword kw">else</span>
+86:           <span class="ruby-identifier">match</span> = <span class="ruby-constant">Array</span>(<span class="ruby-identifier">phrases</span>).<span class="ruby-identifier">map</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">p</span><span class="ruby-operator">|</span> <span class="ruby-constant">Regexp</span>.<span class="ruby-identifier">escape</span>(<span class="ruby-identifier">p</span>) }.<span class="ruby-identifier">join</span>(<span class="ruby-value str">'|'</span>)
+87:           <span class="ruby-identifier">text</span>.<span class="ruby-identifier">gsub</span>(<span class="ruby-node">/(#{match})/i</span>, <span class="ruby-identifier">highlighter</span>)
+88:         <span class="ruby-keyword kw">end</span>
+89:       <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001219"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001219'>
+
+
+markdown
+
+(text)
+
+</a>
+</h3>
+<p>
+Returns the text with all the Markdown codes turned into HTML tags.
+<em>This method is only available if <a
+href="http://www.deveiate.org/projects/BlueCloth">BlueCloth</a> is
+available</em>.
+</p>
+<h4>Examples</h4>
+<pre>
+  markdown(&quot;We are using __Markdown__ now!&quot;)
+  # =&gt; &quot;&lt;p&gt;We are using &lt;strong&gt;Markdown&lt;/strong&gt; now!&lt;/p&gt;&quot;
+
+  markdown(&quot;We like to _write_ `code`, not just _read_ it!&quot;)
+  # =&gt; &quot;&lt;p&gt;We like to &lt;em&gt;write&lt;/em&gt; &lt;code&gt;code&lt;/code&gt;, not just &lt;em&gt;read&lt;/em&gt; it!&lt;/p&gt;&quot;
+
+  markdown(&quot;The [Markdown website](http://daringfireball.net/projects/markdown/) has more information.&quot;)
+  # =&gt; &quot;&lt;p&gt;The &lt;a href=&quot;http://daringfireball.net/projects/markdown/&quot;&gt;Markdown website&lt;/a&gt;
+  #     has more information.&lt;/p&gt;&quot;
+
+  markdown('![The ROR logo](http://rubyonrails.com/images/rails.png &quot;Ruby on Rails&quot;)')
+  # =&gt; '&lt;p&gt;&lt;img src=&quot;http://rubyonrails.com/images/rails.png&quot; alt=&quot;The ROR logo&quot; title=&quot;Ruby on Rails&quot; /&gt;&lt;/p&gt;'
+</pre>
+
+<p class="source_link" id="M001219-show-link"><a onclick="toggle('M001219-source'); toggleText('M001219-link'); return false;" href="#" id="M001219-link">Show source...</a></p><div class="source" id="M001219-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/actionpack/lib/action_view/helpers/text_helper.rb, line 281</span>
+281:         <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">markdown</span>(<span class="ruby-identifier">text</span>)
+282:           <span class="ruby-identifier">text</span>.<span class="ruby-identifier">blank?</span> <span class="ruby-value">? </span><span class="ruby-value str">&quot;&quot;</span> <span class="ruby-operator">:</span> <span class="ruby-constant">BlueCloth</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">text</span>).<span class="ruby-identifier">to_html</span>
+283:         <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001215"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001215'>
+
+
+pluralize
+
+(count, singular, plural = nil)
+
+</a>
+</h3>
+<p>
+Attempts to <a href="TextHelper.html#M001215">pluralize</a> the
+<tt>singular</tt> word unless <tt>count</tt> is 1. If <tt>plural</tt> is
+supplied, it will use that when count is &gt; 1, if the ActiveSupport <a
+href="../../Inflector.html">Inflector</a> is loaded, it will use the <a
+href="../../Inflector.html">Inflector</a> to determine the plural form,
+otherwise it will just add an &#8216;s&#8217; to the <tt>singular</tt>
+word.
+</p>
+<h4>Examples</h4>
+<pre>
+  pluralize(1, 'person')
+  # =&gt; 1 person
+
+  pluralize(2, 'person')
+  # =&gt; 2 people
+
+  pluralize(3, 'person', 'users')
+  # =&gt; 3 users
+
+  pluralize(0, 'person')
+  # =&gt; 0 people
+</pre>
+
+<p class="source_link" id="M001215-show-link"><a onclick="toggle('M001215-source'); toggleText('M001215-link'); return false;" href="#" id="M001215-link">Show source...</a></p><div class="source" id="M001215-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/actionpack/lib/action_view/helpers/text_helper.rb, line 167</span>
+167:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">pluralize</span>(<span class="ruby-identifier">count</span>, <span class="ruby-identifier">singular</span>, <span class="ruby-identifier">plural</span> = <span class="ruby-keyword kw">nil</span>)
+168:          <span class="ruby-node">&quot;#{count || 0} &quot;</span> <span class="ruby-operator">+</span> <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">count</span> <span class="ruby-operator">==</span> <span class="ruby-value">1</span> <span class="ruby-operator">||</span> <span class="ruby-identifier">count</span> <span class="ruby-operator">==</span> <span class="ruby-value str">'1'</span>
+169:           <span class="ruby-identifier">singular</span>
+170:         <span class="ruby-keyword kw">elsif</span> <span class="ruby-identifier">plural</span>
+171:           <span class="ruby-identifier">plural</span>
+172:         <span class="ruby-keyword kw">elsif</span> <span class="ruby-constant">Object</span>.<span class="ruby-identifier">const_defined?</span>(<span class="ruby-value str">&quot;Inflector&quot;</span>)
+173:           <span class="ruby-constant">Inflector</span>.<span class="ruby-identifier">pluralize</span>(<span class="ruby-identifier">singular</span>)
+174:         <span class="ruby-keyword kw">else</span>
+175:           <span class="ruby-identifier">singular</span> <span class="ruby-operator">+</span> <span class="ruby-value str">&quot;s&quot;</span>
+176:         <span class="ruby-keyword kw">end</span>
+177:       <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001223"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001223'>
+
+
+reset_cycle
+
+(name = &quot;default&quot;)
+
+</a>
+</h3>
+<p>
+Resets a <a href="TextHelper.html#M001222">cycle</a> so that it starts from
+the first element the next time it is called. Pass in <tt>name</tt> to
+reset a named <a href="TextHelper.html#M001222">cycle</a>.
+</p>
+<h4>Example</h4>
+<pre>
+  # Alternate CSS classes for even and odd numbers...
+  @items = [[1,2,3,4], [5,6,3], [3,4,5,6,7,4]]
+  &lt;table&gt;
+  &lt;% @items.each do |item| %&gt;
+    &lt;tr class=&quot;&lt;%= cycle(&quot;even&quot;, &quot;odd&quot;) -%&gt;&quot;&gt;
+        &lt;% item.each do |value| %&gt;
+          &lt;span style=&quot;color:&lt;%= cycle(&quot;#333&quot;, &quot;#666&quot;, &quot;#999&quot;, :name =&gt; &quot;colors&quot;) -%&gt;&quot;&gt;
+            &lt;%= value %&gt;
+          &lt;/span&gt;
+        &lt;% end %&gt;
+
+        &lt;% reset_cycle(&quot;colors&quot;) %&gt;
+    &lt;/tr&gt;
+  &lt;% end %&gt;
+  &lt;/table&gt;
+</pre>
+
+<p class="source_link" id="M001223-show-link"><a onclick="toggle('M001223-source'); toggleText('M001223-link'); return false;" href="#" id="M001223-link">Show source...</a></p><div class="source" id="M001223-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/actionpack/lib/action_view/helpers/text_helper.rb, line 416</span>
+416:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">reset_cycle</span>(<span class="ruby-identifier">name</span> = <span class="ruby-value str">&quot;default&quot;</span>)
+417:         <span class="ruby-identifier">cycle</span> = <span class="ruby-identifier">get_cycle</span>(<span class="ruby-identifier">name</span>)
+418:         <span class="ruby-identifier">cycle</span>.<span class="ruby-identifier">reset</span> <span class="ruby-keyword kw">unless</span> <span class="ruby-identifier">cycle</span>.<span class="ruby-identifier">nil?</span>
+419:       <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001220"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001220'>
+
+
+simple_format
+
+(text)
+
+</a>
+</h3>
+<p>
+Returns <tt>text</tt> transformed into HTML using simple formatting rules.
+Two or more consecutive newlines(<tt>\n\n</tt>) are considered as a
+paragraph and wrapped in <tt>&lt;p&gt;</tt> tags. One newline (<tt>\n</tt>)
+is considered as a linebreak and a <tt>&lt;br /&gt;</tt> tag is appended.
+This method does not remove the newlines from the <tt>text</tt>.
+</p>
+<h4>Examples</h4>
+<pre>
+  my_text = &quot;Here is some basic text...\n...with a line break.&quot;
+
+  simple_format(my_text)
+  # =&gt; &quot;&lt;p&gt;Here is some basic text...\n&lt;br /&gt;...with a line break.&lt;/p&gt;&quot;
+
+  more_text = &quot;We want to put a paragraph...\n\n...right there.&quot;
+
+  simple_format(more_text)
+  # =&gt; &quot;&lt;p&gt;We want to put a paragraph...&lt;/p&gt;\n\n&lt;p&gt;...right there.&lt;/p&gt;&quot;
+</pre>
+
+<p class="source_link" id="M001220-show-link"><a onclick="toggle('M001220-source'); toggleText('M001220-link'); return false;" href="#" id="M001220-link">Show source...</a></p><div class="source" id="M001220-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/actionpack/lib/action_view/helpers/text_helper.rb, line 304</span>
+304:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">simple_format</span>(<span class="ruby-identifier">text</span>)
+305:         <span class="ruby-identifier">content_tag</span> <span class="ruby-value str">'p'</span>, <span class="ruby-identifier">text</span>.<span class="ruby-identifier">to_s</span>.
+306:           <span class="ruby-identifier">gsub</span>(<span class="ruby-regexp re">/\r\n?/</span>, <span class="ruby-value str">&quot;\n&quot;</span>).                    <span class="ruby-comment cmt"># \r\n and \r -&gt; \n</span>
+307:           <span class="ruby-identifier">gsub</span>(<span class="ruby-regexp re">/\n\n+/</span>, <span class="ruby-value str">&quot;&lt;/p&gt;\n\n&lt;p&gt;&quot;</span>).           <span class="ruby-comment cmt"># 2+ newline  -&gt; paragraph</span>
+308:           <span class="ruby-identifier">gsub</span>(<span class="ruby-regexp re">/([^\n]\n)(?=[^\n])/</span>, <span class="ruby-value str">'\1&lt;br /&gt;'</span>)  <span class="ruby-comment cmt"># 1 newline   -&gt; br</span>
+309:       <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001217"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001217'>
+
+
+textilize
+
+(text)
+
+</a>
+</h3>
+<p>
+Returns the text with all the <a
+href="http://www.textism.com/tools/textile">Textile</a> codes turned into
+HTML tags.
+</p>
+<p>
+You can learn more about Textile&#8216;s syntax at its <a
+href="http://www.textism.com/tools/textile">website</a>. <em>This method is
+only available if <a
+href="http://whytheluckystiff.net/ruby/redcloth/">RedCloth</a> is
+available</em>.
+</p>
+<h4>Examples</h4>
+<pre>
+  textilize(&quot;*This is Textile!*  Rejoice!&quot;)
+  # =&gt; &quot;&lt;p&gt;&lt;strong&gt;This is Textile!&lt;/strong&gt;  Rejoice!&lt;/p&gt;&quot;
+
+  textilize(&quot;I _love_ ROR(Ruby on Rails)!&quot;)
+  # =&gt; &quot;&lt;p&gt;I &lt;em&gt;love&lt;/em&gt; &lt;acronym title=&quot;Ruby on Rails&quot;&gt;ROR&lt;/acronym&gt;!&lt;/p&gt;&quot;
+
+  textilize(&quot;h2. Textile makes markup -easy- simple!&quot;)
+  # =&gt; &quot;&lt;h2&gt;Textile makes markup &lt;del&gt;easy&lt;/del&gt; simple!&lt;/h2&gt;&quot;
+
+  textilize(&quot;Visit the Rails website &quot;here&quot;:http://www.rubyonrails.org/.)
+  # =&gt; &quot;&lt;p&gt;Visit the Rails website &lt;a href=&quot;http://www.rubyonrails.org/&quot;&gt;here&lt;/a&gt;.&lt;/p&gt;&quot;
+</pre>
+
+<p class="source_link" id="M001217-show-link"><a onclick="toggle('M001217-source'); toggleText('M001217-link'); return false;" href="#" id="M001217-link">Show source...</a></p><div class="source" id="M001217-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/actionpack/lib/action_view/helpers/text_helper.rb, line 222</span>
+222:         <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">textilize</span>(<span class="ruby-identifier">text</span>)
+223:           <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">text</span>.<span class="ruby-identifier">blank?</span>
+224:             <span class="ruby-value str">&quot;&quot;</span>
+225:           <span class="ruby-keyword kw">else</span>
+226:             <span class="ruby-identifier">textilized</span> = <span class="ruby-constant">RedCloth</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">text</span>, [ <span class="ruby-identifier">:hard_breaks</span> ])
+227:             <span class="ruby-identifier">textilized</span>.<span class="ruby-identifier">hard_breaks</span> = <span class="ruby-keyword kw">true</span> <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">textilized</span>.<span class="ruby-identifier">respond_to?</span>(<span class="ruby-value str">&quot;hard_breaks=&quot;</span>)
+228:             <span class="ruby-identifier">textilized</span>.<span class="ruby-identifier">to_html</span>
+229:           <span class="ruby-keyword kw">end</span>
+230:         <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001218"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001218'>
+
+
+textilize_without_paragraph
+
+(text)
+
+</a>
+</h3>
+<p>
+Returns the text with all the Textile codes turned into HTML tags, but
+without the bounding &lt;p&gt; tag that RedCloth adds.
+</p>
+<p>
+You can learn more about Textile&#8216;s syntax at its <a
+href="http://www.textism.com/tools/textile">website</a>. <em>This method is
+only available if <a
+href="http://whytheluckystiff.net/ruby/redcloth/">RedCloth</a> is
+available</em>.
+</p>
+<h4>Examples</h4>
+<pre>
+  textilize_without_paragraph(&quot;*This is Textile!*  Rejoice!&quot;)
+  # =&gt; &quot;&lt;strong&gt;This is Textile!&lt;/strong&gt;  Rejoice!&quot;
+
+  textilize_without_paragraph(&quot;I _love_ ROR(Ruby on Rails)!&quot;)
+  # =&gt; &quot;I &lt;em&gt;love&lt;/em&gt; &lt;acronym title=&quot;Ruby on Rails&quot;&gt;ROR&lt;/acronym&gt;!&quot;
+
+  textilize_without_paragraph(&quot;h2. Textile makes markup -easy- simple!&quot;)
+  # =&gt; &quot;&lt;h2&gt;Textile makes markup &lt;del&gt;easy&lt;/del&gt; simple!&lt;/h2&gt;&quot;
+
+  textilize_without_paragraph(&quot;Visit the Rails website &quot;here&quot;:http://www.rubyonrails.org/.)
+  # =&gt; &quot;Visit the Rails website &lt;a href=&quot;http://www.rubyonrails.org/&quot;&gt;here&lt;/a&gt;.&quot;
+</pre>
+
+<p class="source_link" id="M001218-show-link"><a onclick="toggle('M001218-source'); toggleText('M001218-link'); return false;" href="#" id="M001218-link">Show source...</a></p><div class="source" id="M001218-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/actionpack/lib/action_view/helpers/text_helper.rb, line 251</span>
+251:         <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">textilize_without_paragraph</span>(<span class="ruby-identifier">text</span>)
+252:           <span class="ruby-identifier">textiled</span> = <span class="ruby-identifier">textilize</span>(<span class="ruby-identifier">text</span>)
+253:           <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">textiled</span>[<span class="ruby-value">0</span><span class="ruby-operator">..</span><span class="ruby-value">2</span>] <span class="ruby-operator">==</span> <span class="ruby-value str">&quot;&lt;p&gt;&quot;</span> <span class="ruby-keyword kw">then</span> <span class="ruby-identifier">textiled</span> = <span class="ruby-identifier">textiled</span>[<span class="ruby-value">3</span><span class="ruby-operator">..</span><span class="ruby-value">-1</span>] <span class="ruby-keyword kw">end</span>
+254:           <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">textiled</span>[<span class="ruby-value">-4</span><span class="ruby-operator">..</span><span class="ruby-value">-1</span>] <span class="ruby-operator">==</span> <span class="ruby-value str">&quot;&lt;/p&gt;&quot;</span> <span class="ruby-keyword kw">then</span> <span class="ruby-identifier">textiled</span> = <span class="ruby-identifier">textiled</span>[<span class="ruby-value">0</span><span class="ruby-operator">..</span><span class="ruby-value">-5</span>] <span class="ruby-keyword kw">end</span>
+255:           <span class="ruby-keyword kw">return</span> <span class="ruby-identifier">textiled</span>
+256:         <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001212"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001212'>
+
+
+truncate
+
+(text, length = 30, truncate_string = &quot;...&quot;)
+
+</a>
+</h3>
+<p>
+If <tt>text</tt> is longer than <tt>length</tt>, <tt>text</tt> will be
+truncated to the length of <tt>length</tt> (defaults to 30) and the last
+characters will be replaced with the <tt>truncate_string</tt> (defaults to
+&quot;&#8230;&quot;).
+</p>
+<h4>Examples</h4>
+<pre>
+  truncate(&quot;Once upon a time in a world far far away&quot;, 14)
+  # =&gt; Once upon a...
+
+  truncate(&quot;Once upon a time in a world far far away&quot;)
+  # =&gt; Once upon a time in a world f...
+
+  truncate(&quot;And they found that many people were sleeping better.&quot;, 25, &quot;(clipped)&quot;)
+  # =&gt; And they found that many (clipped)
+
+  truncate(&quot;And they found that many people were sleeping better.&quot;, 15, &quot;... (continued)&quot;)
+  # =&gt; And they found... (continued)
+</pre>
+
+<p class="source_link" id="M001212-show-link"><a onclick="toggle('M001212-source'); toggleText('M001212-link'); return false;" href="#" id="M001212-link">Show source...</a></p><div class="source" id="M001212-source"><pre>    <span class="ruby-comment cmt"># File vendor/rails/actionpack/lib/action_view/helpers/text_helper.rb, line 49</span>
+49:         <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">truncate</span>(<span class="ruby-identifier">text</span>, <span class="ruby-identifier">length</span> = <span class="ruby-value">30</span>, <span class="ruby-identifier">truncate_string</span> = <span class="ruby-value str">&quot;...&quot;</span>)
+50:           <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">text</span>
+51:             <span class="ruby-identifier">l</span> = <span class="ruby-identifier">length</span> <span class="ruby-operator">-</span> <span class="ruby-identifier">truncate_string</span>.<span class="ruby-identifier">chars</span>.<span class="ruby-identifier">length</span>
+52:             <span class="ruby-identifier">chars</span> = <span class="ruby-identifier">text</span>.<span class="ruby-identifier">chars</span>
+53:             (<span class="ruby-identifier">chars</span>.<span class="ruby-identifier">length</span> <span class="ruby-operator">&gt;</span> <span class="ruby-identifier">length</span> <span class="ruby-value">? </span><span class="ruby-identifier">chars</span>[<span class="ruby-value">0</span><span class="ruby-operator">...</span><span class="ruby-identifier">l</span>] <span class="ruby-operator">+</span> <span class="ruby-identifier">truncate_string</span> <span class="ruby-operator">:</span> <span class="ruby-identifier">text</span>).<span class="ruby-identifier">to_s</span>
+54:           <span class="ruby-keyword kw">end</span>
+55:         <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001216"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001216'>
+
+
+word_wrap
+
+(text, line_width = 80)
+
+</a>
+</h3>
+<p>
+Wraps the <tt>text</tt> into lines no longer than <tt>line_width</tt>
+width. This method breaks on the first whitespace character that does not
+exceed <tt>line_width</tt> (which is 80 by default).
+</p>
+<h4>Examples</h4>
+<pre>
+  word_wrap('Once upon a time', 4)
+  # =&gt; Once\nupon\na\ntime
+
+  word_wrap('Once upon a time', 8)
+  # =&gt; Once upon\na time
+
+  word_wrap('Once upon a time')
+  # =&gt; Once upon a time
+
+  word_wrap('Once upon a time', 1)
+  # =&gt; Once\nupon\na\ntime
+</pre>
+
+<p class="source_link" id="M001216-show-link"><a onclick="toggle('M001216-source'); toggleText('M001216-link'); return false;" href="#" id="M001216-link">Show source...</a></p><div class="source" id="M001216-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/actionpack/lib/action_view/helpers/text_helper.rb, line 195</span>
+195:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">word_wrap</span>(<span class="ruby-identifier">text</span>, <span class="ruby-identifier">line_width</span> = <span class="ruby-value">80</span>)
+196:         <span class="ruby-identifier">text</span>.<span class="ruby-identifier">split</span>(<span class="ruby-value str">&quot;\n&quot;</span>).<span class="ruby-identifier">collect</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">line</span><span class="ruby-operator">|</span>
+197:           <span class="ruby-identifier">line</span>.<span class="ruby-identifier">length</span> <span class="ruby-operator">&gt;</span> <span class="ruby-identifier">line_width</span> <span class="ruby-value">? </span><span class="ruby-identifier">line</span>.<span class="ruby-identifier">gsub</span>(<span class="ruby-node">/(.{1,#{line_width}})(\s+|$)/</span>, <span class="ruby-value str">&quot;\\1\n&quot;</span>).<span class="ruby-identifier">strip</span> <span class="ruby-operator">:</span> <span class="ruby-identifier">line</span>
+198:         <span class="ruby-keyword kw">end</span> <span class="ruby-operator">*</span> <span class="ruby-value str">&quot;\n&quot;</span>
+199:       <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+
+
+
+
+</div><div class="clear" id="footer">Generated on Jan 21, 2008 / Allison 2 &copy; 2007 <a href="http://cloudbur.st">Cloudburst, LLC</a></div></div></body></html>

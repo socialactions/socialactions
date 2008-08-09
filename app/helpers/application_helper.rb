@@ -37,9 +37,7 @@ module ApplicationHelper
   end
 
   def shorten_and_clean(text)
-    output = strip_tags(text).to(200).split(' ')
-    output.pop
-    output.join(' ') + '...'
+    truncate_html(sanitize(text),200)
   end
   
   def feed_url

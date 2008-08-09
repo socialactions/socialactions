@@ -1,0 +1,893 @@
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head><meta content="text/html; charset=utf-8" http-equiv="Content-Type"/><title>Module: ActiveSupport::CoreExtensions::Numeric::Time</title><link type="text/css" href="../../../.././rdoc-style.css" media="screen" rel="stylesheet"/><script type="text/javascript">
+// Allison template
+// Copyright 2007, 2008 Cloudburst, LLC. Licensed under the AFL 3. See the included LICENSE file.
+
+var href_base = '../../../.././rdoc-style.css'.replace(/(.*\/).*/, '$1'); // inline js is good for something  
+
+function $(id) {
+    if (document.getElementById)
+      elem = document.getElementById(id);
+    else if ( document.all )
+      elem = eval("document.all." + id);
+    else
+      return false;
+    return elem;
+}
+
+  function toggle(id) {
+    elem = $(id);
+    elemStyle = elem.style;   
+    if (elemStyle.display == "block") {
+      elemStyle.display = "none"
+    } else {
+      elemStyle.display = "block"
+    }
+    return true;
+  }
+
+  function toggleText(id) {
+    elem = $(id)
+    if (m = elem.innerHTML.match(/(Hide)(.*)/)) {
+      elem.innerHTML = "Show" + m[2];
+    } else if (m = elem.innerHTML.match(/(Show)(.*)/)) {
+      elem.innerHTML = "Hide" + m[2];
+    }
+    return true;
+  }
+
+function span(s, klass) {
+  return '<span class="' + klass + '">' + s + '</span>';
+}
+  
+function highlightSymbols() {
+  pres = document.getElementsByTagName('pre');
+  for(var i = 0; i < pres.length; i++) {
+    pre = pres[i];
+    spans = pre.getElementsByTagName('span');
+    for(var k = 0; k < spans.length; k++) {
+      span = spans[k];
+      if (span.className.match(/ruby-identifier/)) {
+        if (span.innerHTML.match(/^:/)) {
+          span.className += " ruby-symbol";
+        }
+      }
+    }
+  }
+}
+
+ function hasClass(obj) {
+     var result = false;
+     if (obj.getAttributeNode("class") != null) {
+         result = obj.getAttributeNode("class").value;
+     }
+     return result;
+  }   
+
+ function stripe() {
+    var even = true;
+    var color = "#e4ebed";
+    var tables = document.getElementsByTagName('table');
+    if (tables.length == 0) { return; }
+    for (var h = 0; h < tables.length; h++) {
+        var trs = tables[h].getElementsByTagName("tr");
+        for (var i = 0; i < trs.length; i++) {
+          var tds = trs[i].getElementsByTagName("td");
+            for (var j = 0; j < tds.length; j++) {       
+              if (hasClass(tds[j]) != "first") {                
+              var mytd = tds[j];
+              if (even) {
+                mytd.style.backgroundColor = color;
+              }         
+            }
+          }
+          even =  ! even;
+      }
+    }
+  }
+  
+function ajaxGet(url) {
+  url = (href_base + url).replace('/./', '/')
+  var req = false;
+
+  if (window.ActiveXObject) {
+    try {
+      // stupid hack because IE7 disables local Ajax with the native xmlhttprequest object
+      // for security purposes. Yet ActiveX still works. Thanks, Microsoft. I hate you. Die.
+      req = new ActiveXObject("MSXML2.XMLHTTP.3.0");
+    } catch (e) {
+      try {
+        /* IE 6 and maybe 5, don't know, don't care */
+        req = new ActiveXObject("Msxml2.XMLHTTP");
+      } catch (e) {
+        try {
+          req = new ActiveXObject("Microsoft.XMLHTTP");
+        } catch (e) {
+          req = false;
+        }
+      }
+    }
+  }
+    
+  /* real browsers */
+  if (!req && window.XMLHttpRequest) {
+    try {
+      req = new XMLHttpRequest();
+    } catch (e) {
+      req = false;
+    }
+  } 
+  
+  if (req) {
+    req.open('GET', url, false);
+    req.send(null);
+    return req.responseText;
+  } else {
+    return "Ajax error";  
+  }
+}
+
+
+function addEvent(elm, evType, fn, useCapture) {
+	if (elm.addEventListener) {
+	  elm.addEventListener(evType, fn, useCapture);  
+  	return true;
+	} else if (elm.attachEvent) {
+  	var r = elm.attachEvent('on' + evType, fn);  
+	  return r;  
+	} else {
+  	elm['on' + evType] = fn;
+	}
+}
+
+function insertIndices() {
+  pages = ["class", "file", "method"]
+  for (x in pages) { 
+    $(pages[x]).innerHTML += ajaxGet('fr_' + pages[x] + '_index.html').replace(/(href=")/g, '$1' + href_base);
+  }
+  /* mouseoverify method links */
+  links = $('method').getElementsByTagName('a');
+  for (var x = 0; x < links.length; x++) {
+    if (m = links[x].innerHTML.match(/(.*)\s\((.*)\)/)) {
+      links[x].innerHTML = m[1] + '<br>';
+      links[x].title = m[2];
+    }
+  }
+  /* this is stupid */
+  $('class').style.display = "block";
+  $('file').style.display = "block";
+  
+  /* has to be here because IE7 does not guarantee the onLoad callback order */
+  abbreviateIndicesInner(["class", "file"], 25, "a");
+  /* same, linkTitle() depends on the class link list */
+  linkTitle();
+}
+
+function abbreviateIndices() {
+  var ids = ["defined_in", "child_of", "includes", "requires", "method", "methods"];
+  abbreviateIndicesInner(ids, 25, 'a');
+  abbreviateIndicesInner(ids, 25, 'span');
+}
+
+function abbreviateIndicesInner(indices, amount, tag) {
+  for (var x = 0; x < indices.length; x++) { 
+    var the_index = $(indices[x]);
+    if (the_index) {
+      links = the_index.getElementsByTagName(tag);
+      for (var y = 0; y < links.length; y++) {
+        var link = links[y];
+        if (link.getElementsByTagName('span').length == 0 && link.getElementsByTagName('a').length == 0) {
+          // avoid nesting
+          link.innerHTML = link.innerHTML.replace(/<br>|\n/gi, '');
+          link.title = link.innerHTML;
+          link.innerHTML = abbreviate(link.innerHTML, amount) + '<br>';
+        }
+      }
+    }
+  }
+}
+
+function linkTitle() {
+  
+  /* grab the correct title element from the index */
+  var index_page = ajaxGet('index.html');
+  title_text = index_page.match(/<title>(.*)<\/title>/m)[1];
+  document.title = title_text + " - " + document.title;
+  var p = $('header').getElementsByTagName('p')[0]
+  if (p.innerHTML.match(/^\s*$/)) {
+    p.innerHTML = title_text;
+  } else {
+    p.innerHTML = title_text + ": " + p.innerHTML;
+  }
+  
+  /* set the link properly */
+  title_link = index_page.match(/<a\s+href="(.*?)"/)[1];
+  var element = $('title');
+  var item_type = "";
+  var item_name = "";
+  if (m = element.innerHTML.match(/(Class:|Module:|File:)\s*(.*)/)) {
+    item_type = m[1];
+    item_name = m[2];
+  } else {
+    item_name = element.innerHTML;
+  }
+  element.innerHTML = '<a href="' + href_base + title_link + '">' + item_type + " " + abbreviate(item_name, 45) + '</a>';
+  element.getElementsByTagName('a')[0].title = item_name
+  
+  /* breadcrumb navigation */
+  items = item_name.split("::");
+  items_new = item_name.split("::");
+  file_links = $('class').getElementsByTagName('a');
+  for (var x = 0; x < items.length - 1; x++ ){
+    var item = items[x];
+    link = ("/classes/" + items.slice(0,x).join("/") + "/" + item + ".html").replace('//', '/');
+    regex = new RegExp(RegExp.escape(link) + '$');
+    for (var y = 0; y < file_links.length; y++) {
+      if (file_links[y].href.match(regex)) {
+         items_new[x] = '<a href="' + href_base + link + '">' + item + '</a>';
+         break;
+      }
+    }  
+  }
+  $('item_name').innerHTML = item_type + ' ' + items_new.join(" :: ");
+}
+
+function abbreviate(s, size) {
+  while (s.length > size) {
+    var old_s = s;
+    s = s.replace(/\s|\n/mg, '');
+    s = s.replace(/([A-Z])[a-z]+/m, '$1');
+    if (!s || old_s == s) {
+      return "..." + s.substring(s.length - size, s.length);
+    }
+  }
+  return s;
+}
+
+function disableSubmit(event) {
+  var keyCode = event.keyCode ? event.keyCode : event.which ? event.which : event.charCode;
+  if (keyCode == 13) {
+    return false;
+  } else {
+    return true;
+  }
+}
+  
+function filterList(id, s, event) {
+  
+  /* some weak escaping */
+  s = s.replace(/[^\w\d\.\_\-\/\:\=\[\]\?\!]/g, '');
+  s = RegExp.escape(s);
+  
+  var show_all = false;
+  if (s.match(/^\s*$/)) {
+    show_all = true;
+  }
+  
+  links = $(id).getElementsByTagName('a')
+  regex = new RegExp(s, 'i');
+  
+  for (var x = 0; x < links.length; x++) {
+    var link = links[x];
+    if (show_all) {
+      link.style.display = 'inline';
+    } else {
+       if (link.innerHTML.match(regex)) {        
+         link.style.display = 'inline';
+       } else {
+         link.style.display = 'none';
+       }
+    }
+  }
+  return true;
+}
+
+RegExp.escape = function(text) {
+  if (!arguments.callee.sRE) {
+    var specials = ['/', '.', '*', '+', '?', '|', '(', ')', '[', ']', '{', '}', '\\'];
+    arguments.callee.sRE = new RegExp(
+      '(\\' + specials.join('|\\') + ')', 'g'
+    );
+  }
+  return text.replace(arguments.callee.sRE, '\\$1');
+}
+
+function hacks() {
+  // show the spacer if necessary, 
+  divs = document.getElementsByTagName('div');
+  for(var x = 0; x < divs.length; x++) {
+    if (divs[x].className && divs[x].className.match(/top/)) {
+      document.getElementById('spacer').style.display = 'block';
+    }
+  }
+  // remove extra colons from tables
+  tds = document.getElementsByTagName('td');
+  for(var x = 0; x < tds.length; x++) {
+    str = tds[x].innerHTML
+    if (str.charAt(str.length - 1) == ":") {
+      tds[x].innerHTML = str.slice(0, str.length - 1)
+    }
+  }
+}
+
+addEvent(window, 'load', insertIndices, false);
+addEvent(window, 'load', abbreviateIndices, false);
+addEvent(window, 'load', stripe, false);
+addEvent(window, 'load', highlightSymbols, false);
+addEvent(window, 'load', hacks, false);
+</script></head><body><div id="container"><div class="curve" id="preheader_curve_0"></div><div class="curve" id="preheader_curve_1"></div><div class="curve" id="preheader_curve_2"></div><div class="curve" id="preheader_curve_3"></div><div class="curve" id="preheader_curve_4"></div><div class="curve" id="preheader_curve_5"></div><div id="header"><p>
+</p><span><h1 id="title">
+Module: ActiveSupport::CoreExtensions::Numeric::Time
+</h1></span>
+</div><div class="clear"></div><div id="left">
+
+<div class="navigation darker top" id="defined_in"><h3>Defined in</h3>
+
+<a href="../../../../files/vendor/rails/activesupport/lib/active_support/core_ext/numeric/time_rb.html">vendor/rails/activesupport/lib/active_support/core_ext/numeric/time.rb</a>
+
+</div>
+
+
+
+<div class="navigation top" id="methods"><h3>Methods</h3>
+
+
+<a href='#M000745'>
+ago<br/>
+</a>
+
+
+
+
+<a href='#M000736'>
+day<br/>
+</a>
+
+
+
+
+<a href='#M000735'>
+days<br/>
+</a>
+
+
+
+
+<a href='#M000740'>
+fortnight<br/>
+</a>
+
+
+
+
+<a href='#M000739'>
+fortnights<br/>
+</a>
+
+
+
+
+<a href='#M000748'>
+from_now<br/>
+</a>
+
+
+
+
+<a href='#M000734'>
+hour<br/>
+</a>
+
+
+
+
+<a href='#M000733'>
+hours<br/>
+</a>
+
+
+
+
+<a href='#M000732'>
+minute<br/>
+</a>
+
+
+
+
+<a href='#M000731'>
+minutes<br/>
+</a>
+
+
+
+
+<a href='#M000742'>
+month<br/>
+</a>
+
+
+
+
+<a href='#M000741'>
+months<br/>
+</a>
+
+
+
+
+<a href='#M000730'>
+second<br/>
+</a>
+
+
+
+
+<a href='#M000729'>
+seconds<br/>
+</a>
+
+
+
+
+<a href='#M000747'>
+since<br/>
+</a>
+
+
+
+
+<a href='#M000746'>
+until<br/>
+</a>
+
+
+
+
+<a href='#M000738'>
+week<br/>
+</a>
+
+
+
+
+<a href='#M000737'>
+weeks<br/>
+</a>
+
+
+
+
+<a href='#M000744'>
+year<br/>
+</a>
+
+
+
+
+<a href='#M000743'>
+years<br/>
+</a>
+
+
+</div>
+<div id="spacer"></div><div class="navigation darker index" id="class_wrapper"><div class="list_header"><h3>All classes</h3></div><div class="list_header_link"><a onclick="toggle('class'); toggleText('class_link'); return false;" href="#" id="class_link">Hide...</a></div><div class="clear"></div><div id="class"><form><label for="filter_class">Filter:&nbsp;&nbsp;</label><input type="text" onKeyUp="return filterList('class', this.value, event);" onKeyPress="return disableSubmit(event);" id="filter_class"></input></form></div></div><div class="navigation darker index" id="file_wrapper"><div class="list_header"><h3>All files</h3></div><div class="list_header_link"><a onclick="toggle('file'); toggleText('file_link'); return false;" href="#" id="file_link">Hide...</a></div><div class="clear"></div><div id="file"><form><label for="filter_file">Filter:&nbsp;&nbsp;</label><input type="text" onKeyUp="return filterList('file', this.value, event);" onKeyPress="return disableSubmit(event);" id="filter_file"></input></form></div></div><div class="navigation darker index" id="method_wrapper"><div class="list_header"><h3>All methods</h3></div><div class="list_header_link"><a onclick="toggle('method'); toggleText('method_link'); return false;" href="#" id="method_link">Show...</a></div><div class="clear"></div><div id="method"><form><label for="filter_method">Filter:&nbsp;&nbsp;</label><input type="text" onKeyUp="return filterList('method', this.value, event);" onKeyPress="return disableSubmit(event);" id="filter_method"></input></form></div></div></div><div id="content">
+<h1 id="item_name">Module: ActiveSupport::CoreExtensions::Numeric::Time</h1>
+
+<div id="description"><p>
+Enables the use of time calculations and declarations, like 45.minutes +
+2.hours + 4.years.
+</p>
+<p>
+These methods use Time#advance for precise date calculations when using <a
+href="Time.html#M000748">from_now</a>, <a href="Time.html#M000745">ago</a>,
+etc. as well as adding or subtracting their results from a <a
+href="Time.html">Time</a> object. For example:
+</p>
+<pre>
+  # equivalent to Time.now.advance(:months =&gt; 1)
+  1.month.from_now
+
+  # equivalent to Time.now.advance(:years =&gt; 2)
+  2.years.from_now
+
+  # equivalent to Time.now.advance(:months =&gt; 4, :years =&gt; 5)
+  (4.months + 5.years).from_now
+</pre>
+<p>
+While these methods provide precise calculation when used as in the
+examples above, care should be taken to note that this is not true if the
+result of `<a href="Time.html#M000741">months</a>&#8217;, `<a
+href="Time.html#M000743">years</a>&#8217;, etc is converted before use:
+</p>
+<pre>
+  # equivalent to 30.days.to_i.from_now
+  1.month.to_i.from_now
+
+  # equivalent to 365.25.days.to_f.from_now
+  1.year.to_f.from_now
+</pre>
+<p>
+In such cases, Ruby&#8216;s core <a
+href="http://stdlib.rubyonrails.org/libdoc/date/rdoc/index.html">Date</a>
+and <a
+href="http://stdlib.rubyonrails.org/libdoc/time/rdoc/index.html">Time</a>
+should be used for precision date and time arithmetic
+</p>
+</div>
+
+
+
+
+<p></p>
+
+
+
+
+
+
+<h1>Public Instance Methods</h1>
+
+
+<a class="small" name="M000745"><br/></a>
+<div class="method_block"><h3>
+<a href='#M000745'>
+
+
+ago
+
+(time = ::Time.now)
+
+</a>
+</h3>
+<p>
+Reads best without arguments: 10.minutes.<a
+href="Time.html#M000745">ago</a>
+</p>
+
+<p class="source_link" id="M000745-show-link"><a onclick="toggle('M000745-source'); toggleText('M000745-link'); return false;" href="#" id="M000745-link">Show source...</a></p><div class="source" id="M000745-source"><pre>    <span class="ruby-comment cmt"># File vendor/rails/activesupport/lib/active_support/core_ext/numeric/time.rb, line 74</span>
+74:         <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">ago</span>(<span class="ruby-identifier">time</span> = <span class="ruby-operator">::</span><span class="ruby-constant">Time</span>.<span class="ruby-identifier">now</span>)
+75:           <span class="ruby-identifier">time</span> <span class="ruby-operator">-</span> <span class="ruby-keyword kw">self</span>
+76:         <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M000736"><br/></a>
+<div class="method_block"><h3>
+<a href='#M000736'>
+
+
+day
+
+()
+
+</a>
+</h3>
+<p>
+Alias for <a href="Time.html#M000735">days</a>
+</p>
+
+</div>
+
+<a class="small" name="M000735"><br/></a>
+<div class="method_block"><h3>
+<a href='#M000735'>
+
+
+days
+
+()
+
+</a>
+</h3>
+
+<p class="source_link" id="M000735-show-link"><a onclick="toggle('M000735-source'); toggleText('M000735-link'); return false;" href="#" id="M000735-link">Show source...</a></p><div class="source" id="M000735-source"><pre>    <span class="ruby-comment cmt"># File vendor/rails/activesupport/lib/active_support/core_ext/numeric/time.rb, line 48</span>
+48:         <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">days</span>
+49:           <span class="ruby-constant">ActiveSupport</span><span class="ruby-operator">::</span><span class="ruby-constant">Duration</span>.<span class="ruby-identifier">new</span>(<span class="ruby-keyword kw">self</span> <span class="ruby-operator">*</span> <span class="ruby-value">24</span>.<span class="ruby-identifier">hours</span>, [[<span class="ruby-identifier">:days</span>, <span class="ruby-keyword kw">self</span>]])
+50:         <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M000740"><br/></a>
+<div class="method_block"><h3>
+<a href='#M000740'>
+
+
+fortnight
+
+()
+
+</a>
+</h3>
+<p>
+Alias for <a href="Time.html#M000739">fortnights</a>
+</p>
+
+</div>
+
+<a class="small" name="M000739"><br/></a>
+<div class="method_block"><h3>
+<a href='#M000739'>
+
+
+fortnights
+
+()
+
+</a>
+</h3>
+
+<p class="source_link" id="M000739-show-link"><a onclick="toggle('M000739-source'); toggleText('M000739-link'); return false;" href="#" id="M000739-link">Show source...</a></p><div class="source" id="M000739-source"><pre>    <span class="ruby-comment cmt"># File vendor/rails/activesupport/lib/active_support/core_ext/numeric/time.rb, line 58</span>
+58:         <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">fortnights</span>
+59:           <span class="ruby-constant">ActiveSupport</span><span class="ruby-operator">::</span><span class="ruby-constant">Duration</span>.<span class="ruby-identifier">new</span>(<span class="ruby-keyword kw">self</span> <span class="ruby-operator">*</span> <span class="ruby-value">2</span>.<span class="ruby-identifier">weeks</span>, [[<span class="ruby-identifier">:days</span>, <span class="ruby-keyword kw">self</span> <span class="ruby-operator">*</span> <span class="ruby-value">14</span>]])
+60:         <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M000748"><br/></a>
+<div class="method_block"><h3>
+<a href='#M000748'>
+
+
+from_now
+
+(time = ::Time.now)
+
+</a>
+</h3>
+<p>
+Alias for <a href="Time.html#M000747">since</a>
+</p>
+
+</div>
+
+<a class="small" name="M000734"><br/></a>
+<div class="method_block"><h3>
+<a href='#M000734'>
+
+
+hour
+
+()
+
+</a>
+</h3>
+<p>
+Alias for <a href="Time.html#M000733">hours</a>
+</p>
+
+</div>
+
+<a class="small" name="M000733"><br/></a>
+<div class="method_block"><h3>
+<a href='#M000733'>
+
+
+hours
+
+()
+
+</a>
+</h3>
+
+<p class="source_link" id="M000733-show-link"><a onclick="toggle('M000733-source'); toggleText('M000733-link'); return false;" href="#" id="M000733-link">Show source...</a></p><div class="source" id="M000733-source"><pre>    <span class="ruby-comment cmt"># File vendor/rails/activesupport/lib/active_support/core_ext/numeric/time.rb, line 43</span>
+43:         <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">hours</span>
+44:           <span class="ruby-constant">ActiveSupport</span><span class="ruby-operator">::</span><span class="ruby-constant">Duration</span>.<span class="ruby-identifier">new</span>(<span class="ruby-keyword kw">self</span> <span class="ruby-operator">*</span> <span class="ruby-value">3600</span>, [[<span class="ruby-identifier">:seconds</span>, <span class="ruby-keyword kw">self</span> <span class="ruby-operator">*</span> <span class="ruby-value">3600</span>]])
+45:         <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M000732"><br/></a>
+<div class="method_block"><h3>
+<a href='#M000732'>
+
+
+minute
+
+()
+
+</a>
+</h3>
+<p>
+Alias for <a href="Time.html#M000731">minutes</a>
+</p>
+
+</div>
+
+<a class="small" name="M000731"><br/></a>
+<div class="method_block"><h3>
+<a href='#M000731'>
+
+
+minutes
+
+()
+
+</a>
+</h3>
+
+<p class="source_link" id="M000731-show-link"><a onclick="toggle('M000731-source'); toggleText('M000731-link'); return false;" href="#" id="M000731-link">Show source...</a></p><div class="source" id="M000731-source"><pre>    <span class="ruby-comment cmt"># File vendor/rails/activesupport/lib/active_support/core_ext/numeric/time.rb, line 38</span>
+38:         <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">minutes</span>
+39:           <span class="ruby-constant">ActiveSupport</span><span class="ruby-operator">::</span><span class="ruby-constant">Duration</span>.<span class="ruby-identifier">new</span>(<span class="ruby-keyword kw">self</span> <span class="ruby-operator">*</span> <span class="ruby-value">60</span>, [[<span class="ruby-identifier">:seconds</span>, <span class="ruby-keyword kw">self</span> <span class="ruby-operator">*</span> <span class="ruby-value">60</span>]])
+40:         <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M000742"><br/></a>
+<div class="method_block"><h3>
+<a href='#M000742'>
+
+
+month
+
+()
+
+</a>
+</h3>
+<p>
+Alias for <a href="Time.html#M000741">months</a>
+</p>
+
+</div>
+
+<a class="small" name="M000741"><br/></a>
+<div class="method_block"><h3>
+<a href='#M000741'>
+
+
+months
+
+()
+
+</a>
+</h3>
+
+<p class="source_link" id="M000741-show-link"><a onclick="toggle('M000741-source'); toggleText('M000741-link'); return false;" href="#" id="M000741-link">Show source...</a></p><div class="source" id="M000741-source"><pre>    <span class="ruby-comment cmt"># File vendor/rails/activesupport/lib/active_support/core_ext/numeric/time.rb, line 63</span>
+63:         <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">months</span>
+64:           <span class="ruby-constant">ActiveSupport</span><span class="ruby-operator">::</span><span class="ruby-constant">Duration</span>.<span class="ruby-identifier">new</span>(<span class="ruby-keyword kw">self</span> <span class="ruby-operator">*</span> <span class="ruby-value">30</span>.<span class="ruby-identifier">days</span>, [[<span class="ruby-identifier">:months</span>, <span class="ruby-keyword kw">self</span>]])
+65:         <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M000730"><br/></a>
+<div class="method_block"><h3>
+<a href='#M000730'>
+
+
+second
+
+()
+
+</a>
+</h3>
+<p>
+Alias for <a href="Time.html#M000729">seconds</a>
+</p>
+
+</div>
+
+<a class="small" name="M000729"><br/></a>
+<div class="method_block"><h3>
+<a href='#M000729'>
+
+
+seconds
+
+()
+
+</a>
+</h3>
+
+<p class="source_link" id="M000729-show-link"><a onclick="toggle('M000729-source'); toggleText('M000729-link'); return false;" href="#" id="M000729-link">Show source...</a></p><div class="source" id="M000729-source"><pre>    <span class="ruby-comment cmt"># File vendor/rails/activesupport/lib/active_support/core_ext/numeric/time.rb, line 33</span>
+33:         <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">seconds</span>
+34:           <span class="ruby-constant">ActiveSupport</span><span class="ruby-operator">::</span><span class="ruby-constant">Duration</span>.<span class="ruby-identifier">new</span>(<span class="ruby-keyword kw">self</span>, [[<span class="ruby-identifier">:seconds</span>, <span class="ruby-keyword kw">self</span>]])
+35:         <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M000747"><br/></a>
+<div class="method_block"><h3>
+<a href='#M000747'>
+
+
+since
+
+(time = ::Time.now)
+
+</a>
+</h3>
+<p>
+Reads best with argument: 10.minutes.<a
+href="Time.html#M000747">since</a>(time)
+</p>
+
+<p class="source_link" id="M000747-show-link"><a onclick="toggle('M000747-source'); toggleText('M000747-link'); return false;" href="#" id="M000747-link">Show source...</a></p><div class="source" id="M000747-source"><pre>    <span class="ruby-comment cmt"># File vendor/rails/activesupport/lib/active_support/core_ext/numeric/time.rb, line 82</span>
+82:         <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">since</span>(<span class="ruby-identifier">time</span> = <span class="ruby-operator">::</span><span class="ruby-constant">Time</span>.<span class="ruby-identifier">now</span>)
+83:           <span class="ruby-identifier">time</span> <span class="ruby-operator">+</span> <span class="ruby-keyword kw">self</span>
+84:         <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M000746"><br/></a>
+<div class="method_block"><h3>
+<a href='#M000746'>
+
+
+until
+
+(time = ::Time.now)
+
+</a>
+</h3>
+<p>
+Alias for <a href="Time.html#M000745">ago</a>
+</p>
+
+</div>
+
+<a class="small" name="M000738"><br/></a>
+<div class="method_block"><h3>
+<a href='#M000738'>
+
+
+week
+
+()
+
+</a>
+</h3>
+<p>
+Alias for <a href="Time.html#M000737">weeks</a>
+</p>
+
+</div>
+
+<a class="small" name="M000737"><br/></a>
+<div class="method_block"><h3>
+<a href='#M000737'>
+
+
+weeks
+
+()
+
+</a>
+</h3>
+
+<p class="source_link" id="M000737-show-link"><a onclick="toggle('M000737-source'); toggleText('M000737-link'); return false;" href="#" id="M000737-link">Show source...</a></p><div class="source" id="M000737-source"><pre>    <span class="ruby-comment cmt"># File vendor/rails/activesupport/lib/active_support/core_ext/numeric/time.rb, line 53</span>
+53:         <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">weeks</span>
+54:           <span class="ruby-constant">ActiveSupport</span><span class="ruby-operator">::</span><span class="ruby-constant">Duration</span>.<span class="ruby-identifier">new</span>(<span class="ruby-keyword kw">self</span> <span class="ruby-operator">*</span> <span class="ruby-value">7</span>.<span class="ruby-identifier">days</span>, [[<span class="ruby-identifier">:days</span>, <span class="ruby-keyword kw">self</span> <span class="ruby-operator">*</span> <span class="ruby-value">7</span>]])
+55:         <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M000744"><br/></a>
+<div class="method_block"><h3>
+<a href='#M000744'>
+
+
+year
+
+()
+
+</a>
+</h3>
+<p>
+Alias for <a href="Time.html#M000743">years</a>
+</p>
+
+</div>
+
+<a class="small" name="M000743"><br/></a>
+<div class="method_block"><h3>
+<a href='#M000743'>
+
+
+years
+
+()
+
+</a>
+</h3>
+
+<p class="source_link" id="M000743-show-link"><a onclick="toggle('M000743-source'); toggleText('M000743-link'); return false;" href="#" id="M000743-link">Show source...</a></p><div class="source" id="M000743-source"><pre>    <span class="ruby-comment cmt"># File vendor/rails/activesupport/lib/active_support/core_ext/numeric/time.rb, line 68</span>
+68:         <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">years</span>
+69:           <span class="ruby-constant">ActiveSupport</span><span class="ruby-operator">::</span><span class="ruby-constant">Duration</span>.<span class="ruby-identifier">new</span>(<span class="ruby-keyword kw">self</span> <span class="ruby-operator">*</span> <span class="ruby-value">365.25</span>.<span class="ruby-identifier">days</span>, [[<span class="ruby-identifier">:years</span>, <span class="ruby-keyword kw">self</span>]])
+70:         <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+
+
+
+
+</div><div class="clear" id="footer">Generated on Jan 21, 2008 / Allison 2 &copy; 2007 <a href="http://cloudbur.st">Cloudburst, LLC</a></div></div></body></html>

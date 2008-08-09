@@ -1,0 +1,916 @@
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head><meta content="text/html; charset=utf-8" http-equiv="Content-Type"/><title>Class: ActiveResource::Errors</title><link type="text/css" href="../.././rdoc-style.css" media="screen" rel="stylesheet"/><script type="text/javascript">
+// Allison template
+// Copyright 2007, 2008 Cloudburst, LLC. Licensed under the AFL 3. See the included LICENSE file.
+
+var href_base = '../.././rdoc-style.css'.replace(/(.*\/).*/, '$1'); // inline js is good for something  
+
+function $(id) {
+    if (document.getElementById)
+      elem = document.getElementById(id);
+    else if ( document.all )
+      elem = eval("document.all." + id);
+    else
+      return false;
+    return elem;
+}
+
+  function toggle(id) {
+    elem = $(id);
+    elemStyle = elem.style;   
+    if (elemStyle.display == "block") {
+      elemStyle.display = "none"
+    } else {
+      elemStyle.display = "block"
+    }
+    return true;
+  }
+
+  function toggleText(id) {
+    elem = $(id)
+    if (m = elem.innerHTML.match(/(Hide)(.*)/)) {
+      elem.innerHTML = "Show" + m[2];
+    } else if (m = elem.innerHTML.match(/(Show)(.*)/)) {
+      elem.innerHTML = "Hide" + m[2];
+    }
+    return true;
+  }
+
+function span(s, klass) {
+  return '<span class="' + klass + '">' + s + '</span>';
+}
+  
+function highlightSymbols() {
+  pres = document.getElementsByTagName('pre');
+  for(var i = 0; i < pres.length; i++) {
+    pre = pres[i];
+    spans = pre.getElementsByTagName('span');
+    for(var k = 0; k < spans.length; k++) {
+      span = spans[k];
+      if (span.className.match(/ruby-identifier/)) {
+        if (span.innerHTML.match(/^:/)) {
+          span.className += " ruby-symbol";
+        }
+      }
+    }
+  }
+}
+
+ function hasClass(obj) {
+     var result = false;
+     if (obj.getAttributeNode("class") != null) {
+         result = obj.getAttributeNode("class").value;
+     }
+     return result;
+  }   
+
+ function stripe() {
+    var even = true;
+    var color = "#e4ebed";
+    var tables = document.getElementsByTagName('table');
+    if (tables.length == 0) { return; }
+    for (var h = 0; h < tables.length; h++) {
+        var trs = tables[h].getElementsByTagName("tr");
+        for (var i = 0; i < trs.length; i++) {
+          var tds = trs[i].getElementsByTagName("td");
+            for (var j = 0; j < tds.length; j++) {       
+              if (hasClass(tds[j]) != "first") {                
+              var mytd = tds[j];
+              if (even) {
+                mytd.style.backgroundColor = color;
+              }         
+            }
+          }
+          even =  ! even;
+      }
+    }
+  }
+  
+function ajaxGet(url) {
+  url = (href_base + url).replace('/./', '/')
+  var req = false;
+
+  if (window.ActiveXObject) {
+    try {
+      // stupid hack because IE7 disables local Ajax with the native xmlhttprequest object
+      // for security purposes. Yet ActiveX still works. Thanks, Microsoft. I hate you. Die.
+      req = new ActiveXObject("MSXML2.XMLHTTP.3.0");
+    } catch (e) {
+      try {
+        /* IE 6 and maybe 5, don't know, don't care */
+        req = new ActiveXObject("Msxml2.XMLHTTP");
+      } catch (e) {
+        try {
+          req = new ActiveXObject("Microsoft.XMLHTTP");
+        } catch (e) {
+          req = false;
+        }
+      }
+    }
+  }
+    
+  /* real browsers */
+  if (!req && window.XMLHttpRequest) {
+    try {
+      req = new XMLHttpRequest();
+    } catch (e) {
+      req = false;
+    }
+  } 
+  
+  if (req) {
+    req.open('GET', url, false);
+    req.send(null);
+    return req.responseText;
+  } else {
+    return "Ajax error";  
+  }
+}
+
+
+function addEvent(elm, evType, fn, useCapture) {
+	if (elm.addEventListener) {
+	  elm.addEventListener(evType, fn, useCapture);  
+  	return true;
+	} else if (elm.attachEvent) {
+  	var r = elm.attachEvent('on' + evType, fn);  
+	  return r;  
+	} else {
+  	elm['on' + evType] = fn;
+	}
+}
+
+function insertIndices() {
+  pages = ["class", "file", "method"]
+  for (x in pages) { 
+    $(pages[x]).innerHTML += ajaxGet('fr_' + pages[x] + '_index.html').replace(/(href=")/g, '$1' + href_base);
+  }
+  /* mouseoverify method links */
+  links = $('method').getElementsByTagName('a');
+  for (var x = 0; x < links.length; x++) {
+    if (m = links[x].innerHTML.match(/(.*)\s\((.*)\)/)) {
+      links[x].innerHTML = m[1] + '<br>';
+      links[x].title = m[2];
+    }
+  }
+  /* this is stupid */
+  $('class').style.display = "block";
+  $('file').style.display = "block";
+  
+  /* has to be here because IE7 does not guarantee the onLoad callback order */
+  abbreviateIndicesInner(["class", "file"], 25, "a");
+  /* same, linkTitle() depends on the class link list */
+  linkTitle();
+}
+
+function abbreviateIndices() {
+  var ids = ["defined_in", "child_of", "includes", "requires", "method", "methods"];
+  abbreviateIndicesInner(ids, 25, 'a');
+  abbreviateIndicesInner(ids, 25, 'span');
+}
+
+function abbreviateIndicesInner(indices, amount, tag) {
+  for (var x = 0; x < indices.length; x++) { 
+    var the_index = $(indices[x]);
+    if (the_index) {
+      links = the_index.getElementsByTagName(tag);
+      for (var y = 0; y < links.length; y++) {
+        var link = links[y];
+        if (link.getElementsByTagName('span').length == 0 && link.getElementsByTagName('a').length == 0) {
+          // avoid nesting
+          link.innerHTML = link.innerHTML.replace(/<br>|\n/gi, '');
+          link.title = link.innerHTML;
+          link.innerHTML = abbreviate(link.innerHTML, amount) + '<br>';
+        }
+      }
+    }
+  }
+}
+
+function linkTitle() {
+  
+  /* grab the correct title element from the index */
+  var index_page = ajaxGet('index.html');
+  title_text = index_page.match(/<title>(.*)<\/title>/m)[1];
+  document.title = title_text + " - " + document.title;
+  var p = $('header').getElementsByTagName('p')[0]
+  if (p.innerHTML.match(/^\s*$/)) {
+    p.innerHTML = title_text;
+  } else {
+    p.innerHTML = title_text + ": " + p.innerHTML;
+  }
+  
+  /* set the link properly */
+  title_link = index_page.match(/<a\s+href="(.*?)"/)[1];
+  var element = $('title');
+  var item_type = "";
+  var item_name = "";
+  if (m = element.innerHTML.match(/(Class:|Module:|File:)\s*(.*)/)) {
+    item_type = m[1];
+    item_name = m[2];
+  } else {
+    item_name = element.innerHTML;
+  }
+  element.innerHTML = '<a href="' + href_base + title_link + '">' + item_type + " " + abbreviate(item_name, 45) + '</a>';
+  element.getElementsByTagName('a')[0].title = item_name
+  
+  /* breadcrumb navigation */
+  items = item_name.split("::");
+  items_new = item_name.split("::");
+  file_links = $('class').getElementsByTagName('a');
+  for (var x = 0; x < items.length - 1; x++ ){
+    var item = items[x];
+    link = ("/classes/" + items.slice(0,x).join("/") + "/" + item + ".html").replace('//', '/');
+    regex = new RegExp(RegExp.escape(link) + '$');
+    for (var y = 0; y < file_links.length; y++) {
+      if (file_links[y].href.match(regex)) {
+         items_new[x] = '<a href="' + href_base + link + '">' + item + '</a>';
+         break;
+      }
+    }  
+  }
+  $('item_name').innerHTML = item_type + ' ' + items_new.join(" :: ");
+}
+
+function abbreviate(s, size) {
+  while (s.length > size) {
+    var old_s = s;
+    s = s.replace(/\s|\n/mg, '');
+    s = s.replace(/([A-Z])[a-z]+/m, '$1');
+    if (!s || old_s == s) {
+      return "..." + s.substring(s.length - size, s.length);
+    }
+  }
+  return s;
+}
+
+function disableSubmit(event) {
+  var keyCode = event.keyCode ? event.keyCode : event.which ? event.which : event.charCode;
+  if (keyCode == 13) {
+    return false;
+  } else {
+    return true;
+  }
+}
+  
+function filterList(id, s, event) {
+  
+  /* some weak escaping */
+  s = s.replace(/[^\w\d\.\_\-\/\:\=\[\]\?\!]/g, '');
+  s = RegExp.escape(s);
+  
+  var show_all = false;
+  if (s.match(/^\s*$/)) {
+    show_all = true;
+  }
+  
+  links = $(id).getElementsByTagName('a')
+  regex = new RegExp(s, 'i');
+  
+  for (var x = 0; x < links.length; x++) {
+    var link = links[x];
+    if (show_all) {
+      link.style.display = 'inline';
+    } else {
+       if (link.innerHTML.match(regex)) {        
+         link.style.display = 'inline';
+       } else {
+         link.style.display = 'none';
+       }
+    }
+  }
+  return true;
+}
+
+RegExp.escape = function(text) {
+  if (!arguments.callee.sRE) {
+    var specials = ['/', '.', '*', '+', '?', '|', '(', ')', '[', ']', '{', '}', '\\'];
+    arguments.callee.sRE = new RegExp(
+      '(\\' + specials.join('|\\') + ')', 'g'
+    );
+  }
+  return text.replace(arguments.callee.sRE, '\\$1');
+}
+
+function hacks() {
+  // show the spacer if necessary, 
+  divs = document.getElementsByTagName('div');
+  for(var x = 0; x < divs.length; x++) {
+    if (divs[x].className && divs[x].className.match(/top/)) {
+      document.getElementById('spacer').style.display = 'block';
+    }
+  }
+  // remove extra colons from tables
+  tds = document.getElementsByTagName('td');
+  for(var x = 0; x < tds.length; x++) {
+    str = tds[x].innerHTML
+    if (str.charAt(str.length - 1) == ":") {
+      tds[x].innerHTML = str.slice(0, str.length - 1)
+    }
+  }
+}
+
+addEvent(window, 'load', insertIndices, false);
+addEvent(window, 'load', abbreviateIndices, false);
+addEvent(window, 'load', stripe, false);
+addEvent(window, 'load', highlightSymbols, false);
+addEvent(window, 'load', hacks, false);
+</script></head><body><div id="container"><div class="curve" id="preheader_curve_0"></div><div class="curve" id="preheader_curve_1"></div><div class="curve" id="preheader_curve_2"></div><div class="curve" id="preheader_curve_3"></div><div class="curve" id="preheader_curve_4"></div><div class="curve" id="preheader_curve_5"></div><div id="header"><p>
+</p><span><h1 id="title">
+Class: ActiveResource::Errors
+</h1></span>
+</div><div class="clear"></div><div id="left">
+<div class="navigation darker top" id="child_of"><h3>Child of</h3><span>
+
+<a href='../Object.html'>
+Object
+</a>
+</span></div>
+
+<div class="navigation darker top" id="defined_in"><h3>Defined in</h3>
+
+<a href="../../files/vendor/rails/activeresource/lib/active_resource/validations_rb.html">vendor/rails/activeresource/lib/active_resource/validations.rb</a>
+
+</div>
+
+<div class="navigation top" id="includes"><h3>Includes</h3>
+
+
+<a href='../Enumerable.html'>
+Enumerable<br/>
+</a>
+
+
+</div>
+
+
+<div class="navigation top" id="methods"><h3>Methods</h3>
+
+
+<a href='#M000956'>
+[]<br/>
+</a>
+
+
+
+
+<a href='#M000953'>
+add<br/>
+</a>
+
+
+
+
+<a href='#M000952'>
+add_to_base<br/>
+</a>
+
+
+
+
+<a href='#M000961'>
+clear<br/>
+</a>
+
+
+
+
+<a href='#M000963'>
+count<br/>
+</a>
+
+
+
+
+<a href='#M000958'>
+each<br/>
+</a>
+
+
+
+
+<a href='#M000959'>
+each_full<br/>
+</a>
+
+
+
+
+<a href='#M000965'>
+from_xml<br/>
+</a>
+
+
+
+
+<a href='#M000960'>
+full_messages<br/>
+</a>
+
+
+
+
+<a href='#M000954'>
+invalid?<br/>
+</a>
+
+
+
+
+<a href='#M000964'>
+length<br/>
+</a>
+
+
+
+
+<a href='#M000955'>
+on<br/>
+</a>
+
+
+
+
+<a href='#M000957'>
+on_base<br/>
+</a>
+
+
+
+
+<a href='#M000962'>
+size<br/>
+</a>
+
+
+</div>
+<div id="spacer"></div><div class="navigation darker index" id="class_wrapper"><div class="list_header"><h3>All classes</h3></div><div class="list_header_link"><a onclick="toggle('class'); toggleText('class_link'); return false;" href="#" id="class_link">Hide...</a></div><div class="clear"></div><div id="class"><form><label for="filter_class">Filter:&nbsp;&nbsp;</label><input type="text" onKeyUp="return filterList('class', this.value, event);" onKeyPress="return disableSubmit(event);" id="filter_class"></input></form></div></div><div class="navigation darker index" id="file_wrapper"><div class="list_header"><h3>All files</h3></div><div class="list_header_link"><a onclick="toggle('file'); toggleText('file_link'); return false;" href="#" id="file_link">Hide...</a></div><div class="clear"></div><div id="file"><form><label for="filter_file">Filter:&nbsp;&nbsp;</label><input type="text" onKeyUp="return filterList('file', this.value, event);" onKeyPress="return disableSubmit(event);" id="filter_file"></input></form></div></div><div class="navigation darker index" id="method_wrapper"><div class="list_header"><h3>All methods</h3></div><div class="list_header_link"><a onclick="toggle('method'); toggleText('method_link'); return false;" href="#" id="method_link">Show...</a></div><div class="clear"></div><div id="method"><form><label for="filter_method">Filter:&nbsp;&nbsp;</label><input type="text" onKeyUp="return filterList('method', this.value, event);" onKeyPress="return disableSubmit(event);" id="filter_method"></input></form></div></div></div><div id="content">
+<h1 id="item_name">Class: ActiveResource::Errors</h1>
+
+<div id="description"><p>
+Active Resource validation is reported to and from this object, which is
+used by <a href="Base.html#M001004">Base#save</a> to determine whether the
+object in a valid state to be saved. See usage example in <a
+href="Validations.html">Validations</a>.
+</p>
+</div>
+
+
+
+
+<p></p>
+
+
+
+
+<h1>Attributes</h1><p><table><tr><th>Name</th><th>Read/write?</th></tr>
+<tr>
+<td class="highlight">errors</td>
+
+
+
+
+<td class="normal">R</td>
+</tr>
+</table></p>
+
+
+<h1>Public Instance Methods</h1>
+
+
+<a class="small" name="M000956"><br/></a>
+<div class="method_block"><h3>
+<a href='#M000956'>
+
+
+[]
+
+(attribute)
+
+</a>
+</h3>
+<p>
+Alias for <a href="Errors.html#M000955">on</a>
+</p>
+
+</div>
+
+<a class="small" name="M000953"><br/></a>
+<div class="method_block"><h3>
+<a href='#M000953'>
+
+
+add
+
+(attribute, msg)
+
+</a>
+</h3>
+<p>
+Adds an error to an Active Resource object&#8216;s attribute (named for the
+<tt>attribute</tt> parameter) with the error message in <tt>msg</tt>.
+</p>
+<h4>Examples</h4>
+<pre>
+  my_resource = Node.find(1)
+  my_resource.errors.add('name', 'can not be &quot;base&quot;') if my_resource.name == 'base'
+  my_resource.errors.on('name')
+  # =&gt; 'can not be &quot;base&quot;!'
+
+  my_resource.errors.add('desc', 'can not be blank') if my_resource.desc == ''
+  my_resource.valid?
+  # =&gt; false
+  my_resource.errors.on('desc')
+  # =&gt; 'can not be blank!'
+</pre>
+
+<p class="source_link" id="M000953-show-link"><a onclick="toggle('M000953-source'); toggleText('M000953-link'); return false;" href="#" id="M000953-link">Show source...</a></p><div class="source" id="M000953-source"><pre>    <span class="ruby-comment cmt"># File vendor/rails/activeresource/lib/active_resource/validations.rb, line 50</span>
+50:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">add</span>(<span class="ruby-identifier">attribute</span>, <span class="ruby-identifier">msg</span>)
+51:       <span class="ruby-ivar">@errors</span>[<span class="ruby-identifier">attribute</span>.<span class="ruby-identifier">to_s</span>] = [] <span class="ruby-keyword kw">if</span> <span class="ruby-ivar">@errors</span>[<span class="ruby-identifier">attribute</span>.<span class="ruby-identifier">to_s</span>].<span class="ruby-identifier">nil?</span>
+52:       <span class="ruby-ivar">@errors</span>[<span class="ruby-identifier">attribute</span>.<span class="ruby-identifier">to_s</span>] <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-identifier">msg</span>
+53:     <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M000952"><br/></a>
+<div class="method_block"><h3>
+<a href='#M000952'>
+
+
+add_to_base
+
+(msg)
+
+</a>
+</h3>
+<p>
+Add an error to the base Active Resource object rather than an attribute.
+</p>
+<h4>Examples</h4>
+<pre>
+  my_folder = Folder.find(1)
+  my_folder.errors.add_to_base(&quot;You can't edit an existing folder&quot;)
+  my_folder.errors.on_base
+  # =&gt; &quot;You can't edit an existing folder&quot;
+
+  my_folder.errors.add_to_base(&quot;This folder has been tagged as frozen&quot;)
+  my_folder.valid?
+  # =&gt; false
+  my_folder.errors.on_base
+  # =&gt; [&quot;You can't edit an existing folder&quot;, &quot;This folder has been tagged as frozen&quot;]
+</pre>
+
+<p class="source_link" id="M000952-show-link"><a onclick="toggle('M000952-source'); toggleText('M000952-link'); return false;" href="#" id="M000952-link">Show source...</a></p><div class="source" id="M000952-source"><pre>    <span class="ruby-comment cmt"># File vendor/rails/activeresource/lib/active_resource/validations.rb, line 31</span>
+31:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">add_to_base</span>(<span class="ruby-identifier">msg</span>)
+32:       <span class="ruby-identifier">add</span>(<span class="ruby-identifier">:base</span>, <span class="ruby-identifier">msg</span>)
+33:     <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M000961"><br/></a>
+<div class="method_block"><h3>
+<a href='#M000961'>
+
+
+clear
+
+()
+
+</a>
+</h3>
+
+<p class="source_link" id="M000961-show-link"><a onclick="toggle('M000961-source'); toggleText('M000961-link'); return false;" href="#" id="M000961-link">Show source...</a></p><div class="source" id="M000961-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/activeresource/lib/active_resource/validations.rb, line 178</span>
+178:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">clear</span>
+179:       <span class="ruby-ivar">@errors</span> = {}
+180:     <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M000963"><br/></a>
+<div class="method_block"><h3>
+<a href='#M000963'>
+
+
+count
+
+()
+
+</a>
+</h3>
+<p>
+Alias for <a href="Errors.html#M000962">size</a>
+</p>
+
+</div>
+
+<a class="small" name="M000958"><br/></a>
+<div class="method_block"><h3>
+<a href='#M000958'>
+
+
+each
+
+() {|attr, msg| ...}
+
+</a>
+</h3>
+<p>
+Yields <a href="Errors.html#M000958">each</a> attribute and associated
+message per error added.
+</p>
+<h4>Examples</h4>
+<pre>
+  my_person = Person.new(params[:person])
+
+  my_person.errors.add('login', 'can not be empty') if my_person.login == ''
+  my_person.errors.add('password', 'can not be empty') if my_person.password == ''
+  messages = ''
+  my_person.errors.each {|attr, msg| messages += attr.humanize + &quot; &quot; + msg + &quot;&lt;br /&gt;&quot;}
+  messages
+  # =&gt; &quot;Login can not be empty&lt;br /&gt;Password can not be empty&lt;br /&gt;&quot;
+</pre>
+
+<p class="source_link" id="M000958-show-link"><a onclick="toggle('M000958-source'); toggleText('M000958-link'); return false;" href="#" id="M000958-link">Show source...</a></p><div class="source" id="M000958-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/activeresource/lib/active_resource/validations.rb, line 128</span>
+128:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">each</span>
+129:       <span class="ruby-ivar">@errors</span>.<span class="ruby-identifier">each_key</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">attr</span><span class="ruby-operator">|</span> <span class="ruby-ivar">@errors</span>[<span class="ruby-identifier">attr</span>].<span class="ruby-identifier">each</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">msg</span><span class="ruby-operator">|</span> <span class="ruby-keyword kw">yield</span> <span class="ruby-identifier">attr</span>, <span class="ruby-identifier">msg</span> } }
+130:     <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M000959"><br/></a>
+<div class="method_block"><h3>
+<a href='#M000959'>
+
+
+each_full
+
+() {|msg| ...}
+
+</a>
+</h3>
+<p>
+Yields <a href="Errors.html#M000958">each</a> full error message added. So
+Person.errors.<a href="Errors.html#M000953">add</a>(&quot;first_name&quot;,
+&quot;can&#8216;t be empty&quot;) will be returned through iteration as
+&quot;First name can&#8216;t be empty&quot;.
+</p>
+<h4>Examples</h4>
+<pre>
+  my_person = Person.new(params[:person])
+
+  my_person.errors.add('login', 'can not be empty') if my_person.login == ''
+  my_person.errors.add('password', 'can not be empty') if my_person.password == ''
+  messages = ''
+  my_person.errors.each_full {|msg| messages += msg + &quot;&lt;br/&gt;&quot;}
+  messages
+  # =&gt; &quot;Login can not be empty&lt;br /&gt;Password can not be empty&lt;br /&gt;&quot;
+</pre>
+
+<p class="source_link" id="M000959-show-link"><a onclick="toggle('M000959-source'); toggleText('M000959-link'); return false;" href="#" id="M000959-link">Show source...</a></p><div class="source" id="M000959-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/activeresource/lib/active_resource/validations.rb, line 145</span>
+145:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">each_full</span>
+146:       <span class="ruby-identifier">full_messages</span>.<span class="ruby-identifier">each</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">msg</span><span class="ruby-operator">|</span> <span class="ruby-keyword kw">yield</span> <span class="ruby-identifier">msg</span> }
+147:     <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M000965"><br/></a>
+<div class="method_block"><h3>
+<a href='#M000965'>
+
+
+from_xml
+
+(xml)
+
+</a>
+</h3>
+<p>
+Grabs errors from the XML response.
+</p>
+
+<p class="source_link" id="M000965-show-link"><a onclick="toggle('M000965-source'); toggleText('M000965-link'); return false;" href="#" id="M000965-link">Show source...</a></p><div class="source" id="M000965-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/activeresource/lib/active_resource/validations.rb, line 203</span>
+203:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">from_xml</span>(<span class="ruby-identifier">xml</span>)
+204:       <span class="ruby-identifier">clear</span>
+205:       <span class="ruby-identifier">humanized_attributes</span> = <span class="ruby-ivar">@base</span>.<span class="ruby-identifier">attributes</span>.<span class="ruby-identifier">keys</span>.<span class="ruby-identifier">inject</span>({}) { <span class="ruby-operator">|</span><span class="ruby-identifier">h</span>, <span class="ruby-identifier">attr_name</span><span class="ruby-operator">|</span> <span class="ruby-identifier">h</span>.<span class="ruby-identifier">update</span>(<span class="ruby-identifier">attr_name</span>.<span class="ruby-identifier">humanize</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">attr_name</span>) }
+206:       <span class="ruby-identifier">messages</span> = <span class="ruby-constant">Hash</span>.<span class="ruby-identifier">from_xml</span>(<span class="ruby-identifier">xml</span>)[<span class="ruby-value str">'errors'</span>][<span class="ruby-value str">'error'</span>] <span class="ruby-keyword kw">rescue</span> []
+207:       <span class="ruby-identifier">messages</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">message</span><span class="ruby-operator">|</span>
+208:         <span class="ruby-identifier">attr_message</span> = <span class="ruby-identifier">humanized_attributes</span>.<span class="ruby-identifier">keys</span>.<span class="ruby-identifier">detect</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">attr_name</span><span class="ruby-operator">|</span>
+209:           <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">message</span>[<span class="ruby-value">0</span>, <span class="ruby-identifier">attr_name</span>.<span class="ruby-identifier">size</span> <span class="ruby-operator">+</span> <span class="ruby-value">1</span>] <span class="ruby-operator">==</span> <span class="ruby-node">&quot;#{attr_name} &quot;</span>
+210:             <span class="ruby-identifier">add</span> <span class="ruby-identifier">humanized_attributes</span>[<span class="ruby-identifier">attr_name</span>], <span class="ruby-identifier">message</span>[(<span class="ruby-identifier">attr_name</span>.<span class="ruby-identifier">size</span> <span class="ruby-operator">+</span> <span class="ruby-value">1</span>)<span class="ruby-operator">..</span><span class="ruby-value">-1</span>]
+211:           <span class="ruby-keyword kw">end</span>
+212:         <span class="ruby-keyword kw">end</span>
+213:         
+214:         <span class="ruby-identifier">add_to_base</span> <span class="ruby-identifier">message</span> <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">attr_message</span>.<span class="ruby-identifier">nil?</span>
+215:       <span class="ruby-keyword kw">end</span>
+216:     <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M000960"><br/></a>
+<div class="method_block"><h3>
+<a href='#M000960'>
+
+
+full_messages
+
+()
+
+</a>
+</h3>
+<p>
+Returns all the full error messages in an array.
+</p>
+<h4>Examples</h4>
+<pre>
+  my_person = Person.new(params[:person])
+
+  my_person.errors.add('login', 'can not be empty') if my_person.login == ''
+  my_person.errors.add('password', 'can not be empty') if my_person.password == ''
+  messages = ''
+  my_person.errors.full_messages.each {|msg| messages += msg + &quot;&lt;br/&gt;&quot;}
+  messages
+  # =&gt; &quot;Login can not be empty&lt;br /&gt;Password can not be empty&lt;br /&gt;&quot;
+</pre>
+
+<p class="source_link" id="M000960-show-link"><a onclick="toggle('M000960-source'); toggleText('M000960-link'); return false;" href="#" id="M000960-link">Show source...</a></p><div class="source" id="M000960-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/activeresource/lib/active_resource/validations.rb, line 161</span>
+161:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">full_messages</span>
+162:       <span class="ruby-identifier">full_messages</span> = []
+163: 
+164:       <span class="ruby-ivar">@errors</span>.<span class="ruby-identifier">each_key</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">attr</span><span class="ruby-operator">|</span>
+165:         <span class="ruby-ivar">@errors</span>[<span class="ruby-identifier">attr</span>].<span class="ruby-identifier">each</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">msg</span><span class="ruby-operator">|</span>
+166:           <span class="ruby-keyword kw">next</span> <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">msg</span>.<span class="ruby-identifier">nil?</span>
+167: 
+168:           <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">attr</span> <span class="ruby-operator">==</span> <span class="ruby-value str">&quot;base&quot;</span>
+169:             <span class="ruby-identifier">full_messages</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-identifier">msg</span>
+170:           <span class="ruby-keyword kw">else</span>
+171:             <span class="ruby-identifier">full_messages</span> <span class="ruby-operator">&lt;&lt;</span> [<span class="ruby-identifier">attr</span>.<span class="ruby-identifier">humanize</span>, <span class="ruby-identifier">msg</span>].<span class="ruby-identifier">join</span>(<span class="ruby-value str">' '</span>)
+172:           <span class="ruby-keyword kw">end</span>
+173:         <span class="ruby-keyword kw">end</span>
+174:       <span class="ruby-keyword kw">end</span>
+175:       <span class="ruby-identifier">full_messages</span>
+176:     <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M000954"><br/></a>
+<div class="method_block"><h3>
+<a href='#M000954'>
+
+
+invalid?
+
+(attribute)
+
+</a>
+</h3>
+<p>
+Returns true if the specified <tt>attribute</tt> has errors associated with
+it.
+</p>
+<h4>Examples</h4>
+<pre>
+  my_resource = Disk.find(1)
+  my_resource.errors.add('location', 'must be Main') unless my_resource.location == 'Main'
+  my_resource.errors.on('location')
+  # =&gt; 'must be Main!'
+
+  my_resource.errors.invalid?('location')
+  # =&gt; true
+  my_resource.errors.invalid?('name')
+  # =&gt; false
+</pre>
+
+<p class="source_link" id="M000954-show-link"><a onclick="toggle('M000954-source'); toggleText('M000954-link'); return false;" href="#" id="M000954-link">Show source...</a></p><div class="source" id="M000954-source"><pre>    <span class="ruby-comment cmt"># File vendor/rails/activeresource/lib/active_resource/validations.rb, line 67</span>
+67:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">invalid?</span>(<span class="ruby-identifier">attribute</span>)
+68:       <span class="ruby-operator">!</span><span class="ruby-ivar">@errors</span>[<span class="ruby-identifier">attribute</span>.<span class="ruby-identifier">to_s</span>].<span class="ruby-identifier">nil?</span>
+69:     <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M000964"><br/></a>
+<div class="method_block"><h3>
+<a href='#M000964'>
+
+
+length
+
+()
+
+</a>
+</h3>
+<p>
+Alias for <a href="Errors.html#M000962">size</a>
+</p>
+
+</div>
+
+<a class="small" name="M000955"><br/></a>
+<div class="method_block"><h3>
+<a href='#M000955'>
+
+
+on
+
+(attribute)
+
+</a>
+</h3>
+<p>
+A method to return the errors associated with <tt>attribute</tt>, which
+returns nil, if no errors are associated with the specified
+<tt>attribute</tt>, the error message if one error is associated with the
+specified <tt>attribute</tt>, or an array of error messages if more than
+one error is associated with the specified <tt>attribute</tt>.
+</p>
+<h4>Examples</h4>
+<pre>
+  my_person = Person.new(params[:person])
+  my_person.errors.on('login')
+  # =&gt; nil
+
+  my_person.errors.add('login', 'can not be empty') if my_person.login == ''
+  my_person.errors.on('login')
+  # =&gt; 'can not be empty'
+
+  my_person.errors.add('login', 'can not be longer than 10 characters') if my_person.login.length &gt; 10
+  my_person.errors.on('login')
+  # =&gt; ['can not be empty', 'can not be longer than 10 characters']
+</pre>
+
+<p class="source_link" id="M000955-show-link"><a onclick="toggle('M000955-source'); toggleText('M000955-link'); return false;" href="#" id="M000955-link">Show source...</a></p><div class="source" id="M000955-source"><pre>    <span class="ruby-comment cmt"># File vendor/rails/activeresource/lib/active_resource/validations.rb, line 87</span>
+87:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">on</span>(<span class="ruby-identifier">attribute</span>)
+88:       <span class="ruby-identifier">errors</span> = <span class="ruby-ivar">@errors</span>[<span class="ruby-identifier">attribute</span>.<span class="ruby-identifier">to_s</span>]
+89:       <span class="ruby-keyword kw">return</span> <span class="ruby-keyword kw">nil</span> <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">errors</span>.<span class="ruby-identifier">nil?</span>
+90:       <span class="ruby-identifier">errors</span>.<span class="ruby-identifier">size</span> <span class="ruby-operator">==</span> <span class="ruby-value">1</span> <span class="ruby-operator">?</span> <span class="ruby-identifier">errors</span>.<span class="ruby-identifier">first</span> <span class="ruby-operator">:</span> <span class="ruby-identifier">errors</span>
+91:     <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M000957"><br/></a>
+<div class="method_block"><h3>
+<a href='#M000957'>
+
+
+on_base
+
+()
+
+</a>
+</h3>
+<p>
+A method to return errors assigned to <tt>base</tt> object through <a
+href="Errors.html#M000952">add_to_base</a>, which returns nil, if no errors
+are associated with the specified <tt>attribute</tt>, the error message if
+one error is associated with the specified <tt>attribute</tt>, or an array
+of error messages if more than one error is associated with the specified
+<tt>attribute</tt>.
+</p>
+<h4>Examples</h4>
+<pre>
+  my_account = Account.find(1)
+  my_account.errors.on_base
+  # =&gt; nil
+
+  my_account.errors.add_to_base(&quot;This account is frozen&quot;)
+  my_account.errors.on_base
+  # =&gt; &quot;This account is frozen&quot;
+
+  my_account.errors.add_to_base(&quot;This account has been closed&quot;)
+  my_account.errors.on_base
+  # =&gt; [&quot;This account is frozen&quot;, &quot;This account has been closed&quot;]
+</pre>
+
+<p class="source_link" id="M000957-show-link"><a onclick="toggle('M000957-source'); toggleText('M000957-link'); return false;" href="#" id="M000957-link">Show source...</a></p><div class="source" id="M000957-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/activeresource/lib/active_resource/validations.rb, line 112</span>
+112:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">on_base</span>
+113:       <span class="ruby-identifier">on</span>(<span class="ruby-identifier">:base</span>)
+114:     <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M000962"><br/></a>
+<div class="method_block"><h3>
+<a href='#M000962'>
+
+
+size
+
+()
+
+</a>
+</h3>
+<p>
+Returns the total number of errors added. Two errors added to the same
+attribute will be counted as such with this as well.
+</p>
+<h4>Examples</h4>
+<pre>
+  my_person = Person.new(params[:person])
+  my_person.errors.size
+  # =&gt; 0
+
+  my_person.errors.add('login', 'can not be empty') if my_person.login == ''
+  my_person.errors.add('password', 'can not be empty') if my_person.password == ''
+  my_person.error.size
+  # =&gt; 2
+</pre>
+
+<p class="source_link" id="M000962-show-link"><a onclick="toggle('M000962-source'); toggleText('M000962-link'); return false;" href="#" id="M000962-link">Show source...</a></p><div class="source" id="M000962-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/activeresource/lib/active_resource/validations.rb, line 195</span>
+195:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">size</span>
+196:       <span class="ruby-ivar">@errors</span>.<span class="ruby-identifier">values</span>.<span class="ruby-identifier">inject</span>(<span class="ruby-value">0</span>) { <span class="ruby-operator">|</span><span class="ruby-identifier">error_count</span>, <span class="ruby-identifier">attribute</span><span class="ruby-operator">|</span> <span class="ruby-identifier">error_count</span> <span class="ruby-operator">+</span> <span class="ruby-identifier">attribute</span>.<span class="ruby-identifier">size</span> }
+197:     <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+
+
+
+
+</div><div class="clear" id="footer">Generated on Jan 21, 2008 / Allison 2 &copy; 2007 <a href="http://cloudbur.st">Cloudburst, LLC</a></div></div></body></html>

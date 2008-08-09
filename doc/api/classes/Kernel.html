@@ -1,0 +1,700 @@
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head><meta content="text/html; charset=utf-8" http-equiv="Content-Type"/><title>Module: Kernel</title><link type="text/css" href=".././rdoc-style.css" media="screen" rel="stylesheet"/><script type="text/javascript">
+// Allison template
+// Copyright 2007, 2008 Cloudburst, LLC. Licensed under the AFL 3. See the included LICENSE file.
+
+var href_base = '.././rdoc-style.css'.replace(/(.*\/).*/, '$1'); // inline js is good for something  
+
+function $(id) {
+    if (document.getElementById)
+      elem = document.getElementById(id);
+    else if ( document.all )
+      elem = eval("document.all." + id);
+    else
+      return false;
+    return elem;
+}
+
+  function toggle(id) {
+    elem = $(id);
+    elemStyle = elem.style;   
+    if (elemStyle.display == "block") {
+      elemStyle.display = "none"
+    } else {
+      elemStyle.display = "block"
+    }
+    return true;
+  }
+
+  function toggleText(id) {
+    elem = $(id)
+    if (m = elem.innerHTML.match(/(Hide)(.*)/)) {
+      elem.innerHTML = "Show" + m[2];
+    } else if (m = elem.innerHTML.match(/(Show)(.*)/)) {
+      elem.innerHTML = "Hide" + m[2];
+    }
+    return true;
+  }
+
+function span(s, klass) {
+  return '<span class="' + klass + '">' + s + '</span>';
+}
+  
+function highlightSymbols() {
+  pres = document.getElementsByTagName('pre');
+  for(var i = 0; i < pres.length; i++) {
+    pre = pres[i];
+    spans = pre.getElementsByTagName('span');
+    for(var k = 0; k < spans.length; k++) {
+      span = spans[k];
+      if (span.className.match(/ruby-identifier/)) {
+        if (span.innerHTML.match(/^:/)) {
+          span.className += " ruby-symbol";
+        }
+      }
+    }
+  }
+}
+
+ function hasClass(obj) {
+     var result = false;
+     if (obj.getAttributeNode("class") != null) {
+         result = obj.getAttributeNode("class").value;
+     }
+     return result;
+  }   
+
+ function stripe() {
+    var even = true;
+    var color = "#e4ebed";
+    var tables = document.getElementsByTagName('table');
+    if (tables.length == 0) { return; }
+    for (var h = 0; h < tables.length; h++) {
+        var trs = tables[h].getElementsByTagName("tr");
+        for (var i = 0; i < trs.length; i++) {
+          var tds = trs[i].getElementsByTagName("td");
+            for (var j = 0; j < tds.length; j++) {       
+              if (hasClass(tds[j]) != "first") {                
+              var mytd = tds[j];
+              if (even) {
+                mytd.style.backgroundColor = color;
+              }         
+            }
+          }
+          even =  ! even;
+      }
+    }
+  }
+  
+function ajaxGet(url) {
+  url = (href_base + url).replace('/./', '/')
+  var req = false;
+
+  if (window.ActiveXObject) {
+    try {
+      // stupid hack because IE7 disables local Ajax with the native xmlhttprequest object
+      // for security purposes. Yet ActiveX still works. Thanks, Microsoft. I hate you. Die.
+      req = new ActiveXObject("MSXML2.XMLHTTP.3.0");
+    } catch (e) {
+      try {
+        /* IE 6 and maybe 5, don't know, don't care */
+        req = new ActiveXObject("Msxml2.XMLHTTP");
+      } catch (e) {
+        try {
+          req = new ActiveXObject("Microsoft.XMLHTTP");
+        } catch (e) {
+          req = false;
+        }
+      }
+    }
+  }
+    
+  /* real browsers */
+  if (!req && window.XMLHttpRequest) {
+    try {
+      req = new XMLHttpRequest();
+    } catch (e) {
+      req = false;
+    }
+  } 
+  
+  if (req) {
+    req.open('GET', url, false);
+    req.send(null);
+    return req.responseText;
+  } else {
+    return "Ajax error";  
+  }
+}
+
+
+function addEvent(elm, evType, fn, useCapture) {
+	if (elm.addEventListener) {
+	  elm.addEventListener(evType, fn, useCapture);  
+  	return true;
+	} else if (elm.attachEvent) {
+  	var r = elm.attachEvent('on' + evType, fn);  
+	  return r;  
+	} else {
+  	elm['on' + evType] = fn;
+	}
+}
+
+function insertIndices() {
+  pages = ["class", "file", "method"]
+  for (x in pages) { 
+    $(pages[x]).innerHTML += ajaxGet('fr_' + pages[x] + '_index.html').replace(/(href=")/g, '$1' + href_base);
+  }
+  /* mouseoverify method links */
+  links = $('method').getElementsByTagName('a');
+  for (var x = 0; x < links.length; x++) {
+    if (m = links[x].innerHTML.match(/(.*)\s\((.*)\)/)) {
+      links[x].innerHTML = m[1] + '<br>';
+      links[x].title = m[2];
+    }
+  }
+  /* this is stupid */
+  $('class').style.display = "block";
+  $('file').style.display = "block";
+  
+  /* has to be here because IE7 does not guarantee the onLoad callback order */
+  abbreviateIndicesInner(["class", "file"], 25, "a");
+  /* same, linkTitle() depends on the class link list */
+  linkTitle();
+}
+
+function abbreviateIndices() {
+  var ids = ["defined_in", "child_of", "includes", "requires", "method", "methods"];
+  abbreviateIndicesInner(ids, 25, 'a');
+  abbreviateIndicesInner(ids, 25, 'span');
+}
+
+function abbreviateIndicesInner(indices, amount, tag) {
+  for (var x = 0; x < indices.length; x++) { 
+    var the_index = $(indices[x]);
+    if (the_index) {
+      links = the_index.getElementsByTagName(tag);
+      for (var y = 0; y < links.length; y++) {
+        var link = links[y];
+        if (link.getElementsByTagName('span').length == 0 && link.getElementsByTagName('a').length == 0) {
+          // avoid nesting
+          link.innerHTML = link.innerHTML.replace(/<br>|\n/gi, '');
+          link.title = link.innerHTML;
+          link.innerHTML = abbreviate(link.innerHTML, amount) + '<br>';
+        }
+      }
+    }
+  }
+}
+
+function linkTitle() {
+  
+  /* grab the correct title element from the index */
+  var index_page = ajaxGet('index.html');
+  title_text = index_page.match(/<title>(.*)<\/title>/m)[1];
+  document.title = title_text + " - " + document.title;
+  var p = $('header').getElementsByTagName('p')[0]
+  if (p.innerHTML.match(/^\s*$/)) {
+    p.innerHTML = title_text;
+  } else {
+    p.innerHTML = title_text + ": " + p.innerHTML;
+  }
+  
+  /* set the link properly */
+  title_link = index_page.match(/<a\s+href="(.*?)"/)[1];
+  var element = $('title');
+  var item_type = "";
+  var item_name = "";
+  if (m = element.innerHTML.match(/(Class:|Module:|File:)\s*(.*)/)) {
+    item_type = m[1];
+    item_name = m[2];
+  } else {
+    item_name = element.innerHTML;
+  }
+  element.innerHTML = '<a href="' + href_base + title_link + '">' + item_type + " " + abbreviate(item_name, 45) + '</a>';
+  element.getElementsByTagName('a')[0].title = item_name
+  
+  /* breadcrumb navigation */
+  items = item_name.split("::");
+  items_new = item_name.split("::");
+  file_links = $('class').getElementsByTagName('a');
+  for (var x = 0; x < items.length - 1; x++ ){
+    var item = items[x];
+    link = ("/classes/" + items.slice(0,x).join("/") + "/" + item + ".html").replace('//', '/');
+    regex = new RegExp(RegExp.escape(link) + '$');
+    for (var y = 0; y < file_links.length; y++) {
+      if (file_links[y].href.match(regex)) {
+         items_new[x] = '<a href="' + href_base + link + '">' + item + '</a>';
+         break;
+      }
+    }  
+  }
+  $('item_name').innerHTML = item_type + ' ' + items_new.join(" :: ");
+}
+
+function abbreviate(s, size) {
+  while (s.length > size) {
+    var old_s = s;
+    s = s.replace(/\s|\n/mg, '');
+    s = s.replace(/([A-Z])[a-z]+/m, '$1');
+    if (!s || old_s == s) {
+      return "..." + s.substring(s.length - size, s.length);
+    }
+  }
+  return s;
+}
+
+function disableSubmit(event) {
+  var keyCode = event.keyCode ? event.keyCode : event.which ? event.which : event.charCode;
+  if (keyCode == 13) {
+    return false;
+  } else {
+    return true;
+  }
+}
+  
+function filterList(id, s, event) {
+  
+  /* some weak escaping */
+  s = s.replace(/[^\w\d\.\_\-\/\:\=\[\]\?\!]/g, '');
+  s = RegExp.escape(s);
+  
+  var show_all = false;
+  if (s.match(/^\s*$/)) {
+    show_all = true;
+  }
+  
+  links = $(id).getElementsByTagName('a')
+  regex = new RegExp(s, 'i');
+  
+  for (var x = 0; x < links.length; x++) {
+    var link = links[x];
+    if (show_all) {
+      link.style.display = 'inline';
+    } else {
+       if (link.innerHTML.match(regex)) {        
+         link.style.display = 'inline';
+       } else {
+         link.style.display = 'none';
+       }
+    }
+  }
+  return true;
+}
+
+RegExp.escape = function(text) {
+  if (!arguments.callee.sRE) {
+    var specials = ['/', '.', '*', '+', '?', '|', '(', ')', '[', ']', '{', '}', '\\'];
+    arguments.callee.sRE = new RegExp(
+      '(\\' + specials.join('|\\') + ')', 'g'
+    );
+  }
+  return text.replace(arguments.callee.sRE, '\\$1');
+}
+
+function hacks() {
+  // show the spacer if necessary, 
+  divs = document.getElementsByTagName('div');
+  for(var x = 0; x < divs.length; x++) {
+    if (divs[x].className && divs[x].className.match(/top/)) {
+      document.getElementById('spacer').style.display = 'block';
+    }
+  }
+  // remove extra colons from tables
+  tds = document.getElementsByTagName('td');
+  for(var x = 0; x < tds.length; x++) {
+    str = tds[x].innerHTML
+    if (str.charAt(str.length - 1) == ":") {
+      tds[x].innerHTML = str.slice(0, str.length - 1)
+    }
+  }
+}
+
+addEvent(window, 'load', insertIndices, false);
+addEvent(window, 'load', abbreviateIndices, false);
+addEvent(window, 'load', stripe, false);
+addEvent(window, 'load', highlightSymbols, false);
+addEvent(window, 'load', hacks, false);
+</script></head><body><div id="container"><div class="curve" id="preheader_curve_0"></div><div class="curve" id="preheader_curve_1"></div><div class="curve" id="preheader_curve_2"></div><div class="curve" id="preheader_curve_3"></div><div class="curve" id="preheader_curve_4"></div><div class="curve" id="preheader_curve_5"></div><div id="header"><p>
+</p><span><h1 id="title">
+Module: Kernel
+</h1></span>
+</div><div class="clear"></div><div id="left">
+
+<div class="navigation darker top" id="defined_in"><h3>Defined in</h3>
+
+<a href="../files/vendor/rails/activesupport/lib/active_support/vendor/builder-2_1_2/blankslate_rb.html">vendor/rails/activesupport/lib/active_support/vendor/builder-2.1.2/blankslate.rb</a>
+
+
+<a href="../files/vendor/rails/activesupport/lib/active_support/core_ext/kernel/daemonizing_rb.html">vendor/rails/activesupport/lib/active_support/core_ext/kernel/daemonizing.rb</a>
+
+
+<a href="../files/vendor/rails/activesupport/lib/active_support/core_ext/kernel/requires_rb.html">vendor/rails/activesupport/lib/active_support/core_ext/kernel/requires.rb</a>
+
+
+<a href="../files/vendor/rails/activesupport/lib/active_support/core_ext/kernel/reporting_rb.html">vendor/rails/activesupport/lib/active_support/core_ext/kernel/reporting.rb</a>
+
+
+<a href="../files/vendor/rails/activesupport/lib/active_support/core_ext/kernel/debugger_rb.html">vendor/rails/activesupport/lib/active_support/core_ext/kernel/debugger.rb</a>
+
+</div>
+
+
+
+<div class="navigation top" id="methods"><h3>Methods</h3>
+
+
+<a href='#M001816'>
+breakpoint<br/>
+</a>
+
+
+
+
+<a href='#M001809'>
+daemonize<br/>
+</a>
+
+
+
+
+<a href='#M001815'>
+debugger<br/>
+</a>
+
+
+
+
+<a href='#M001812'>
+enable_warnings<br/>
+</a>
+
+
+
+
+<a href='#M001808'>
+method_added<br/>
+</a>
+
+
+
+
+<a href='#M001810'>
+require_library_or_gem<br/>
+</a>
+
+
+
+
+<a href='#M001813'>
+silence_stream<br/>
+</a>
+
+
+
+
+<a href='#M001811'>
+silence_warnings<br/>
+</a>
+
+
+
+
+<a href='#M001814'>
+suppress<br/>
+</a>
+
+
+</div>
+<div id="spacer"></div><div class="navigation darker index" id="class_wrapper"><div class="list_header"><h3>All classes</h3></div><div class="list_header_link"><a onclick="toggle('class'); toggleText('class_link'); return false;" href="#" id="class_link">Hide...</a></div><div class="clear"></div><div id="class"><form><label for="filter_class">Filter:&nbsp;&nbsp;</label><input type="text" onKeyUp="return filterList('class', this.value, event);" onKeyPress="return disableSubmit(event);" id="filter_class"></input></form></div></div><div class="navigation darker index" id="file_wrapper"><div class="list_header"><h3>All files</h3></div><div class="list_header_link"><a onclick="toggle('file'); toggleText('file_link'); return false;" href="#" id="file_link">Hide...</a></div><div class="clear"></div><div id="file"><form><label for="filter_file">Filter:&nbsp;&nbsp;</label><input type="text" onKeyUp="return filterList('file', this.value, event);" onKeyPress="return disableSubmit(event);" id="filter_file"></input></form></div></div><div class="navigation darker index" id="method_wrapper"><div class="list_header"><h3>All methods</h3></div><div class="list_header_link"><a onclick="toggle('method'); toggleText('method_link'); return false;" href="#" id="method_link">Show...</a></div><div class="clear"></div><div id="method"><form><label for="filter_method">Filter:&nbsp;&nbsp;</label><input type="text" onKeyUp="return filterList('method', this.value, event);" onKeyPress="return disableSubmit(event);" id="filter_method"></input></form></div></div></div><div id="content">
+<h1 id="item_name">Module: Kernel</h1>
+
+<div id="description"><p>
+Since Ruby is very dynamic, methods added to the ancestors of <a
+href="BlankSlate.html">BlankSlate</a> <em>after <a
+href="BlankSlate.html">BlankSlate</a> is defined</em> will show up in the
+list of available <a href="BlankSlate.html">BlankSlate</a> methods. We
+handle this by defining a hook in the <a href="Object.html">Object</a> and
+<a href="Kernel.html">Kernel</a> classes that will hide any method defined
+after <a href="BlankSlate.html">BlankSlate</a> has been loaded.
+</p>
+</div>
+
+
+
+
+<p></p>
+
+
+
+<h1>Aliases</h1><p><table><tr><th>Old name</th><th>New name</th></tr>
+<tr>
+
+
+<td class="highlight">method_added</td>
+
+<td class="normal">blank_slate_method_added</td>
+
+</tr>
+</table></p>
+
+
+
+<h1>Public Class Methods</h1>
+
+
+<a class="small" name="M001808"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001808'>
+
+
+method_added
+
+(name)
+
+</a>
+</h3>
+<p>
+Detect method additions to <a href="Kernel.html">Kernel</a> and remove them
+in the <a href="BlankSlate.html">BlankSlate</a> class.
+</p>
+
+<p class="source_link" id="M001808-show-link"><a onclick="toggle('M001808-source'); toggleText('M001808-link'); return false;" href="#" id="M001808-link">Show source...</a></p><div class="source" id="M001808-source"><pre>    <span class="ruby-comment cmt"># File vendor/rails/activesupport/lib/active_support/vendor/builder-2.1.2/blankslate.rb, line 65</span>
+65:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">method_added</span>(<span class="ruby-identifier">name</span>)
+66:       <span class="ruby-identifier">result</span> = <span class="ruby-identifier">blank_slate_method_added</span>(<span class="ruby-identifier">name</span>)
+67:       <span class="ruby-keyword kw">return</span> <span class="ruby-identifier">result</span> <span class="ruby-keyword kw">if</span> <span class="ruby-keyword kw">self</span> <span class="ruby-operator">!=</span> <span class="ruby-constant">Kernel</span>
+68:       <span class="ruby-constant">BlankSlate</span>.<span class="ruby-identifier">hide</span>(<span class="ruby-identifier">name</span>)
+69:       <span class="ruby-identifier">result</span>
+70:     <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+
+<h1>Public Instance Methods</h1>
+
+
+<a class="small" name="M001816"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001816'>
+
+
+breakpoint
+
+()
+
+</a>
+</h3>
+
+<p class="source_link" id="M001816-show-link"><a onclick="toggle('M001816-source'); toggleText('M001816-link'); return false;" href="#" id="M001816-link">Show source...</a></p><div class="source" id="M001816-source"><pre>    <span class="ruby-comment cmt"># File vendor/rails/activesupport/lib/active_support/core_ext/kernel/debugger.rb, line 9</span>
+ 9:   <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">breakpoint</span>
+10:     <span class="ruby-constant">RAILS_DEFAULT_LOGGER</span>.<span class="ruby-identifier">info</span> <span class="ruby-value str">&quot;\n***** The 'breakpoint' command has been renamed 'debugger' -- please change *****\n&quot;</span>
+11:     <span class="ruby-identifier">debugger</span>
+12:   <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001809"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001809'>
+
+
+daemonize
+
+()
+
+</a>
+</h3>
+<p>
+Turns the current script into a daemon process that detaches from the
+console. It can be shut down with a TERM signal.
+</p>
+
+<p class="source_link" id="M001809-show-link"><a onclick="toggle('M001809-source'); toggleText('M001809-link'); return false;" href="#" id="M001809-link">Show source...</a></p><div class="source" id="M001809-source"><pre>    <span class="ruby-comment cmt"># File vendor/rails/activesupport/lib/active_support/core_ext/kernel/daemonizing.rb, line 4</span>
+ 4:   <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">daemonize</span>
+ 5:     <span class="ruby-identifier">exit</span> <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">fork</span>                   <span class="ruby-comment cmt"># Parent exits, child continues.</span>
+ 6:     <span class="ruby-constant">Process</span>.<span class="ruby-identifier">setsid</span>                 <span class="ruby-comment cmt"># Become session leader.</span>
+ 7:     <span class="ruby-identifier">exit</span> <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">fork</span>                   <span class="ruby-comment cmt"># Zap session leader. See [1].</span>
+ 8:     <span class="ruby-constant">Dir</span>.<span class="ruby-identifier">chdir</span> <span class="ruby-value str">&quot;/&quot;</span>                  <span class="ruby-comment cmt"># Release old working directory.</span>
+ 9:     <span class="ruby-constant">File</span>.<span class="ruby-identifier">umask</span> <span class="ruby-value">0000</span>                <span class="ruby-comment cmt"># Ensure sensible umask. Adjust as needed.</span>
+10:     <span class="ruby-constant">STDIN</span>.<span class="ruby-identifier">reopen</span> <span class="ruby-value str">&quot;/dev/null&quot;</span>       <span class="ruby-comment cmt"># Free file descriptors and</span>
+11:     <span class="ruby-constant">STDOUT</span>.<span class="ruby-identifier">reopen</span> <span class="ruby-value str">&quot;/dev/null&quot;</span>, <span class="ruby-value str">&quot;a&quot;</span> <span class="ruby-comment cmt"># point them somewhere sensible.</span>
+12:     <span class="ruby-constant">STDERR</span>.<span class="ruby-identifier">reopen</span> <span class="ruby-constant">STDOUT</span>           <span class="ruby-comment cmt"># STDOUT/ERR should better go to a logfile.</span>
+13:     <span class="ruby-identifier">trap</span>(<span class="ruby-value str">&quot;TERM&quot;</span>) { <span class="ruby-identifier">exit</span> }
+14:   <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001815"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001815'>
+
+
+debugger
+
+()
+
+</a>
+</h3>
+<p>
+Starts a debugging session if ruby-debug has been loaded (call
+script/server &#8212;<a href="Kernel.html#M001815">debugger</a> to do load
+it).
+</p>
+
+<p class="source_link" id="M001815-show-link"><a onclick="toggle('M001815-source'); toggleText('M001815-link'); return false;" href="#" id="M001815-link">Show source...</a></p><div class="source" id="M001815-source"><pre>   <span class="ruby-comment cmt"># File vendor/rails/activesupport/lib/active_support/core_ext/kernel/debugger.rb, line 4</span>
+4:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">debugger</span>
+5:       <span class="ruby-constant">RAILS_DEFAULT_LOGGER</span>.<span class="ruby-identifier">info</span> <span class="ruby-value str">&quot;\n***** Debugger requested, but was not available: Start server with --debugger to enable *****\n&quot;</span>
+6:     <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001812"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001812'>
+
+
+enable_warnings
+
+() {|| ...}
+
+</a>
+</h3>
+<p>
+Sets $VERBOSE to true for the duration of the block and back to its
+original value afterwards.
+</p>
+
+<p class="source_link" id="M001812-show-link"><a onclick="toggle('M001812-source'); toggleText('M001812-link'); return false;" href="#" id="M001812-link">Show source...</a></p><div class="source" id="M001812-source"><pre>    <span class="ruby-comment cmt"># File vendor/rails/activesupport/lib/active_support/core_ext/kernel/reporting.rb, line 17</span>
+17:   <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">enable_warnings</span>
+18:     <span class="ruby-identifier">old_verbose</span>, <span class="ruby-identifier">$VERBOSE</span> = <span class="ruby-identifier">$VERBOSE</span>, <span class="ruby-keyword kw">true</span>
+19:     <span class="ruby-keyword kw">yield</span>
+20:   <span class="ruby-keyword kw">ensure</span>
+21:     <span class="ruby-identifier">$VERBOSE</span> = <span class="ruby-identifier">old_verbose</span>
+22:   <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001810"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001810'>
+
+
+require_library_or_gem
+
+(library_name)
+
+</a>
+</h3>
+<p>
+Require a library with fallback to RubyGems. Warnings during library
+loading are silenced to increase signal/noise for application warnings.
+</p>
+
+<p class="source_link" id="M001810-show-link"><a onclick="toggle('M001810-source'); toggleText('M001810-link'); return false;" href="#" id="M001810-link">Show source...</a></p><div class="source" id="M001810-source"><pre>    <span class="ruby-comment cmt"># File vendor/rails/activesupport/lib/active_support/core_ext/kernel/requires.rb, line 4</span>
+ 4:   <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">require_library_or_gem</span>(<span class="ruby-identifier">library_name</span>)
+ 5:     <span class="ruby-identifier">silence_warnings</span> <span class="ruby-keyword kw">do</span>
+ 6:       <span class="ruby-keyword kw">begin</span>
+ 7:         <span class="ruby-identifier">require</span> <span class="ruby-identifier">library_name</span>
+ 8:       <span class="ruby-keyword kw">rescue</span> <span class="ruby-constant">LoadError</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">cannot_require</span>
+ 9:         <span class="ruby-comment cmt"># 1. Requiring the module is unsuccessful, maybe it's a gem and nobody required rubygems yet. Try.</span>
+10:         <span class="ruby-keyword kw">begin</span>
+11:           <span class="ruby-identifier">require</span> <span class="ruby-value str">'rubygems'</span>
+12:         <span class="ruby-keyword kw">rescue</span> <span class="ruby-constant">LoadError</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">rubygems_not_installed</span>
+13:           <span class="ruby-identifier">raise</span> <span class="ruby-identifier">cannot_require</span>
+14:         <span class="ruby-keyword kw">end</span>
+15:         <span class="ruby-comment cmt"># 2. Rubygems is installed and loaded. Try to load the library again</span>
+16:         <span class="ruby-keyword kw">begin</span>
+17:           <span class="ruby-identifier">require</span> <span class="ruby-identifier">library_name</span>
+18:         <span class="ruby-keyword kw">rescue</span> <span class="ruby-constant">LoadError</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">gem_not_installed</span>
+19:           <span class="ruby-identifier">raise</span> <span class="ruby-identifier">cannot_require</span>
+20:         <span class="ruby-keyword kw">end</span>
+21:       <span class="ruby-keyword kw">end</span>
+22:     <span class="ruby-keyword kw">end</span>
+23:   <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001813"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001813'>
+
+
+silence_stream
+
+(stream) {|| ...}
+
+</a>
+</h3>
+<p>
+Silences any stream for the duration of the block.
+</p>
+<pre>
+  silence_stream(STDOUT) do
+    puts 'This will never be seen'
+  end
+
+  puts 'But this will'
+</pre>
+
+<p class="source_link" id="M001813-show-link"><a onclick="toggle('M001813-source'); toggleText('M001813-link'); return false;" href="#" id="M001813-link">Show source...</a></p><div class="source" id="M001813-source"><pre>    <span class="ruby-comment cmt"># File vendor/rails/activesupport/lib/active_support/core_ext/kernel/reporting.rb, line 36</span>
+36:   <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">silence_stream</span>(<span class="ruby-identifier">stream</span>)
+37:     <span class="ruby-identifier">old_stream</span> = <span class="ruby-identifier">stream</span>.<span class="ruby-identifier">dup</span>
+38:     <span class="ruby-identifier">stream</span>.<span class="ruby-identifier">reopen</span>(<span class="ruby-constant">RUBY_PLATFORM</span> <span class="ruby-operator">=~</span> <span class="ruby-regexp re">/mswin/</span> <span class="ruby-operator">?</span> <span class="ruby-value str">'NUL:'</span> <span class="ruby-operator">:</span> <span class="ruby-value str">'/dev/null'</span>)
+39:     <span class="ruby-identifier">stream</span>.<span class="ruby-identifier">sync</span> = <span class="ruby-keyword kw">true</span>
+40:     <span class="ruby-keyword kw">yield</span>
+41:   <span class="ruby-keyword kw">ensure</span>
+42:     <span class="ruby-identifier">stream</span>.<span class="ruby-identifier">reopen</span>(<span class="ruby-identifier">old_stream</span>)
+43:   <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001811"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001811'>
+
+
+silence_warnings
+
+() {|| ...}
+
+</a>
+</h3>
+<p>
+Sets $VERBOSE to nil for the duration of the block and back to its original
+value afterwards.
+</p>
+<pre>
+  silence_warnings do
+    value = noisy_call # no warning voiced
+  end
+
+  noisy_call # warning voiced
+</pre>
+
+<p class="source_link" id="M001811-show-link"><a onclick="toggle('M001811-source'); toggleText('M001811-link'); return false;" href="#" id="M001811-link">Show source...</a></p><div class="source" id="M001811-source"><pre>    <span class="ruby-comment cmt"># File vendor/rails/activesupport/lib/active_support/core_ext/kernel/reporting.rb, line 9</span>
+ 9:   <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">silence_warnings</span>
+10:     <span class="ruby-identifier">old_verbose</span>, <span class="ruby-identifier">$VERBOSE</span> = <span class="ruby-identifier">$VERBOSE</span>, <span class="ruby-keyword kw">nil</span>
+11:     <span class="ruby-keyword kw">yield</span>
+12:   <span class="ruby-keyword kw">ensure</span>
+13:     <span class="ruby-identifier">$VERBOSE</span> = <span class="ruby-identifier">old_verbose</span>
+14:   <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001814"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001814'>
+
+
+suppress
+
+(*exception_classes) {|| ...}
+
+</a>
+</h3>
+
+<p class="source_link" id="M001814-show-link"><a onclick="toggle('M001814-source'); toggleText('M001814-link'); return false;" href="#" id="M001814-link">Show source...</a></p><div class="source" id="M001814-source"><pre>    <span class="ruby-comment cmt"># File vendor/rails/activesupport/lib/active_support/core_ext/kernel/reporting.rb, line 45</span>
+45:   <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">suppress</span>(<span class="ruby-operator">*</span><span class="ruby-identifier">exception_classes</span>)
+46:     <span class="ruby-keyword kw">begin</span> <span class="ruby-keyword kw">yield</span>
+47:     <span class="ruby-keyword kw">rescue</span> <span class="ruby-constant">Exception</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">e</span>
+48:       <span class="ruby-identifier">raise</span> <span class="ruby-keyword kw">unless</span> <span class="ruby-identifier">exception_classes</span>.<span class="ruby-identifier">any?</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">cls</span><span class="ruby-operator">|</span> <span class="ruby-identifier">e</span>.<span class="ruby-identifier">kind_of?</span>(<span class="ruby-identifier">cls</span>) }
+49:     <span class="ruby-keyword kw">end</span>
+50:   <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+
+
+
+
+</div><div class="clear" id="footer">Generated on Jan 21, 2008 / Allison 2 &copy; 2007 <a href="http://cloudbur.st">Cloudburst, LLC</a></div></div></body></html>

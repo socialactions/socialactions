@@ -1,0 +1,646 @@
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head><meta content="text/html; charset=utf-8" http-equiv="Content-Type"/><title>File: README</title><link type="text/css" href=".././rdoc-style.css" media="screen" rel="stylesheet"/><script type="text/javascript">
+// Allison template
+// Copyright 2007, 2008 Cloudburst, LLC. Licensed under the AFL 3. See the included LICENSE file.
+
+var href_base = '.././rdoc-style.css'.replace(/(.*\/).*/, '$1'); // inline js is good for something  
+
+function $(id) {
+    if (document.getElementById)
+      elem = document.getElementById(id);
+    else if ( document.all )
+      elem = eval("document.all." + id);
+    else
+      return false;
+    return elem;
+}
+
+  function toggle(id) {
+    elem = $(id);
+    elemStyle = elem.style;   
+    if (elemStyle.display == "block") {
+      elemStyle.display = "none"
+    } else {
+      elemStyle.display = "block"
+    }
+    return true;
+  }
+
+  function toggleText(id) {
+    elem = $(id)
+    if (m = elem.innerHTML.match(/(Hide)(.*)/)) {
+      elem.innerHTML = "Show" + m[2];
+    } else if (m = elem.innerHTML.match(/(Show)(.*)/)) {
+      elem.innerHTML = "Hide" + m[2];
+    }
+    return true;
+  }
+
+function span(s, klass) {
+  return '<span class="' + klass + '">' + s + '</span>';
+}
+  
+function highlightSymbols() {
+  pres = document.getElementsByTagName('pre');
+  for(var i = 0; i < pres.length; i++) {
+    pre = pres[i];
+    spans = pre.getElementsByTagName('span');
+    for(var k = 0; k < spans.length; k++) {
+      span = spans[k];
+      if (span.className.match(/ruby-identifier/)) {
+        if (span.innerHTML.match(/^:/)) {
+          span.className += " ruby-symbol";
+        }
+      }
+    }
+  }
+}
+
+ function hasClass(obj) {
+     var result = false;
+     if (obj.getAttributeNode("class") != null) {
+         result = obj.getAttributeNode("class").value;
+     }
+     return result;
+  }   
+
+ function stripe() {
+    var even = true;
+    var color = "#e4ebed";
+    var tables = document.getElementsByTagName('table');
+    if (tables.length == 0) { return; }
+    for (var h = 0; h < tables.length; h++) {
+        var trs = tables[h].getElementsByTagName("tr");
+        for (var i = 0; i < trs.length; i++) {
+          var tds = trs[i].getElementsByTagName("td");
+            for (var j = 0; j < tds.length; j++) {       
+              if (hasClass(tds[j]) != "first") {                
+              var mytd = tds[j];
+              if (even) {
+                mytd.style.backgroundColor = color;
+              }         
+            }
+          }
+          even =  ! even;
+      }
+    }
+  }
+  
+function ajaxGet(url) {
+  url = (href_base + url).replace('/./', '/')
+  var req = false;
+
+  if (window.ActiveXObject) {
+    try {
+      // stupid hack because IE7 disables local Ajax with the native xmlhttprequest object
+      // for security purposes. Yet ActiveX still works. Thanks, Microsoft. I hate you. Die.
+      req = new ActiveXObject("MSXML2.XMLHTTP.3.0");
+    } catch (e) {
+      try {
+        /* IE 6 and maybe 5, don't know, don't care */
+        req = new ActiveXObject("Msxml2.XMLHTTP");
+      } catch (e) {
+        try {
+          req = new ActiveXObject("Microsoft.XMLHTTP");
+        } catch (e) {
+          req = false;
+        }
+      }
+    }
+  }
+    
+  /* real browsers */
+  if (!req && window.XMLHttpRequest) {
+    try {
+      req = new XMLHttpRequest();
+    } catch (e) {
+      req = false;
+    }
+  } 
+  
+  if (req) {
+    req.open('GET', url, false);
+    req.send(null);
+    return req.responseText;
+  } else {
+    return "Ajax error";  
+  }
+}
+
+
+function addEvent(elm, evType, fn, useCapture) {
+	if (elm.addEventListener) {
+	  elm.addEventListener(evType, fn, useCapture);  
+  	return true;
+	} else if (elm.attachEvent) {
+  	var r = elm.attachEvent('on' + evType, fn);  
+	  return r;  
+	} else {
+  	elm['on' + evType] = fn;
+	}
+}
+
+function insertIndices() {
+  pages = ["class", "file", "method"]
+  for (x in pages) { 
+    $(pages[x]).innerHTML += ajaxGet('fr_' + pages[x] + '_index.html').replace(/(href=")/g, '$1' + href_base);
+  }
+  /* mouseoverify method links */
+  links = $('method').getElementsByTagName('a');
+  for (var x = 0; x < links.length; x++) {
+    if (m = links[x].innerHTML.match(/(.*)\s\((.*)\)/)) {
+      links[x].innerHTML = m[1] + '<br>';
+      links[x].title = m[2];
+    }
+  }
+  /* this is stupid */
+  $('class').style.display = "block";
+  $('file').style.display = "block";
+  
+  /* has to be here because IE7 does not guarantee the onLoad callback order */
+  abbreviateIndicesInner(["class", "file"], 25, "a");
+  /* same, linkTitle() depends on the class link list */
+  linkTitle();
+}
+
+function abbreviateIndices() {
+  var ids = ["defined_in", "child_of", "includes", "requires", "method", "methods"];
+  abbreviateIndicesInner(ids, 25, 'a');
+  abbreviateIndicesInner(ids, 25, 'span');
+}
+
+function abbreviateIndicesInner(indices, amount, tag) {
+  for (var x = 0; x < indices.length; x++) { 
+    var the_index = $(indices[x]);
+    if (the_index) {
+      links = the_index.getElementsByTagName(tag);
+      for (var y = 0; y < links.length; y++) {
+        var link = links[y];
+        if (link.getElementsByTagName('span').length == 0 && link.getElementsByTagName('a').length == 0) {
+          // avoid nesting
+          link.innerHTML = link.innerHTML.replace(/<br>|\n/gi, '');
+          link.title = link.innerHTML;
+          link.innerHTML = abbreviate(link.innerHTML, amount) + '<br>';
+        }
+      }
+    }
+  }
+}
+
+function linkTitle() {
+  
+  /* grab the correct title element from the index */
+  var index_page = ajaxGet('index.html');
+  title_text = index_page.match(/<title>(.*)<\/title>/m)[1];
+  document.title = title_text + " - " + document.title;
+  var p = $('header').getElementsByTagName('p')[0]
+  if (p.innerHTML.match(/^\s*$/)) {
+    p.innerHTML = title_text;
+  } else {
+    p.innerHTML = title_text + ": " + p.innerHTML;
+  }
+  
+  /* set the link properly */
+  title_link = index_page.match(/<a\s+href="(.*?)"/)[1];
+  var element = $('title');
+  var item_type = "";
+  var item_name = "";
+  if (m = element.innerHTML.match(/(Class:|Module:|File:)\s*(.*)/)) {
+    item_type = m[1];
+    item_name = m[2];
+  } else {
+    item_name = element.innerHTML;
+  }
+  element.innerHTML = '<a href="' + href_base + title_link + '">' + item_type + " " + abbreviate(item_name, 45) + '</a>';
+  element.getElementsByTagName('a')[0].title = item_name
+  
+  /* breadcrumb navigation */
+  items = item_name.split("::");
+  items_new = item_name.split("::");
+  file_links = $('class').getElementsByTagName('a');
+  for (var x = 0; x < items.length - 1; x++ ){
+    var item = items[x];
+    link = ("/classes/" + items.slice(0,x).join("/") + "/" + item + ".html").replace('//', '/');
+    regex = new RegExp(RegExp.escape(link) + '$');
+    for (var y = 0; y < file_links.length; y++) {
+      if (file_links[y].href.match(regex)) {
+         items_new[x] = '<a href="' + href_base + link + '">' + item + '</a>';
+         break;
+      }
+    }  
+  }
+  $('item_name').innerHTML = item_type + ' ' + items_new.join(" :: ");
+}
+
+function abbreviate(s, size) {
+  while (s.length > size) {
+    var old_s = s;
+    s = s.replace(/\s|\n/mg, '');
+    s = s.replace(/([A-Z])[a-z]+/m, '$1');
+    if (!s || old_s == s) {
+      return "..." + s.substring(s.length - size, s.length);
+    }
+  }
+  return s;
+}
+
+function disableSubmit(event) {
+  var keyCode = event.keyCode ? event.keyCode : event.which ? event.which : event.charCode;
+  if (keyCode == 13) {
+    return false;
+  } else {
+    return true;
+  }
+}
+  
+function filterList(id, s, event) {
+  
+  /* some weak escaping */
+  s = s.replace(/[^\w\d\.\_\-\/\:\=\[\]\?\!]/g, '');
+  s = RegExp.escape(s);
+  
+  var show_all = false;
+  if (s.match(/^\s*$/)) {
+    show_all = true;
+  }
+  
+  links = $(id).getElementsByTagName('a')
+  regex = new RegExp(s, 'i');
+  
+  for (var x = 0; x < links.length; x++) {
+    var link = links[x];
+    if (show_all) {
+      link.style.display = 'inline';
+    } else {
+       if (link.innerHTML.match(regex)) {        
+         link.style.display = 'inline';
+       } else {
+         link.style.display = 'none';
+       }
+    }
+  }
+  return true;
+}
+
+RegExp.escape = function(text) {
+  if (!arguments.callee.sRE) {
+    var specials = ['/', '.', '*', '+', '?', '|', '(', ')', '[', ']', '{', '}', '\\'];
+    arguments.callee.sRE = new RegExp(
+      '(\\' + specials.join('|\\') + ')', 'g'
+    );
+  }
+  return text.replace(arguments.callee.sRE, '\\$1');
+}
+
+function hacks() {
+  // show the spacer if necessary, 
+  divs = document.getElementsByTagName('div');
+  for(var x = 0; x < divs.length; x++) {
+    if (divs[x].className && divs[x].className.match(/top/)) {
+      document.getElementById('spacer').style.display = 'block';
+    }
+  }
+  // remove extra colons from tables
+  tds = document.getElementsByTagName('td');
+  for(var x = 0; x < tds.length; x++) {
+    str = tds[x].innerHTML
+    if (str.charAt(str.length - 1) == ":") {
+      tds[x].innerHTML = str.slice(0, str.length - 1)
+    }
+  }
+}
+
+addEvent(window, 'load', insertIndices, false);
+addEvent(window, 'load', abbreviateIndices, false);
+addEvent(window, 'load', stripe, false);
+addEvent(window, 'load', highlightSymbols, false);
+addEvent(window, 'load', hacks, false);
+</script></head><body><div id="container"><div class="curve" id="preheader_curve_0"></div><div class="curve" id="preheader_curve_1"></div><div class="curve" id="preheader_curve_2"></div><div class="curve" id="preheader_curve_3"></div><div class="curve" id="preheader_curve_4"></div><div class="curve" id="preheader_curve_5"></div><div id="header"><p>
+README
+</p><span><h1 id="title">
+File: README
+</h1></span>
+</div><div class="clear"></div><div id="left">
+
+
+
+
+<div id="spacer"></div><div class="navigation darker index" id="class_wrapper"><div class="list_header"><h3>All classes</h3></div><div class="list_header_link"><a onclick="toggle('class'); toggleText('class_link'); return false;" href="#" id="class_link">Hide...</a></div><div class="clear"></div><div id="class"><form><label for="filter_class">Filter:&nbsp;&nbsp;</label><input type="text" onKeyUp="return filterList('class', this.value, event);" onKeyPress="return disableSubmit(event);" id="filter_class"></input></form></div></div><div class="navigation darker index" id="file_wrapper"><div class="list_header"><h3>All files</h3></div><div class="list_header_link"><a onclick="toggle('file'); toggleText('file_link'); return false;" href="#" id="file_link">Hide...</a></div><div class="clear"></div><div id="file"><form><label for="filter_file">Filter:&nbsp;&nbsp;</label><input type="text" onKeyUp="return filterList('file', this.value, event);" onKeyPress="return disableSubmit(event);" id="filter_file"></input></form></div></div><div class="navigation darker index" id="method_wrapper"><div class="list_header"><h3>All methods</h3></div><div class="list_header_link"><a onclick="toggle('method'); toggleText('method_link'); return false;" href="#" id="method_link">Show...</a></div><div class="clear"></div><div id="method"><form><label for="filter_method">Filter:&nbsp;&nbsp;</label><input type="text" onKeyUp="return filterList('method', this.value, event);" onKeyPress="return disableSubmit(event);" id="filter_method"></input></form></div></div></div><div id="content">
+<h1 id="item_name">File: README</h1>
+
+<div id="description"><h2>Welcome to <a href="../classes/Rails.html">Rails</a></h2>
+<p>
+<a href="../classes/Rails.html">Rails</a> is a web-application and
+persistence framework that includes everything needed to create
+database-backed web-applications according to the Model-View-Control
+pattern of separation. This pattern splits the view (also called the
+presentation) into &quot;dumb&quot; templates that are primarily
+responsible for inserting pre-built data in between HTML tags. The model
+contains the &quot;smart&quot; domain objects (such as Account, Product,
+Person, Post) that holds all the business logic and knows how to persist
+themselves to a database. The controller handles the incoming requests
+(such as Save New Account, Update Product, Show Post) by manipulating the
+model and directing data to the view.
+</p>
+<p>
+In <a href="../classes/Rails.html">Rails</a>, the model is handled by
+what&#8216;s called an object-relational mapping layer entitled Active
+Record. This layer allows you to present the data from database rows as
+objects and embellish these data objects with business logic methods. You
+can read more about Active Record in <a
+href="vendor/rails/activerecord/README.html">files/vendor/rails/activerecord/README.html</a>.
+</p>
+<p>
+The controller and view are handled by the Action Pack, which handles both
+layers by its two parts: Action View and Action Controller. These two
+layers are bundled in a single package due to their heavy interdependence.
+This is unlike the relationship between the Active Record and Action Pack
+that is much more separate. Each of these packages can be used
+independently outside of <a href="../classes/Rails.html">Rails</a>. You can
+read more about Action Pack in <a
+href="vendor/rails/actionpack/README.html">files/vendor/rails/actionpack/README.html</a>.
+</p>
+<h2>Getting Started</h2>
+<ol>
+<li>At the command prompt, start a new <a
+href="../classes/Rails.html">Rails</a> application using the <tt>rails</tt>
+command and your application name. Ex: rails myapp (If you&#8216;ve
+downloaded <a href="../classes/Rails.html">Rails</a> in a complete tgz or
+zip, this step is already done)
+
+</li>
+<li>Change directory into myapp and start the web server:
+<tt>script/server</tt> (run with &#8212;help for options)
+
+</li>
+<li>Go to <a href="http://localhost:3000">localhost:3000</a>/ and get
+&quot;Welcome aboard: You’re riding the <a
+href="../classes/Rails.html">Rails</a>!&quot;
+
+</li>
+<li>Follow the guidelines to start developing your application
+
+</li>
+</ol>
+<h2>Web Servers</h2>
+<p>
+By default, <a href="../classes/Rails.html">Rails</a> will try to use
+Mongrel and lighttpd if they are installed, otherwise <a
+href="../classes/Rails.html">Rails</a> will use WEBrick, the webserver that
+ships with Ruby. When you run script/server, <a
+href="../classes/Rails.html">Rails</a> will check if Mongrel exists, then
+lighttpd and finally fall back to WEBrick. This ensures that you can always
+get up and running quickly.
+</p>
+<p>
+Mongrel is a Ruby-based webserver with a C component (which requires
+compilation) that is suitable for development and deployment of <a
+href="../classes/Rails.html">Rails</a> applications. If you have Ruby Gems
+installed, getting up and running with mongrel is as easy as: <tt>gem
+install mongrel</tt>. More info at: <a
+href="http://mongrel.rubyforge.org">mongrel.rubyforge.org</a>
+</p>
+<p>
+If Mongrel is not installed, <a href="../classes/Rails.html">Rails</a> will
+look for lighttpd. It&#8216;s considerably faster than Mongrel and WEBrick
+and also suited for production use, but requires additional installation
+and currently only works well on OS X/Unix (Windows users are encouraged to
+start with Mongrel). We recommend version 1.4.11 and higher. You can
+download it from <a href="http://www.lighttpd.net">www.lighttpd.net</a>.
+</p>
+<p>
+And finally, if neither Mongrel or lighttpd are installed, <a
+href="../classes/Rails.html">Rails</a> will use the built-in Ruby web
+server, WEBrick. WEBrick is a small Ruby web server suitable for
+development, but not for production.
+</p>
+<p>
+But of course its also possible to run <a
+href="../classes/Rails.html">Rails</a> on any platform that supports FCGI.
+Apache, LiteSpeed, IIS are just a few. For more information on FCGI, please
+visit: <a
+href="http://wiki.rubyonrails.com/rails/pages/FastCGI">wiki.rubyonrails.com/rails/pages/FastCGI</a>
+</p>
+<h2>Debugging <a href="../classes/Rails.html">Rails</a></h2>
+<p>
+Sometimes your application goes wrong. Fortunately there are a lot of tools
+that will help you debug it and get it back on the rails.
+</p>
+<p>
+First area to check is the application log files. Have &quot;tail -f&quot;
+commands running on the server.log and development.log. <a
+href="../classes/Rails.html">Rails</a> will automatically display debugging
+and runtime information to these files. Debugging info will also be shown
+in the browser on requests from 127.0.0.1.
+</p>
+<p>
+You can also log your own messages directly into the log file from your
+code using the Ruby logger class from inside your controllers. Example:
+</p>
+<pre>
+  class WeblogController &lt; ActionController::Base
+    def destroy
+      @weblog = Weblog.find(params[:id])
+      @weblog.destroy
+      logger.info(&quot;#{Time.now} Destroyed Weblog ID ##{@weblog.id}!&quot;)
+    end
+  end
+</pre>
+<p>
+The result will be a message in your log file along the lines of:
+</p>
+<pre>
+  Mon Oct 08 14:22:29 +1000 2007 Destroyed Weblog ID #1
+</pre>
+<p>
+More information on how to use the logger is at <a
+href="http://www.ruby-doc.org/core">www.ruby-doc.org/core</a>/
+</p>
+<p>
+Also, Ruby documentation can be found at <a
+href="http://www.ruby-lang.org">www.ruby-lang.org</a>/ including:
+</p>
+<ul>
+<li>The Learning Ruby (Pickaxe) Book: <a
+href="http://www.ruby-doc.org/docs/ProgrammingRuby">www.ruby-doc.org/docs/ProgrammingRuby</a>/
+
+</li>
+<li>Learn to Program: <a
+href="http://pine.fm/LearnToProgram">pine.fm/LearnToProgram</a>/ (a
+beginners guide)
+
+</li>
+</ul>
+<p>
+These two online (and free) books will bring you up to speed on the Ruby
+language and also on programming in general.
+</p>
+<h2>Debugger</h2>
+<p>
+Debugger support is available through the debugger command when you start
+your Mongrel or Webrick server with &#8212;debugger. This means that you
+can break out of execution at any point in the code, investigate and change
+the model, AND then resume execution! Example:
+</p>
+<pre>
+  class WeblogController &lt; ActionController::Base
+    def index
+      @posts = Post.find(:all)
+      debugger
+    end
+  end
+</pre>
+<p>
+So the controller will accept the action, run the first line, then present
+you with a IRB prompt in the server window. Here you can do things like:
+</p>
+<pre>
+  &gt;&gt; @posts.inspect
+  =&gt; &quot;[#&lt;Post:0x14a6be8 @attributes={\&quot;title\&quot;=&gt;nil, \&quot;body\&quot;=&gt;nil, \&quot;id\&quot;=&gt;\&quot;1\&quot;}&gt;,
+       #&lt;Post:0x14a6620 @attributes={\&quot;title\&quot;=&gt;\&quot;Rails you know!\&quot;, \&quot;body\&quot;=&gt;\&quot;Only ten..\&quot;, \&quot;id\&quot;=&gt;\&quot;2\&quot;}&gt;]&quot;
+  &gt;&gt; @posts.first.title = &quot;hello from a debugger&quot;
+  =&gt; &quot;hello from a debugger&quot;
+</pre>
+<p>
+&#8230;and even better is that you can examine how your runtime objects
+actually work:
+</p>
+<pre>
+  &gt;&gt; f = @posts.first
+  =&gt; #&lt;Post:0x13630c4 @attributes={&quot;title&quot;=&gt;nil, &quot;body&quot;=&gt;nil, &quot;id&quot;=&gt;&quot;1&quot;}&gt;
+  &gt;&gt; f.
+  Display all 152 possibilities? (y or n)
+</pre>
+<p>
+Finally, when you&#8216;re ready to resume execution, you enter
+&quot;cont&quot;
+</p>
+<h2>Console</h2>
+<p>
+You can interact with the domain model by starting the console through
+<tt>script/console</tt>. Here you&#8216;ll have all parts of the
+application configured, just like it is when the application is running.
+You can inspect domain models, change values, and save to the database.
+Starting the script without arguments will launch it in the development
+environment. Passing an argument will specify a different environment, like
+<tt>script/console production</tt>.
+</p>
+<p>
+To reload your controllers and models after launching the console run
+<tt>reload!</tt>
+</p>
+<h2>Description of Contents</h2>
+<p>
+app
+</p>
+<pre>
+  Holds all the code that's specific to this particular application.
+</pre>
+<p>
+app/controllers
+</p>
+<pre>
+  Holds controllers that should be named like weblogs_controller.rb for
+  automated URL mapping. All controllers should descend from ApplicationController
+  which itself descends from ActionController::Base.
+</pre>
+<p>
+app/models
+</p>
+<pre>
+  Holds models that should be named like post.rb.
+  Most models will descend from ActiveRecord::Base.
+</pre>
+<p>
+app/views
+</p>
+<pre>
+  Holds the template files for the view that should be named like
+  weblogs/index.erb for the WeblogsController#index action. All views use eRuby
+  syntax.
+</pre>
+<p>
+app/views/layouts
+</p>
+<pre>
+  Holds the template files for layouts to be used with views. This models the common
+  header/footer method of wrapping views. In your views, define a layout using the
+  &lt;tt&gt;layout :default&lt;/tt&gt; and create a file named default.erb. Inside default.erb,
+  call &lt;% yield %&gt; to render the view using this layout.
+</pre>
+<p>
+app/helpers
+</p>
+<pre>
+  Holds view helpers that should be named like weblogs_helper.rb. These are generated
+  for you automatically when using script/generate for controllers. Helpers can be used to
+  wrap functionality for your views into methods.
+</pre>
+<p>
+config
+</p>
+<pre>
+  Configuration files for the Rails environment, the routing map, the database, and other dependencies.
+</pre>
+<p>
+db
+</p>
+<pre>
+  Contains the database schema in schema.rb.  db/migrate contains all
+  the sequence of Migrations for your schema.
+</pre>
+<p>
+doc
+</p>
+<pre>
+  This directory is where your application documentation will be stored when generated
+  using &lt;tt&gt;rake doc:app&lt;/tt&gt;
+</pre>
+<p>
+lib
+</p>
+<pre>
+  Application specific libraries. Basically, any kind of custom code that doesn't
+  belong under controllers, models, or helpers. This directory is in the load path.
+</pre>
+<p>
+public
+</p>
+<pre>
+  The directory available for the web server. Contains subdirectories for images, stylesheets,
+  and javascripts. Also contains the dispatchers and the default HTML files. This should be
+  set as the DOCUMENT_ROOT of your web server.
+</pre>
+<p>
+script
+</p>
+<pre>
+  Helper scripts for automation and generation.
+</pre>
+<p>
+test
+</p>
+<pre>
+  Unit and functional tests along with fixtures. When using the script/generate scripts, template
+  test files will be generated for you and placed in this directory.
+</pre>
+<p>
+vendor
+</p>
+<pre>
+  External libraries that the application depends on. Also includes the plugins subdirectory.
+  This directory is in the load path.
+</pre>
+</div>
+
+
+
+
+<p></p>
+
+
+
+
+
+
+
+</div><div class="clear" id="footer">Generated on Jan 21, 2008 / Allison 2 &copy; 2007 <a href="http://cloudbur.st">Cloudburst, LLC</a></div></div></body></html>

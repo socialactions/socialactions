@@ -1,0 +1,1093 @@
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head><meta content="text/html; charset=utf-8" http-equiv="Content-Type"/><title>Module: ActiveRecord::ConnectionAdapters::DatabaseStatements</title><link type="text/css" href="../../.././rdoc-style.css" media="screen" rel="stylesheet"/><script type="text/javascript">
+// Allison template
+// Copyright 2007, 2008 Cloudburst, LLC. Licensed under the AFL 3. See the included LICENSE file.
+
+var href_base = '../../.././rdoc-style.css'.replace(/(.*\/).*/, '$1'); // inline js is good for something  
+
+function $(id) {
+    if (document.getElementById)
+      elem = document.getElementById(id);
+    else if ( document.all )
+      elem = eval("document.all." + id);
+    else
+      return false;
+    return elem;
+}
+
+  function toggle(id) {
+    elem = $(id);
+    elemStyle = elem.style;   
+    if (elemStyle.display == "block") {
+      elemStyle.display = "none"
+    } else {
+      elemStyle.display = "block"
+    }
+    return true;
+  }
+
+  function toggleText(id) {
+    elem = $(id)
+    if (m = elem.innerHTML.match(/(Hide)(.*)/)) {
+      elem.innerHTML = "Show" + m[2];
+    } else if (m = elem.innerHTML.match(/(Show)(.*)/)) {
+      elem.innerHTML = "Hide" + m[2];
+    }
+    return true;
+  }
+
+function span(s, klass) {
+  return '<span class="' + klass + '">' + s + '</span>';
+}
+  
+function highlightSymbols() {
+  pres = document.getElementsByTagName('pre');
+  for(var i = 0; i < pres.length; i++) {
+    pre = pres[i];
+    spans = pre.getElementsByTagName('span');
+    for(var k = 0; k < spans.length; k++) {
+      span = spans[k];
+      if (span.className.match(/ruby-identifier/)) {
+        if (span.innerHTML.match(/^:/)) {
+          span.className += " ruby-symbol";
+        }
+      }
+    }
+  }
+}
+
+ function hasClass(obj) {
+     var result = false;
+     if (obj.getAttributeNode("class") != null) {
+         result = obj.getAttributeNode("class").value;
+     }
+     return result;
+  }   
+
+ function stripe() {
+    var even = true;
+    var color = "#e4ebed";
+    var tables = document.getElementsByTagName('table');
+    if (tables.length == 0) { return; }
+    for (var h = 0; h < tables.length; h++) {
+        var trs = tables[h].getElementsByTagName("tr");
+        for (var i = 0; i < trs.length; i++) {
+          var tds = trs[i].getElementsByTagName("td");
+            for (var j = 0; j < tds.length; j++) {       
+              if (hasClass(tds[j]) != "first") {                
+              var mytd = tds[j];
+              if (even) {
+                mytd.style.backgroundColor = color;
+              }         
+            }
+          }
+          even =  ! even;
+      }
+    }
+  }
+  
+function ajaxGet(url) {
+  url = (href_base + url).replace('/./', '/')
+  var req = false;
+
+  if (window.ActiveXObject) {
+    try {
+      // stupid hack because IE7 disables local Ajax with the native xmlhttprequest object
+      // for security purposes. Yet ActiveX still works. Thanks, Microsoft. I hate you. Die.
+      req = new ActiveXObject("MSXML2.XMLHTTP.3.0");
+    } catch (e) {
+      try {
+        /* IE 6 and maybe 5, don't know, don't care */
+        req = new ActiveXObject("Msxml2.XMLHTTP");
+      } catch (e) {
+        try {
+          req = new ActiveXObject("Microsoft.XMLHTTP");
+        } catch (e) {
+          req = false;
+        }
+      }
+    }
+  }
+    
+  /* real browsers */
+  if (!req && window.XMLHttpRequest) {
+    try {
+      req = new XMLHttpRequest();
+    } catch (e) {
+      req = false;
+    }
+  } 
+  
+  if (req) {
+    req.open('GET', url, false);
+    req.send(null);
+    return req.responseText;
+  } else {
+    return "Ajax error";  
+  }
+}
+
+
+function addEvent(elm, evType, fn, useCapture) {
+	if (elm.addEventListener) {
+	  elm.addEventListener(evType, fn, useCapture);  
+  	return true;
+	} else if (elm.attachEvent) {
+  	var r = elm.attachEvent('on' + evType, fn);  
+	  return r;  
+	} else {
+  	elm['on' + evType] = fn;
+	}
+}
+
+function insertIndices() {
+  pages = ["class", "file", "method"]
+  for (x in pages) { 
+    $(pages[x]).innerHTML += ajaxGet('fr_' + pages[x] + '_index.html').replace(/(href=")/g, '$1' + href_base);
+  }
+  /* mouseoverify method links */
+  links = $('method').getElementsByTagName('a');
+  for (var x = 0; x < links.length; x++) {
+    if (m = links[x].innerHTML.match(/(.*)\s\((.*)\)/)) {
+      links[x].innerHTML = m[1] + '<br>';
+      links[x].title = m[2];
+    }
+  }
+  /* this is stupid */
+  $('class').style.display = "block";
+  $('file').style.display = "block";
+  
+  /* has to be here because IE7 does not guarantee the onLoad callback order */
+  abbreviateIndicesInner(["class", "file"], 25, "a");
+  /* same, linkTitle() depends on the class link list */
+  linkTitle();
+}
+
+function abbreviateIndices() {
+  var ids = ["defined_in", "child_of", "includes", "requires", "method", "methods"];
+  abbreviateIndicesInner(ids, 25, 'a');
+  abbreviateIndicesInner(ids, 25, 'span');
+}
+
+function abbreviateIndicesInner(indices, amount, tag) {
+  for (var x = 0; x < indices.length; x++) { 
+    var the_index = $(indices[x]);
+    if (the_index) {
+      links = the_index.getElementsByTagName(tag);
+      for (var y = 0; y < links.length; y++) {
+        var link = links[y];
+        if (link.getElementsByTagName('span').length == 0 && link.getElementsByTagName('a').length == 0) {
+          // avoid nesting
+          link.innerHTML = link.innerHTML.replace(/<br>|\n/gi, '');
+          link.title = link.innerHTML;
+          link.innerHTML = abbreviate(link.innerHTML, amount) + '<br>';
+        }
+      }
+    }
+  }
+}
+
+function linkTitle() {
+  
+  /* grab the correct title element from the index */
+  var index_page = ajaxGet('index.html');
+  title_text = index_page.match(/<title>(.*)<\/title>/m)[1];
+  document.title = title_text + " - " + document.title;
+  var p = $('header').getElementsByTagName('p')[0]
+  if (p.innerHTML.match(/^\s*$/)) {
+    p.innerHTML = title_text;
+  } else {
+    p.innerHTML = title_text + ": " + p.innerHTML;
+  }
+  
+  /* set the link properly */
+  title_link = index_page.match(/<a\s+href="(.*?)"/)[1];
+  var element = $('title');
+  var item_type = "";
+  var item_name = "";
+  if (m = element.innerHTML.match(/(Class:|Module:|File:)\s*(.*)/)) {
+    item_type = m[1];
+    item_name = m[2];
+  } else {
+    item_name = element.innerHTML;
+  }
+  element.innerHTML = '<a href="' + href_base + title_link + '">' + item_type + " " + abbreviate(item_name, 45) + '</a>';
+  element.getElementsByTagName('a')[0].title = item_name
+  
+  /* breadcrumb navigation */
+  items = item_name.split("::");
+  items_new = item_name.split("::");
+  file_links = $('class').getElementsByTagName('a');
+  for (var x = 0; x < items.length - 1; x++ ){
+    var item = items[x];
+    link = ("/classes/" + items.slice(0,x).join("/") + "/" + item + ".html").replace('//', '/');
+    regex = new RegExp(RegExp.escape(link) + '$');
+    for (var y = 0; y < file_links.length; y++) {
+      if (file_links[y].href.match(regex)) {
+         items_new[x] = '<a href="' + href_base + link + '">' + item + '</a>';
+         break;
+      }
+    }  
+  }
+  $('item_name').innerHTML = item_type + ' ' + items_new.join(" :: ");
+}
+
+function abbreviate(s, size) {
+  while (s.length > size) {
+    var old_s = s;
+    s = s.replace(/\s|\n/mg, '');
+    s = s.replace(/([A-Z])[a-z]+/m, '$1');
+    if (!s || old_s == s) {
+      return "..." + s.substring(s.length - size, s.length);
+    }
+  }
+  return s;
+}
+
+function disableSubmit(event) {
+  var keyCode = event.keyCode ? event.keyCode : event.which ? event.which : event.charCode;
+  if (keyCode == 13) {
+    return false;
+  } else {
+    return true;
+  }
+}
+  
+function filterList(id, s, event) {
+  
+  /* some weak escaping */
+  s = s.replace(/[^\w\d\.\_\-\/\:\=\[\]\?\!]/g, '');
+  s = RegExp.escape(s);
+  
+  var show_all = false;
+  if (s.match(/^\s*$/)) {
+    show_all = true;
+  }
+  
+  links = $(id).getElementsByTagName('a')
+  regex = new RegExp(s, 'i');
+  
+  for (var x = 0; x < links.length; x++) {
+    var link = links[x];
+    if (show_all) {
+      link.style.display = 'inline';
+    } else {
+       if (link.innerHTML.match(regex)) {        
+         link.style.display = 'inline';
+       } else {
+         link.style.display = 'none';
+       }
+    }
+  }
+  return true;
+}
+
+RegExp.escape = function(text) {
+  if (!arguments.callee.sRE) {
+    var specials = ['/', '.', '*', '+', '?', '|', '(', ')', '[', ']', '{', '}', '\\'];
+    arguments.callee.sRE = new RegExp(
+      '(\\' + specials.join('|\\') + ')', 'g'
+    );
+  }
+  return text.replace(arguments.callee.sRE, '\\$1');
+}
+
+function hacks() {
+  // show the spacer if necessary, 
+  divs = document.getElementsByTagName('div');
+  for(var x = 0; x < divs.length; x++) {
+    if (divs[x].className && divs[x].className.match(/top/)) {
+      document.getElementById('spacer').style.display = 'block';
+    }
+  }
+  // remove extra colons from tables
+  tds = document.getElementsByTagName('td');
+  for(var x = 0; x < tds.length; x++) {
+    str = tds[x].innerHTML
+    if (str.charAt(str.length - 1) == ":") {
+      tds[x].innerHTML = str.slice(0, str.length - 1)
+    }
+  }
+}
+
+addEvent(window, 'load', insertIndices, false);
+addEvent(window, 'load', abbreviateIndices, false);
+addEvent(window, 'load', stripe, false);
+addEvent(window, 'load', highlightSymbols, false);
+addEvent(window, 'load', hacks, false);
+</script></head><body><div id="container"><div class="curve" id="preheader_curve_0"></div><div class="curve" id="preheader_curve_1"></div><div class="curve" id="preheader_curve_2"></div><div class="curve" id="preheader_curve_3"></div><div class="curve" id="preheader_curve_4"></div><div class="curve" id="preheader_curve_5"></div><div id="header"><p>
+</p><span><h1 id="title">
+Module: ActiveRecord::ConnectionAdapters::DatabaseStatements
+</h1></span>
+</div><div class="clear"></div><div id="left">
+
+<div class="navigation darker top" id="defined_in"><h3>Defined in</h3>
+
+<a href="../../../files/vendor/rails/activerecord/lib/active_record/connection_adapters/abstract/database_statements_rb.html">vendor/rails/activerecord/lib/active_record/connection_adapters/abstract/database_statements.rb</a>
+
+</div>
+
+
+
+<div class="navigation top" id="methods"><h3>Methods</h3>
+
+
+<a href='#M001353'>
+add_limit!<br/>
+</a>
+
+
+
+
+<a href='#M001354'>
+add_limit_offset!<br/>
+</a>
+
+
+
+
+<a href='#M001355'>
+add_lock!<br/>
+</a>
+
+
+
+
+<a href='#M001350'>
+begin_db_transaction<br/>
+</a>
+
+
+
+
+<a href='#M001351'>
+commit_db_transaction<br/>
+</a>
+
+
+
+
+<a href='#M001356'>
+default_sequence_name<br/>
+</a>
+
+
+
+
+<a href='#M001348'>
+delete<br/>
+</a>
+
+
+
+
+<a href='#M001363'>
+delete_sql<br/>
+</a>
+
+
+
+
+<a href='#M001359'>
+empty_insert_statement<br/>
+</a>
+
+
+
+
+<a href='#M001345'>
+execute<br/>
+</a>
+
+
+
+
+<a href='#M001346'>
+insert<br/>
+</a>
+
+
+
+
+<a href='#M001358'>
+insert_fixture<br/>
+</a>
+
+
+
+
+<a href='#M001361'>
+insert_sql<br/>
+</a>
+
+
+
+
+<a href='#M001357'>
+reset_sequence!<br/>
+</a>
+
+
+
+
+<a href='#M001352'>
+rollback_db_transaction<br/>
+</a>
+
+
+
+
+<a href='#M001360'>
+select<br/>
+</a>
+
+
+
+
+<a href='#M001340'>
+select_all<br/>
+</a>
+
+
+
+
+<a href='#M001341'>
+select_one<br/>
+</a>
+
+
+
+
+<a href='#M001344'>
+select_rows<br/>
+</a>
+
+
+
+
+<a href='#M001342'>
+select_value<br/>
+</a>
+
+
+
+
+<a href='#M001343'>
+select_values<br/>
+</a>
+
+
+
+
+<a href='#M001349'>
+transaction<br/>
+</a>
+
+
+
+
+<a href='#M001347'>
+update<br/>
+</a>
+
+
+
+
+<a href='#M001362'>
+update_sql<br/>
+</a>
+
+
+</div>
+<div id="spacer"></div><div class="navigation darker index" id="class_wrapper"><div class="list_header"><h3>All classes</h3></div><div class="list_header_link"><a onclick="toggle('class'); toggleText('class_link'); return false;" href="#" id="class_link">Hide...</a></div><div class="clear"></div><div id="class"><form><label for="filter_class">Filter:&nbsp;&nbsp;</label><input type="text" onKeyUp="return filterList('class', this.value, event);" onKeyPress="return disableSubmit(event);" id="filter_class"></input></form></div></div><div class="navigation darker index" id="file_wrapper"><div class="list_header"><h3>All files</h3></div><div class="list_header_link"><a onclick="toggle('file'); toggleText('file_link'); return false;" href="#" id="file_link">Hide...</a></div><div class="clear"></div><div id="file"><form><label for="filter_file">Filter:&nbsp;&nbsp;</label><input type="text" onKeyUp="return filterList('file', this.value, event);" onKeyPress="return disableSubmit(event);" id="filter_file"></input></form></div></div><div class="navigation darker index" id="method_wrapper"><div class="list_header"><h3>All methods</h3></div><div class="list_header_link"><a onclick="toggle('method'); toggleText('method_link'); return false;" href="#" id="method_link">Show...</a></div><div class="clear"></div><div id="method"><form><label for="filter_method">Filter:&nbsp;&nbsp;</label><input type="text" onKeyUp="return filterList('method', this.value, event);" onKeyPress="return disableSubmit(event);" id="filter_method"></input></form></div></div></div><div id="content">
+<h1 id="item_name">Module: ActiveRecord::ConnectionAdapters::DatabaseStatements</h1>
+
+
+
+
+
+<p></p>
+
+
+
+
+
+
+<h1>Public Instance Methods</h1>
+
+
+<a class="small" name="M001353"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001353'>
+
+
+add_limit!
+
+(sql, options)
+
+</a>
+</h3>
+<p>
+Alias for add_limit_offset!.
+</p>
+
+<p class="source_link" id="M001353-show-link"><a onclick="toggle('M001353-source'); toggleText('M001353-link'); return false;" href="#" id="M001353-link">Show source...</a></p><div class="source" id="M001353-source"><pre>    <span class="ruby-comment cmt"># File vendor/rails/activerecord/lib/active_record/connection_adapters/abstract/database_statements.rb, line 97</span>
+97:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">add_limit!</span>(<span class="ruby-identifier">sql</span>, <span class="ruby-identifier">options</span>)
+98:         <span class="ruby-identifier">add_limit_offset!</span>(<span class="ruby-identifier">sql</span>, <span class="ruby-identifier">options</span>) <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">options</span>
+99:       <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001354"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001354'>
+
+
+add_limit_offset!
+
+(sql, options)
+
+</a>
+</h3>
+<p>
+Appends <tt>LIMIT</tt> and <tt>OFFSET</tt> options to an SQL statement.
+This method <b>modifies</b> the <tt>sql</tt> parameter.
+</p>
+<h5>Examples</h5>
+<pre>
+ add_limit_offset!('SELECT * FROM suppliers', {:limit =&gt; 10, :offset =&gt; 50})
+</pre>
+<p>
+generates
+</p>
+<pre>
+ SELECT * FROM suppliers LIMIT 10 OFFSET 50
+</pre>
+
+<p class="source_link" id="M001354-show-link"><a onclick="toggle('M001354-source'); toggleText('M001354-link'); return false;" href="#" id="M001354-link">Show source...</a></p><div class="source" id="M001354-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/activerecord/lib/active_record/connection_adapters/abstract/database_statements.rb, line 107</span>
+107:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">add_limit_offset!</span>(<span class="ruby-identifier">sql</span>, <span class="ruby-identifier">options</span>)
+108:         <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">limit</span> = <span class="ruby-identifier">options</span>[<span class="ruby-identifier">:limit</span>]
+109:           <span class="ruby-identifier">sql</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-node">&quot; LIMIT #{limit}&quot;</span>
+110:           <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">offset</span> = <span class="ruby-identifier">options</span>[<span class="ruby-identifier">:offset</span>]
+111:             <span class="ruby-identifier">sql</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-node">&quot; OFFSET #{offset}&quot;</span>
+112:           <span class="ruby-keyword kw">end</span>
+113:         <span class="ruby-keyword kw">end</span>
+114:       <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001355"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001355'>
+
+
+add_lock!
+
+(sql, options)
+
+</a>
+</h3>
+<p>
+Appends a locking clause to an SQL statement. This method <b>modifies</b>
+the <tt>sql</tt> parameter.
+</p>
+<pre>
+  # SELECT * FROM suppliers FOR UPDATE
+  add_lock! 'SELECT * FROM suppliers', :lock =&gt; true
+  add_lock! 'SELECT * FROM suppliers', :lock =&gt; ' FOR UPDATE'
+</pre>
+
+<p class="source_link" id="M001355-show-link"><a onclick="toggle('M001355-source'); toggleText('M001355-link'); return false;" href="#" id="M001355-link">Show source...</a></p><div class="source" id="M001355-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/activerecord/lib/active_record/connection_adapters/abstract/database_statements.rb, line 121</span>
+121:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">add_lock!</span>(<span class="ruby-identifier">sql</span>, <span class="ruby-identifier">options</span>)
+122:         <span class="ruby-keyword kw">case</span> <span class="ruby-identifier">lock</span> = <span class="ruby-identifier">options</span>[<span class="ruby-identifier">:lock</span>]
+123:           <span class="ruby-keyword kw">when</span> <span class="ruby-keyword kw">true</span>;   <span class="ruby-identifier">sql</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-value str">' FOR UPDATE'</span>
+124:           <span class="ruby-keyword kw">when</span> <span class="ruby-constant">String</span>; <span class="ruby-identifier">sql</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-node">&quot; #{lock}&quot;</span>
+125:         <span class="ruby-keyword kw">end</span>
+126:       <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001350"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001350'>
+
+
+begin_db_transaction
+
+()
+
+</a>
+</h3>
+<p>
+Begins the <a href="DatabaseStatements.html#M001349">transaction</a> (and
+turns off auto-committing).
+</p>
+
+<p class="source_link" id="M001350-show-link"><a onclick="toggle('M001350-source'); toggleText('M001350-link'); return false;" href="#" id="M001350-link">Show source...</a></p><div class="source" id="M001350-source"><pre>    <span class="ruby-comment cmt"># File vendor/rails/activerecord/lib/active_record/connection_adapters/abstract/database_statements.rb, line 87</span>
+87:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">begin_db_transaction</span>()    <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001351"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001351'>
+
+
+commit_db_transaction
+
+()
+
+</a>
+</h3>
+<p>
+Commits the <a href="DatabaseStatements.html#M001349">transaction</a> (and
+turns on auto-committing).
+</p>
+
+<p class="source_link" id="M001351-show-link"><a onclick="toggle('M001351-source'); toggleText('M001351-link'); return false;" href="#" id="M001351-link">Show source...</a></p><div class="source" id="M001351-source"><pre>    <span class="ruby-comment cmt"># File vendor/rails/activerecord/lib/active_record/connection_adapters/abstract/database_statements.rb, line 90</span>
+90:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">commit_db_transaction</span>()   <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001356"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001356'>
+
+
+default_sequence_name
+
+(table, column)
+
+</a>
+</h3>
+
+<p class="source_link" id="M001356-show-link"><a onclick="toggle('M001356-source'); toggleText('M001356-link'); return false;" href="#" id="M001356-link">Show source...</a></p><div class="source" id="M001356-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/activerecord/lib/active_record/connection_adapters/abstract/database_statements.rb, line 128</span>
+128:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">default_sequence_name</span>(<span class="ruby-identifier">table</span>, <span class="ruby-identifier">column</span>)
+129:         <span class="ruby-keyword kw">nil</span>
+130:       <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001348"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001348'>
+
+
+delete
+
+(sql, name = nil)
+
+</a>
+</h3>
+<p>
+Executes the <a href="DatabaseStatements.html#M001348">delete</a> statement
+and returns the number of rows affected.
+</p>
+
+<p class="source_link" id="M001348-show-link"><a onclick="toggle('M001348-source'); toggleText('M001348-link'); return false;" href="#" id="M001348-link">Show source...</a></p><div class="source" id="M001348-source"><pre>    <span class="ruby-comment cmt"># File vendor/rails/activerecord/lib/active_record/connection_adapters/abstract/database_statements.rb, line 53</span>
+53:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">delete</span>(<span class="ruby-identifier">sql</span>, <span class="ruby-identifier">name</span> = <span class="ruby-keyword kw">nil</span>)
+54:         <span class="ruby-identifier">delete_sql</span>(<span class="ruby-identifier">sql</span>, <span class="ruby-identifier">name</span>)
+55:       <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001359"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001359'>
+
+
+empty_insert_statement
+
+(table_name)
+
+</a>
+</h3>
+
+<p class="source_link" id="M001359-show-link"><a onclick="toggle('M001359-source'); toggleText('M001359-link'); return false;" href="#" id="M001359-link">Show source...</a></p><div class="source" id="M001359-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/activerecord/lib/active_record/connection_adapters/abstract/database_statements.rb, line 143</span>
+143:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">empty_insert_statement</span>(<span class="ruby-identifier">table_name</span>)
+144:         <span class="ruby-node">&quot;INSERT INTO #{quote_table_name(table_name)} VALUES(DEFAULT)&quot;</span>
+145:       <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001345"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001345'>
+
+
+execute
+
+(sql, name = nil)
+
+</a>
+</h3>
+<p>
+Executes the SQL statement in the context of this connection.
+</p>
+
+<p class="source_link" id="M001345-show-link"><a onclick="toggle('M001345-source'); toggleText('M001345-link'); return false;" href="#" id="M001345-link">Show source...</a></p><div class="source" id="M001345-source"><pre>    <span class="ruby-comment cmt"># File vendor/rails/activerecord/lib/active_record/connection_adapters/abstract/database_statements.rb, line 38</span>
+38:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">execute</span>(<span class="ruby-identifier">sql</span>, <span class="ruby-identifier">name</span> = <span class="ruby-keyword kw">nil</span>)
+39:         <span class="ruby-identifier">raise</span> <span class="ruby-constant">NotImplementedError</span>, <span class="ruby-value str">&quot;execute is an abstract method&quot;</span>
+40:       <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001346"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001346'>
+
+
+insert
+
+(sql, name = nil, pk = nil, id_value = nil, sequence_name = nil)
+
+</a>
+</h3>
+<p>
+Returns the last auto-generated ID from the affected table.
+</p>
+
+<p class="source_link" id="M001346-show-link"><a onclick="toggle('M001346-source'); toggleText('M001346-link'); return false;" href="#" id="M001346-link">Show source...</a></p><div class="source" id="M001346-source"><pre>    <span class="ruby-comment cmt"># File vendor/rails/activerecord/lib/active_record/connection_adapters/abstract/database_statements.rb, line 43</span>
+43:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">insert</span>(<span class="ruby-identifier">sql</span>, <span class="ruby-identifier">name</span> = <span class="ruby-keyword kw">nil</span>, <span class="ruby-identifier">pk</span> = <span class="ruby-keyword kw">nil</span>, <span class="ruby-identifier">id_value</span> = <span class="ruby-keyword kw">nil</span>, <span class="ruby-identifier">sequence_name</span> = <span class="ruby-keyword kw">nil</span>)
+44:         <span class="ruby-identifier">insert_sql</span>(<span class="ruby-identifier">sql</span>, <span class="ruby-identifier">name</span>, <span class="ruby-identifier">pk</span>, <span class="ruby-identifier">id_value</span>, <span class="ruby-identifier">sequence_name</span>)
+45:       <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001358"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001358'>
+
+
+insert_fixture
+
+(fixture, table_name)
+
+</a>
+</h3>
+<p>
+Inserts the given fixture into the table. Overridden in adapters that
+require something beyond a simple <a
+href="DatabaseStatements.html#M001346">insert</a> (eg. Oracle).
+</p>
+
+<p class="source_link" id="M001358-show-link"><a onclick="toggle('M001358-source'); toggleText('M001358-link'); return false;" href="#" id="M001358-link">Show source...</a></p><div class="source" id="M001358-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/activerecord/lib/active_record/connection_adapters/abstract/database_statements.rb, line 139</span>
+139:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">insert_fixture</span>(<span class="ruby-identifier">fixture</span>, <span class="ruby-identifier">table_name</span>)
+140:         <span class="ruby-identifier">execute</span> <span class="ruby-node">&quot;INSERT INTO #{quote_table_name(table_name)} (#{fixture.key_list}) VALUES (#{fixture.value_list})&quot;</span>, <span class="ruby-value str">'Fixture Insert'</span>
+141:       <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001357"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001357'>
+
+
+reset_sequence!
+
+(table, column, sequence = nil)
+
+</a>
+</h3>
+<p>
+Set the sequence to the max value of the table&#8216;s column.
+</p>
+
+<p class="source_link" id="M001357-show-link"><a onclick="toggle('M001357-source'); toggleText('M001357-link'); return false;" href="#" id="M001357-link">Show source...</a></p><div class="source" id="M001357-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/activerecord/lib/active_record/connection_adapters/abstract/database_statements.rb, line 133</span>
+133:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">reset_sequence!</span>(<span class="ruby-identifier">table</span>, <span class="ruby-identifier">column</span>, <span class="ruby-identifier">sequence</span> = <span class="ruby-keyword kw">nil</span>)
+134:         <span class="ruby-comment cmt"># Do nothing by default.  Implement for PostgreSQL, Oracle, ...</span>
+135:       <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001352"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001352'>
+
+
+rollback_db_transaction
+
+()
+
+</a>
+</h3>
+<p>
+Rolls back the <a href="DatabaseStatements.html#M001349">transaction</a>
+(and turns on auto-committing). Must be done if the <a
+href="DatabaseStatements.html#M001349">transaction</a> block raises an
+exception or returns false.
+</p>
+
+<p class="source_link" id="M001352-show-link"><a onclick="toggle('M001352-source'); toggleText('M001352-link'); return false;" href="#" id="M001352-link">Show source...</a></p><div class="source" id="M001352-source"><pre>    <span class="ruby-comment cmt"># File vendor/rails/activerecord/lib/active_record/connection_adapters/abstract/database_statements.rb, line 94</span>
+94:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">rollback_db_transaction</span>() <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001340"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001340'>
+
+
+select_all
+
+(sql, name = nil)
+
+</a>
+</h3>
+<p>
+Returns an array of record hashes with the column names as keys and column
+values as values.
+</p>
+
+<p class="source_link" id="M001340-show-link"><a onclick="toggle('M001340-source'); toggleText('M001340-link'); return false;" href="#" id="M001340-link">Show source...</a></p><div class="source" id="M001340-source"><pre>   <span class="ruby-comment cmt"># File vendor/rails/activerecord/lib/active_record/connection_adapters/abstract/database_statements.rb, line 6</span>
+6:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">select_all</span>(<span class="ruby-identifier">sql</span>, <span class="ruby-identifier">name</span> = <span class="ruby-keyword kw">nil</span>)
+7:         <span class="ruby-identifier">select</span>(<span class="ruby-identifier">sql</span>, <span class="ruby-identifier">name</span>)
+8:       <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001341"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001341'>
+
+
+select_one
+
+(sql, name = nil)
+
+</a>
+</h3>
+<p>
+Returns a record hash with the column names as keys and column values as
+values.
+</p>
+
+<p class="source_link" id="M001341-show-link"><a onclick="toggle('M001341-source'); toggleText('M001341-link'); return false;" href="#" id="M001341-link">Show source...</a></p><div class="source" id="M001341-source"><pre>    <span class="ruby-comment cmt"># File vendor/rails/activerecord/lib/active_record/connection_adapters/abstract/database_statements.rb, line 12</span>
+12:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">select_one</span>(<span class="ruby-identifier">sql</span>, <span class="ruby-identifier">name</span> = <span class="ruby-keyword kw">nil</span>)
+13:         <span class="ruby-identifier">result</span> = <span class="ruby-identifier">select_all</span>(<span class="ruby-identifier">sql</span>, <span class="ruby-identifier">name</span>)
+14:         <span class="ruby-identifier">result</span>.<span class="ruby-identifier">first</span> <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">result</span>
+15:       <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001344"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001344'>
+
+
+select_rows
+
+(sql, name = nil)
+
+</a>
+</h3>
+<p>
+Returns an array of arrays containing the field values. Order is the same
+as that returned by columns.
+</p>
+
+<p class="source_link" id="M001344-show-link"><a onclick="toggle('M001344-source'); toggleText('M001344-link'); return false;" href="#" id="M001344-link">Show source...</a></p><div class="source" id="M001344-source"><pre>    <span class="ruby-comment cmt"># File vendor/rails/activerecord/lib/active_record/connection_adapters/abstract/database_statements.rb, line 33</span>
+33:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">select_rows</span>(<span class="ruby-identifier">sql</span>, <span class="ruby-identifier">name</span> = <span class="ruby-keyword kw">nil</span>)
+34:         <span class="ruby-identifier">raise</span> <span class="ruby-constant">NotImplementedError</span>, <span class="ruby-value str">&quot;select_rows is an abstract method&quot;</span>
+35:       <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001342"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001342'>
+
+
+select_value
+
+(sql, name = nil)
+
+</a>
+</h3>
+<p>
+Returns a single value from a record
+</p>
+
+<p class="source_link" id="M001342-show-link"><a onclick="toggle('M001342-source'); toggleText('M001342-link'); return false;" href="#" id="M001342-link">Show source...</a></p><div class="source" id="M001342-source"><pre>    <span class="ruby-comment cmt"># File vendor/rails/activerecord/lib/active_record/connection_adapters/abstract/database_statements.rb, line 18</span>
+18:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">select_value</span>(<span class="ruby-identifier">sql</span>, <span class="ruby-identifier">name</span> = <span class="ruby-keyword kw">nil</span>)
+19:         <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">result</span> = <span class="ruby-identifier">select_one</span>(<span class="ruby-identifier">sql</span>, <span class="ruby-identifier">name</span>)
+20:           <span class="ruby-identifier">result</span>.<span class="ruby-identifier">values</span>.<span class="ruby-identifier">first</span>
+21:         <span class="ruby-keyword kw">end</span>
+22:       <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001343"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001343'>
+
+
+select_values
+
+(sql, name = nil)
+
+</a>
+</h3>
+<p>
+Returns an array of the values of the first column in a <a
+href="DatabaseStatements.html#M001360">select</a>:
+</p>
+<pre>
+  select_values(&quot;SELECT id FROM companies LIMIT 3&quot;) =&gt; [1,2,3]
+</pre>
+
+<p class="source_link" id="M001343-show-link"><a onclick="toggle('M001343-source'); toggleText('M001343-link'); return false;" href="#" id="M001343-link">Show source...</a></p><div class="source" id="M001343-source"><pre>    <span class="ruby-comment cmt"># File vendor/rails/activerecord/lib/active_record/connection_adapters/abstract/database_statements.rb, line 26</span>
+26:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">select_values</span>(<span class="ruby-identifier">sql</span>, <span class="ruby-identifier">name</span> = <span class="ruby-keyword kw">nil</span>)
+27:         <span class="ruby-identifier">result</span> = <span class="ruby-identifier">select_rows</span>(<span class="ruby-identifier">sql</span>, <span class="ruby-identifier">name</span>)
+28:         <span class="ruby-identifier">result</span>.<span class="ruby-identifier">map</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">v</span><span class="ruby-operator">|</span> <span class="ruby-identifier">v</span>[<span class="ruby-value">0</span>] }
+29:       <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001349"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001349'>
+
+
+transaction
+
+(start_db_transaction = true) {|| ...}
+
+</a>
+</h3>
+<p>
+Wrap a block in a <a
+href="DatabaseStatements.html#M001349">transaction</a>. Returns result of
+block.
+</p>
+
+<p class="source_link" id="M001349-show-link"><a onclick="toggle('M001349-source'); toggleText('M001349-link'); return false;" href="#" id="M001349-link">Show source...</a></p><div class="source" id="M001349-source"><pre>    <span class="ruby-comment cmt"># File vendor/rails/activerecord/lib/active_record/connection_adapters/abstract/database_statements.rb, line 58</span>
+58:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">transaction</span>(<span class="ruby-identifier">start_db_transaction</span> = <span class="ruby-keyword kw">true</span>)
+59:         <span class="ruby-identifier">transaction_open</span> = <span class="ruby-keyword kw">false</span>
+60:         <span class="ruby-keyword kw">begin</span>
+61:           <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">block_given?</span>
+62:             <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">start_db_transaction</span>
+63:               <span class="ruby-identifier">begin_db_transaction</span>
+64:               <span class="ruby-identifier">transaction_open</span> = <span class="ruby-keyword kw">true</span>
+65:             <span class="ruby-keyword kw">end</span>
+66:             <span class="ruby-keyword kw">yield</span>
+67:           <span class="ruby-keyword kw">end</span>
+68:         <span class="ruby-keyword kw">rescue</span> <span class="ruby-constant">Exception</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">database_transaction_rollback</span>
+69:           <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">transaction_open</span>
+70:             <span class="ruby-identifier">transaction_open</span> = <span class="ruby-keyword kw">false</span>
+71:             <span class="ruby-identifier">rollback_db_transaction</span>
+72:           <span class="ruby-keyword kw">end</span>
+73:           <span class="ruby-identifier">raise</span> <span class="ruby-keyword kw">unless</span> <span class="ruby-identifier">database_transaction_rollback</span>.<span class="ruby-identifier">is_a?</span> <span class="ruby-constant">ActiveRecord</span><span class="ruby-operator">::</span><span class="ruby-constant">Rollback</span>
+74:         <span class="ruby-keyword kw">end</span>
+75:       <span class="ruby-keyword kw">ensure</span>
+76:         <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">transaction_open</span>
+77:           <span class="ruby-keyword kw">begin</span>
+78:             <span class="ruby-identifier">commit_db_transaction</span>
+79:           <span class="ruby-keyword kw">rescue</span> <span class="ruby-constant">Exception</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">database_transaction_rollback</span>
+80:             <span class="ruby-identifier">rollback_db_transaction</span>
+81:             <span class="ruby-identifier">raise</span>
+82:           <span class="ruby-keyword kw">end</span>
+83:         <span class="ruby-keyword kw">end</span>
+84:       <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001347"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001347'>
+
+
+update
+
+(sql, name = nil)
+
+</a>
+</h3>
+<p>
+Executes the <a href="DatabaseStatements.html#M001347">update</a> statement
+and returns the number of rows affected.
+</p>
+
+<p class="source_link" id="M001347-show-link"><a onclick="toggle('M001347-source'); toggleText('M001347-link'); return false;" href="#" id="M001347-link">Show source...</a></p><div class="source" id="M001347-source"><pre>    <span class="ruby-comment cmt"># File vendor/rails/activerecord/lib/active_record/connection_adapters/abstract/database_statements.rb, line 48</span>
+48:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">update</span>(<span class="ruby-identifier">sql</span>, <span class="ruby-identifier">name</span> = <span class="ruby-keyword kw">nil</span>)
+49:         <span class="ruby-identifier">update_sql</span>(<span class="ruby-identifier">sql</span>, <span class="ruby-identifier">name</span>)
+50:       <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+
+<h1>Protected Instance Methods</h1>
+
+
+<a class="small" name="M001363"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001363'>
+
+
+delete_sql
+
+(sql, name = nil)
+
+</a>
+</h3>
+<p>
+Executes the <a href="DatabaseStatements.html#M001348">delete</a> statement
+and returns the number of rows affected.
+</p>
+
+<p class="source_link" id="M001363-show-link"><a onclick="toggle('M001363-source'); toggleText('M001363-link'); return false;" href="#" id="M001363-link">Show source...</a></p><div class="source" id="M001363-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/activerecord/lib/active_record/connection_adapters/abstract/database_statements.rb, line 166</span>
+166:         <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">delete_sql</span>(<span class="ruby-identifier">sql</span>, <span class="ruby-identifier">name</span> = <span class="ruby-keyword kw">nil</span>)
+167:           <span class="ruby-identifier">update_sql</span>(<span class="ruby-identifier">sql</span>, <span class="ruby-identifier">name</span>)
+168:         <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001361"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001361'>
+
+
+insert_sql
+
+(sql, name = nil, pk = nil, id_value = nil, sequence_name = nil)
+
+</a>
+</h3>
+<p>
+Returns the last auto-generated ID from the affected table.
+</p>
+
+<p class="source_link" id="M001361-show-link"><a onclick="toggle('M001361-source'); toggleText('M001361-link'); return false;" href="#" id="M001361-link">Show source...</a></p><div class="source" id="M001361-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/activerecord/lib/active_record/connection_adapters/abstract/database_statements.rb, line 155</span>
+155:         <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">insert_sql</span>(<span class="ruby-identifier">sql</span>, <span class="ruby-identifier">name</span> = <span class="ruby-keyword kw">nil</span>, <span class="ruby-identifier">pk</span> = <span class="ruby-keyword kw">nil</span>, <span class="ruby-identifier">id_value</span> = <span class="ruby-keyword kw">nil</span>, <span class="ruby-identifier">sequence_name</span> = <span class="ruby-keyword kw">nil</span>)
+156:           <span class="ruby-identifier">execute</span>(<span class="ruby-identifier">sql</span>, <span class="ruby-identifier">name</span>)
+157:           <span class="ruby-identifier">id_value</span>
+158:         <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001360"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001360'>
+
+
+select
+
+(sql, name = nil)
+
+</a>
+</h3>
+<p>
+Returns an array of record hashes with the column names as keys and column
+values as values.
+</p>
+
+<p class="source_link" id="M001360-show-link"><a onclick="toggle('M001360-source'); toggleText('M001360-link'); return false;" href="#" id="M001360-link">Show source...</a></p><div class="source" id="M001360-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/activerecord/lib/active_record/connection_adapters/abstract/database_statements.rb, line 150</span>
+150:         <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">select</span>(<span class="ruby-identifier">sql</span>, <span class="ruby-identifier">name</span> = <span class="ruby-keyword kw">nil</span>)
+151:           <span class="ruby-identifier">raise</span> <span class="ruby-constant">NotImplementedError</span>, <span class="ruby-value str">&quot;select is an abstract method&quot;</span>
+152:         <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001362"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001362'>
+
+
+update_sql
+
+(sql, name = nil)
+
+</a>
+</h3>
+<p>
+Executes the <a href="DatabaseStatements.html#M001347">update</a> statement
+and returns the number of rows affected.
+</p>
+
+<p class="source_link" id="M001362-show-link"><a onclick="toggle('M001362-source'); toggleText('M001362-link'); return false;" href="#" id="M001362-link">Show source...</a></p><div class="source" id="M001362-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/activerecord/lib/active_record/connection_adapters/abstract/database_statements.rb, line 161</span>
+161:         <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">update_sql</span>(<span class="ruby-identifier">sql</span>, <span class="ruby-identifier">name</span> = <span class="ruby-keyword kw">nil</span>)
+162:           <span class="ruby-identifier">execute</span>(<span class="ruby-identifier">sql</span>, <span class="ruby-identifier">name</span>)
+163:         <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+
+
+
+
+</div><div class="clear" id="footer">Generated on Jan 21, 2008 / Allison 2 &copy; 2007 <a href="http://cloudbur.st">Cloudburst, LLC</a></div></div></body></html>

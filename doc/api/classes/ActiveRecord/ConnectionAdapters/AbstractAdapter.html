@@ -1,0 +1,877 @@
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head><meta content="text/html; charset=utf-8" http-equiv="Content-Type"/><title>Class: ActiveRecord::ConnectionAdapters::AbstractAdapter</title><link type="text/css" href="../../.././rdoc-style.css" media="screen" rel="stylesheet"/><script type="text/javascript">
+// Allison template
+// Copyright 2007, 2008 Cloudburst, LLC. Licensed under the AFL 3. See the included LICENSE file.
+
+var href_base = '../../.././rdoc-style.css'.replace(/(.*\/).*/, '$1'); // inline js is good for something  
+
+function $(id) {
+    if (document.getElementById)
+      elem = document.getElementById(id);
+    else if ( document.all )
+      elem = eval("document.all." + id);
+    else
+      return false;
+    return elem;
+}
+
+  function toggle(id) {
+    elem = $(id);
+    elemStyle = elem.style;   
+    if (elemStyle.display == "block") {
+      elemStyle.display = "none"
+    } else {
+      elemStyle.display = "block"
+    }
+    return true;
+  }
+
+  function toggleText(id) {
+    elem = $(id)
+    if (m = elem.innerHTML.match(/(Hide)(.*)/)) {
+      elem.innerHTML = "Show" + m[2];
+    } else if (m = elem.innerHTML.match(/(Show)(.*)/)) {
+      elem.innerHTML = "Hide" + m[2];
+    }
+    return true;
+  }
+
+function span(s, klass) {
+  return '<span class="' + klass + '">' + s + '</span>';
+}
+  
+function highlightSymbols() {
+  pres = document.getElementsByTagName('pre');
+  for(var i = 0; i < pres.length; i++) {
+    pre = pres[i];
+    spans = pre.getElementsByTagName('span');
+    for(var k = 0; k < spans.length; k++) {
+      span = spans[k];
+      if (span.className.match(/ruby-identifier/)) {
+        if (span.innerHTML.match(/^:/)) {
+          span.className += " ruby-symbol";
+        }
+      }
+    }
+  }
+}
+
+ function hasClass(obj) {
+     var result = false;
+     if (obj.getAttributeNode("class") != null) {
+         result = obj.getAttributeNode("class").value;
+     }
+     return result;
+  }   
+
+ function stripe() {
+    var even = true;
+    var color = "#e4ebed";
+    var tables = document.getElementsByTagName('table');
+    if (tables.length == 0) { return; }
+    for (var h = 0; h < tables.length; h++) {
+        var trs = tables[h].getElementsByTagName("tr");
+        for (var i = 0; i < trs.length; i++) {
+          var tds = trs[i].getElementsByTagName("td");
+            for (var j = 0; j < tds.length; j++) {       
+              if (hasClass(tds[j]) != "first") {                
+              var mytd = tds[j];
+              if (even) {
+                mytd.style.backgroundColor = color;
+              }         
+            }
+          }
+          even =  ! even;
+      }
+    }
+  }
+  
+function ajaxGet(url) {
+  url = (href_base + url).replace('/./', '/')
+  var req = false;
+
+  if (window.ActiveXObject) {
+    try {
+      // stupid hack because IE7 disables local Ajax with the native xmlhttprequest object
+      // for security purposes. Yet ActiveX still works. Thanks, Microsoft. I hate you. Die.
+      req = new ActiveXObject("MSXML2.XMLHTTP.3.0");
+    } catch (e) {
+      try {
+        /* IE 6 and maybe 5, don't know, don't care */
+        req = new ActiveXObject("Msxml2.XMLHTTP");
+      } catch (e) {
+        try {
+          req = new ActiveXObject("Microsoft.XMLHTTP");
+        } catch (e) {
+          req = false;
+        }
+      }
+    }
+  }
+    
+  /* real browsers */
+  if (!req && window.XMLHttpRequest) {
+    try {
+      req = new XMLHttpRequest();
+    } catch (e) {
+      req = false;
+    }
+  } 
+  
+  if (req) {
+    req.open('GET', url, false);
+    req.send(null);
+    return req.responseText;
+  } else {
+    return "Ajax error";  
+  }
+}
+
+
+function addEvent(elm, evType, fn, useCapture) {
+	if (elm.addEventListener) {
+	  elm.addEventListener(evType, fn, useCapture);  
+  	return true;
+	} else if (elm.attachEvent) {
+  	var r = elm.attachEvent('on' + evType, fn);  
+	  return r;  
+	} else {
+  	elm['on' + evType] = fn;
+	}
+}
+
+function insertIndices() {
+  pages = ["class", "file", "method"]
+  for (x in pages) { 
+    $(pages[x]).innerHTML += ajaxGet('fr_' + pages[x] + '_index.html').replace(/(href=")/g, '$1' + href_base);
+  }
+  /* mouseoverify method links */
+  links = $('method').getElementsByTagName('a');
+  for (var x = 0; x < links.length; x++) {
+    if (m = links[x].innerHTML.match(/(.*)\s\((.*)\)/)) {
+      links[x].innerHTML = m[1] + '<br>';
+      links[x].title = m[2];
+    }
+  }
+  /* this is stupid */
+  $('class').style.display = "block";
+  $('file').style.display = "block";
+  
+  /* has to be here because IE7 does not guarantee the onLoad callback order */
+  abbreviateIndicesInner(["class", "file"], 25, "a");
+  /* same, linkTitle() depends on the class link list */
+  linkTitle();
+}
+
+function abbreviateIndices() {
+  var ids = ["defined_in", "child_of", "includes", "requires", "method", "methods"];
+  abbreviateIndicesInner(ids, 25, 'a');
+  abbreviateIndicesInner(ids, 25, 'span');
+}
+
+function abbreviateIndicesInner(indices, amount, tag) {
+  for (var x = 0; x < indices.length; x++) { 
+    var the_index = $(indices[x]);
+    if (the_index) {
+      links = the_index.getElementsByTagName(tag);
+      for (var y = 0; y < links.length; y++) {
+        var link = links[y];
+        if (link.getElementsByTagName('span').length == 0 && link.getElementsByTagName('a').length == 0) {
+          // avoid nesting
+          link.innerHTML = link.innerHTML.replace(/<br>|\n/gi, '');
+          link.title = link.innerHTML;
+          link.innerHTML = abbreviate(link.innerHTML, amount) + '<br>';
+        }
+      }
+    }
+  }
+}
+
+function linkTitle() {
+  
+  /* grab the correct title element from the index */
+  var index_page = ajaxGet('index.html');
+  title_text = index_page.match(/<title>(.*)<\/title>/m)[1];
+  document.title = title_text + " - " + document.title;
+  var p = $('header').getElementsByTagName('p')[0]
+  if (p.innerHTML.match(/^\s*$/)) {
+    p.innerHTML = title_text;
+  } else {
+    p.innerHTML = title_text + ": " + p.innerHTML;
+  }
+  
+  /* set the link properly */
+  title_link = index_page.match(/<a\s+href="(.*?)"/)[1];
+  var element = $('title');
+  var item_type = "";
+  var item_name = "";
+  if (m = element.innerHTML.match(/(Class:|Module:|File:)\s*(.*)/)) {
+    item_type = m[1];
+    item_name = m[2];
+  } else {
+    item_name = element.innerHTML;
+  }
+  element.innerHTML = '<a href="' + href_base + title_link + '">' + item_type + " " + abbreviate(item_name, 45) + '</a>';
+  element.getElementsByTagName('a')[0].title = item_name
+  
+  /* breadcrumb navigation */
+  items = item_name.split("::");
+  items_new = item_name.split("::");
+  file_links = $('class').getElementsByTagName('a');
+  for (var x = 0; x < items.length - 1; x++ ){
+    var item = items[x];
+    link = ("/classes/" + items.slice(0,x).join("/") + "/" + item + ".html").replace('//', '/');
+    regex = new RegExp(RegExp.escape(link) + '$');
+    for (var y = 0; y < file_links.length; y++) {
+      if (file_links[y].href.match(regex)) {
+         items_new[x] = '<a href="' + href_base + link + '">' + item + '</a>';
+         break;
+      }
+    }  
+  }
+  $('item_name').innerHTML = item_type + ' ' + items_new.join(" :: ");
+}
+
+function abbreviate(s, size) {
+  while (s.length > size) {
+    var old_s = s;
+    s = s.replace(/\s|\n/mg, '');
+    s = s.replace(/([A-Z])[a-z]+/m, '$1');
+    if (!s || old_s == s) {
+      return "..." + s.substring(s.length - size, s.length);
+    }
+  }
+  return s;
+}
+
+function disableSubmit(event) {
+  var keyCode = event.keyCode ? event.keyCode : event.which ? event.which : event.charCode;
+  if (keyCode == 13) {
+    return false;
+  } else {
+    return true;
+  }
+}
+  
+function filterList(id, s, event) {
+  
+  /* some weak escaping */
+  s = s.replace(/[^\w\d\.\_\-\/\:\=\[\]\?\!]/g, '');
+  s = RegExp.escape(s);
+  
+  var show_all = false;
+  if (s.match(/^\s*$/)) {
+    show_all = true;
+  }
+  
+  links = $(id).getElementsByTagName('a')
+  regex = new RegExp(s, 'i');
+  
+  for (var x = 0; x < links.length; x++) {
+    var link = links[x];
+    if (show_all) {
+      link.style.display = 'inline';
+    } else {
+       if (link.innerHTML.match(regex)) {        
+         link.style.display = 'inline';
+       } else {
+         link.style.display = 'none';
+       }
+    }
+  }
+  return true;
+}
+
+RegExp.escape = function(text) {
+  if (!arguments.callee.sRE) {
+    var specials = ['/', '.', '*', '+', '?', '|', '(', ')', '[', ']', '{', '}', '\\'];
+    arguments.callee.sRE = new RegExp(
+      '(\\' + specials.join('|\\') + ')', 'g'
+    );
+  }
+  return text.replace(arguments.callee.sRE, '\\$1');
+}
+
+function hacks() {
+  // show the spacer if necessary, 
+  divs = document.getElementsByTagName('div');
+  for(var x = 0; x < divs.length; x++) {
+    if (divs[x].className && divs[x].className.match(/top/)) {
+      document.getElementById('spacer').style.display = 'block';
+    }
+  }
+  // remove extra colons from tables
+  tds = document.getElementsByTagName('td');
+  for(var x = 0; x < tds.length; x++) {
+    str = tds[x].innerHTML
+    if (str.charAt(str.length - 1) == ":") {
+      tds[x].innerHTML = str.slice(0, str.length - 1)
+    }
+  }
+}
+
+addEvent(window, 'load', insertIndices, false);
+addEvent(window, 'load', abbreviateIndices, false);
+addEvent(window, 'load', stripe, false);
+addEvent(window, 'load', highlightSymbols, false);
+addEvent(window, 'load', hacks, false);
+</script></head><body><div id="container"><div class="curve" id="preheader_curve_0"></div><div class="curve" id="preheader_curve_1"></div><div class="curve" id="preheader_curve_2"></div><div class="curve" id="preheader_curve_3"></div><div class="curve" id="preheader_curve_4"></div><div class="curve" id="preheader_curve_5"></div><div id="header"><p>
+</p><span><h1 id="title">
+Class: ActiveRecord::ConnectionAdapters::AbstractAdapter
+</h1></span>
+</div><div class="clear"></div><div id="left">
+<div class="navigation darker top" id="child_of"><h3>Child of</h3><span>
+
+<a href='../../Object.html'>
+Object
+</a>
+</span></div>
+
+<div class="navigation darker top" id="defined_in"><h3>Defined in</h3>
+
+<a href="../../../files/vendor/rails/activerecord/lib/active_record/connection_adapters/abstract_adapter_rb.html">vendor/rails/activerecord/lib/active_record/connection_adapters/abstract_adapter.rb</a>
+
+</div>
+
+<div class="navigation top" id="includes"><h3>Includes</h3>
+
+
+<a href='Quoting.html'>
+Quoting<br/>
+</a>
+
+
+
+
+<a href='DatabaseStatements.html'>
+DatabaseStatements<br/>
+</a>
+
+
+
+
+<a href='SchemaStatements.html'>
+SchemaStatements<br/>
+</a>
+
+
+
+
+<a href='QueryCache.html'>
+QueryCache<br/>
+</a>
+
+
+</div>
+
+
+<div class="navigation top" id="methods"><h3>Methods</h3>
+
+
+<a href='#M001455'>
+active?<br/>
+</a>
+
+
+
+
+<a href='#M001449'>
+adapter_name<br/>
+</a>
+
+
+
+
+<a href='#M001454'>
+disable_referential_integrity<br/>
+</a>
+
+
+
+
+<a href='#M001457'>
+disconnect!<br/>
+</a>
+
+
+
+
+<a href='#M001463'>
+format_log_entry<br/>
+</a>
+
+
+
+
+<a href='#M001462'>
+log<br/>
+</a>
+
+
+
+
+<a href='#M001461'>
+log_info<br/>
+</a>
+
+
+
+
+<a href='#M001452'>
+prefetch_primary_key?<br/>
+</a>
+
+
+
+
+<a href='#M001453'>
+quote_table_name<br/>
+</a>
+
+
+
+
+<a href='#M001460'>
+raw_connection<br/>
+</a>
+
+
+
+
+<a href='#M001456'>
+reconnect!<br/>
+</a>
+
+
+
+
+<a href='#M001458'>
+requires_reloading?<br/>
+</a>
+
+
+
+
+<a href='#M001451'>
+supports_count_distinct?<br/>
+</a>
+
+
+
+
+<a href='#M001450'>
+supports_migrations?<br/>
+</a>
+
+
+
+
+<a href='#M001459'>
+verify!<br/>
+</a>
+
+
+</div>
+<div id="spacer"></div><div class="navigation darker index" id="class_wrapper"><div class="list_header"><h3>All classes</h3></div><div class="list_header_link"><a onclick="toggle('class'); toggleText('class_link'); return false;" href="#" id="class_link">Hide...</a></div><div class="clear"></div><div id="class"><form><label for="filter_class">Filter:&nbsp;&nbsp;</label><input type="text" onKeyUp="return filterList('class', this.value, event);" onKeyPress="return disableSubmit(event);" id="filter_class"></input></form></div></div><div class="navigation darker index" id="file_wrapper"><div class="list_header"><h3>All files</h3></div><div class="list_header_link"><a onclick="toggle('file'); toggleText('file_link'); return false;" href="#" id="file_link">Hide...</a></div><div class="clear"></div><div id="file"><form><label for="filter_file">Filter:&nbsp;&nbsp;</label><input type="text" onKeyUp="return filterList('file', this.value, event);" onKeyPress="return disableSubmit(event);" id="filter_file"></input></form></div></div><div class="navigation darker index" id="method_wrapper"><div class="list_header"><h3>All methods</h3></div><div class="list_header_link"><a onclick="toggle('method'); toggleText('method_link'); return false;" href="#" id="method_link">Show...</a></div><div class="clear"></div><div id="method"><form><label for="filter_method">Filter:&nbsp;&nbsp;</label><input type="text" onKeyUp="return filterList('method', this.value, event);" onKeyPress="return disableSubmit(event);" id="filter_method"></input></form></div></div></div><div id="content">
+<h1 id="item_name">Class: ActiveRecord::ConnectionAdapters::AbstractAdapter</h1>
+
+<div id="description"><p>
+All the concrete database adapters follow the interface laid down in this
+class. You can use this interface directly by borrowing the database
+connection from the <a href="../Base.html">Base</a> with <a
+href="../Base.html#M001630">Base.connection</a>.
+</p>
+<p>
+Most of the methods in the adapter are useful during migrations. Most
+notably, <a
+href="SchemaStatements.html#M001315">SchemaStatements#create_table</a>, <a
+href="SchemaStatements.html#M001317">SchemaStatements#drop_table</a>, <a
+href="SchemaStatements.html#M001323">SchemaStatements#add_index</a>, <a
+href="SchemaStatements.html#M001324">SchemaStatements#remove_index</a>, <a
+href="SchemaStatements.html#M001318">SchemaStatements#add_column</a>, <a
+href="SchemaStatements.html#M001320">SchemaStatements#change_column</a> and
+<a href="SchemaStatements.html#M001319">SchemaStatements#remove_column</a>
+are very useful.
+</p>
+</div>
+
+
+
+
+<p></p>
+
+
+
+
+
+
+<h1>Public Instance Methods</h1>
+
+
+<a class="small" name="M001455"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001455'>
+
+
+active?
+
+()
+
+</a>
+</h3>
+<p>
+Is this connection active and ready to perform queries?
+</p>
+
+<p class="source_link" id="M001455-show-link"><a onclick="toggle('M001455-source'); toggleText('M001455-link'); return false;" href="#" id="M001455-link">Show source...</a></p><div class="source" id="M001455-source"><pre>    <span class="ruby-comment cmt"># File vendor/rails/activerecord/lib/active_record/connection_adapters/abstract_adapter.rb, line 84</span>
+84:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">active?</span>
+85:         <span class="ruby-ivar">@active</span> <span class="ruby-operator">!=</span> <span class="ruby-keyword kw">false</span>
+86:       <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001449"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001449'>
+
+
+adapter_name
+
+()
+
+</a>
+</h3>
+<p>
+Returns the human-readable name of the adapter. Use mixed case - one can
+always use downcase if needed.
+</p>
+
+<p class="source_link" id="M001449-show-link"><a onclick="toggle('M001449-source'); toggleText('M001449-link'); return false;" href="#" id="M001449-link">Show source...</a></p><div class="source" id="M001449-source"><pre>    <span class="ruby-comment cmt"># File vendor/rails/activerecord/lib/active_record/connection_adapters/abstract_adapter.rb, line 38</span>
+38:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">adapter_name</span>
+39:         <span class="ruby-value str">'Abstract'</span>
+40:       <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001454"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001454'>
+
+
+disable_referential_integrity
+
+() {|| ...}
+
+</a>
+</h3>
+<p>
+Override to turn off referential integrity while executing +&amp;block+
+</p>
+
+<p class="source_link" id="M001454-show-link"><a onclick="toggle('M001454-source'); toggleText('M001454-link'); return false;" href="#" id="M001454-link">Show source...</a></p><div class="source" id="M001454-source"><pre>    <span class="ruby-comment cmt"># File vendor/rails/activerecord/lib/active_record/connection_adapters/abstract_adapter.rb, line 77</span>
+77:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">disable_referential_integrity</span>(<span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
+78:         <span class="ruby-keyword kw">yield</span>
+79:       <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001457"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001457'>
+
+
+disconnect!
+
+()
+
+</a>
+</h3>
+<p>
+Close this connection
+</p>
+
+<p class="source_link" id="M001457-show-link"><a onclick="toggle('M001457-source'); toggleText('M001457-link'); return false;" href="#" id="M001457-link">Show source...</a></p><div class="source" id="M001457-source"><pre>    <span class="ruby-comment cmt"># File vendor/rails/activerecord/lib/active_record/connection_adapters/abstract_adapter.rb, line 94</span>
+94:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">disconnect!</span>
+95:         <span class="ruby-ivar">@active</span> = <span class="ruby-keyword kw">false</span>
+96:       <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001461"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001461'>
+
+
+log_info
+
+(sql, name, runtime)
+
+</a>
+</h3>
+
+<p class="source_link" id="M001461-show-link"><a onclick="toggle('M001461-source'); toggleText('M001461-link'); return false;" href="#" id="M001461-link">Show source...</a></p><div class="source" id="M001461-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/activerecord/lib/active_record/connection_adapters/abstract_adapter.rb, line 121</span>
+121:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">log_info</span>(<span class="ruby-identifier">sql</span>, <span class="ruby-identifier">name</span>, <span class="ruby-identifier">runtime</span>)
+122:         <span class="ruby-keyword kw">if</span> <span class="ruby-ivar">@logger</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-ivar">@logger</span>.<span class="ruby-identifier">debug?</span>
+123:           <span class="ruby-identifier">name</span> = <span class="ruby-node">&quot;#{name.nil? ? &quot;SQL&quot; : name} (#{sprintf(&quot;%f&quot;, runtime)})&quot;</span>
+124:           <span class="ruby-ivar">@logger</span>.<span class="ruby-identifier">debug</span> <span class="ruby-identifier">format_log_entry</span>(<span class="ruby-identifier">name</span>, <span class="ruby-identifier">sql</span>.<span class="ruby-identifier">squeeze</span>(<span class="ruby-value str">' '</span>))
+125:         <span class="ruby-keyword kw">end</span>
+126:       <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001452"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001452'>
+
+
+prefetch_primary_key?
+
+(table_name = nil)
+
+</a>
+</h3>
+<p>
+Should primary key values be selected from their corresponding sequence
+before the insert statement? If true, next_sequence_value is called before
+each insert to set the record&#8216;s primary key. This is false for all
+adapters but Firebird.
+</p>
+
+<p class="source_link" id="M001452-show-link"><a onclick="toggle('M001452-source'); toggleText('M001452-link'); return false;" href="#" id="M001452-link">Show source...</a></p><div class="source" id="M001452-source"><pre>    <span class="ruby-comment cmt"># File vendor/rails/activerecord/lib/active_record/connection_adapters/abstract_adapter.rb, line 58</span>
+58:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">prefetch_primary_key?</span>(<span class="ruby-identifier">table_name</span> = <span class="ruby-keyword kw">nil</span>)
+59:         <span class="ruby-keyword kw">false</span>
+60:       <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001453"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001453'>
+
+
+quote_table_name
+
+(name)
+
+</a>
+</h3>
+<p>
+Override to return the quoted table name. Defaults to column quoting.
+</p>
+
+<p class="source_link" id="M001453-show-link"><a onclick="toggle('M001453-source'); toggleText('M001453-link'); return false;" href="#" id="M001453-link">Show source...</a></p><div class="source" id="M001453-source"><pre>    <span class="ruby-comment cmt"># File vendor/rails/activerecord/lib/active_record/connection_adapters/abstract_adapter.rb, line 70</span>
+70:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">quote_table_name</span>(<span class="ruby-identifier">name</span>)
+71:         <span class="ruby-identifier">quote_column_name</span>(<span class="ruby-identifier">name</span>)
+72:       <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001460"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001460'>
+
+
+raw_connection
+
+()
+
+</a>
+</h3>
+<p>
+Provides access to the underlying database connection. Useful for when you
+need to call a proprietary method such as postgresql&#8216;s lo_* methods
+</p>
+
+<p class="source_link" id="M001460-show-link"><a onclick="toggle('M001460-source'); toggleText('M001460-link'); return false;" href="#" id="M001460-link">Show source...</a></p><div class="source" id="M001460-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/activerecord/lib/active_record/connection_adapters/abstract_adapter.rb, line 117</span>
+117:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">raw_connection</span>
+118:         <span class="ruby-ivar">@connection</span>
+119:       <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001456"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001456'>
+
+
+reconnect!
+
+()
+
+</a>
+</h3>
+<p>
+Close this connection and open a new one in its place.
+</p>
+
+<p class="source_link" id="M001456-show-link"><a onclick="toggle('M001456-source'); toggleText('M001456-link'); return false;" href="#" id="M001456-link">Show source...</a></p><div class="source" id="M001456-source"><pre>    <span class="ruby-comment cmt"># File vendor/rails/activerecord/lib/active_record/connection_adapters/abstract_adapter.rb, line 89</span>
+89:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">reconnect!</span>
+90:         <span class="ruby-ivar">@active</span> = <span class="ruby-keyword kw">true</span>
+91:       <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001458"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001458'>
+
+
+requires_reloading?
+
+()
+
+</a>
+</h3>
+<p>
+Returns true if its safe to reload the connection between requests for
+development mode. This is not the case for Ruby/MySQL and it&#8216;s not
+necessary for any adapters except SQLite.
+</p>
+
+<p class="source_link" id="M001458-show-link"><a onclick="toggle('M001458-source'); toggleText('M001458-link'); return false;" href="#" id="M001458-link">Show source...</a></p><div class="source" id="M001458-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/activerecord/lib/active_record/connection_adapters/abstract_adapter.rb, line 100</span>
+100:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">requires_reloading?</span>
+101:         <span class="ruby-keyword kw">false</span>
+102:       <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001451"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001451'>
+
+
+supports_count_distinct?
+
+()
+
+</a>
+</h3>
+<p>
+Does this adapter support using DISTINCT within COUNT? This is
+<tt>true</tt> for all adapters except sqlite.
+</p>
+
+<p class="source_link" id="M001451-show-link"><a onclick="toggle('M001451-source'); toggleText('M001451-link'); return false;" href="#" id="M001451-link">Show source...</a></p><div class="source" id="M001451-source"><pre>    <span class="ruby-comment cmt"># File vendor/rails/activerecord/lib/active_record/connection_adapters/abstract_adapter.rb, line 50</span>
+50:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">supports_count_distinct?</span>
+51:         <span class="ruby-keyword kw">true</span>
+52:       <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001450"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001450'>
+
+
+supports_migrations?
+
+()
+
+</a>
+</h3>
+<p>
+Does this adapter support migrations? Backend specific, as the abstract
+adapter always returns <tt>false</tt>.
+</p>
+
+<p class="source_link" id="M001450-show-link"><a onclick="toggle('M001450-source'); toggleText('M001450-link'); return false;" href="#" id="M001450-link">Show source...</a></p><div class="source" id="M001450-source"><pre>    <span class="ruby-comment cmt"># File vendor/rails/activerecord/lib/active_record/connection_adapters/abstract_adapter.rb, line 44</span>
+44:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">supports_migrations?</span>
+45:         <span class="ruby-keyword kw">false</span>
+46:       <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001459"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001459'>
+
+
+verify!
+
+(timeout)
+
+</a>
+</h3>
+<p>
+Lazily verify this connection, calling +<a
+href="AbstractAdapter.html#M001455">active?</a>+ only if it hasn&#8216;t
+been called for <tt>timeout</tt> seconds.
+</p>
+
+<p class="source_link" id="M001459-show-link"><a onclick="toggle('M001459-source'); toggleText('M001459-link'); return false;" href="#" id="M001459-link">Show source...</a></p><div class="source" id="M001459-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/activerecord/lib/active_record/connection_adapters/abstract_adapter.rb, line 106</span>
+106:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">verify!</span>(<span class="ruby-identifier">timeout</span>)
+107:         <span class="ruby-identifier">now</span> = <span class="ruby-constant">Time</span>.<span class="ruby-identifier">now</span>.<span class="ruby-identifier">to_i</span>
+108:         <span class="ruby-keyword kw">if</span> (<span class="ruby-identifier">now</span> <span class="ruby-operator">-</span> <span class="ruby-ivar">@last_verification</span>) <span class="ruby-operator">&gt;</span> <span class="ruby-identifier">timeout</span>
+109:           <span class="ruby-identifier">reconnect!</span> <span class="ruby-keyword kw">unless</span> <span class="ruby-identifier">active?</span>
+110:           <span class="ruby-ivar">@last_verification</span> = <span class="ruby-identifier">now</span>
+111:         <span class="ruby-keyword kw">end</span>
+112:       <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+
+<h1>Protected Instance Methods</h1>
+
+
+<a class="small" name="M001463"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001463'>
+
+
+format_log_entry
+
+(message, dump = nil)
+
+</a>
+</h3>
+
+<p class="source_link" id="M001463-show-link"><a onclick="toggle('M001463-source'); toggleText('M001463-link'); return false;" href="#" id="M001463-link">Show source...</a></p><div class="source" id="M001463-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/activerecord/lib/active_record/connection_adapters/abstract_adapter.rb, line 154</span>
+154:         <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">format_log_entry</span>(<span class="ruby-identifier">message</span>, <span class="ruby-identifier">dump</span> = <span class="ruby-keyword kw">nil</span>)
+155:           <span class="ruby-keyword kw">if</span> <span class="ruby-constant">ActiveRecord</span><span class="ruby-operator">::</span><span class="ruby-constant">Base</span>.<span class="ruby-identifier">colorize_logging</span>
+156:             <span class="ruby-keyword kw">if</span> <span class="ruby-ivar">@@row_even</span>
+157:               <span class="ruby-ivar">@@row_even</span> = <span class="ruby-keyword kw">false</span>
+158:               <span class="ruby-identifier">message_color</span>, <span class="ruby-identifier">dump_color</span> = <span class="ruby-value str">&quot;4;36;1&quot;</span>, <span class="ruby-value str">&quot;0;1&quot;</span>
+159:             <span class="ruby-keyword kw">else</span>
+160:               <span class="ruby-ivar">@@row_even</span> = <span class="ruby-keyword kw">true</span>
+161:               <span class="ruby-identifier">message_color</span>, <span class="ruby-identifier">dump_color</span> = <span class="ruby-value str">&quot;4;35;1&quot;</span>, <span class="ruby-value str">&quot;0&quot;</span>
+162:             <span class="ruby-keyword kw">end</span>
+163: 
+164:             <span class="ruby-identifier">log_entry</span> = <span class="ruby-node">&quot;  \e[#{message_color}m#{message}\e[0m   &quot;</span>
+165:             <span class="ruby-identifier">log_entry</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-node">&quot;\e[#{dump_color}m%#{String === dump ? 's' : 'p'}\e[0m&quot;</span> <span class="ruby-operator">%</span> <span class="ruby-identifier">dump</span> <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">dump</span>
+166:             <span class="ruby-identifier">log_entry</span>
+167:           <span class="ruby-keyword kw">else</span>
+168:             <span class="ruby-value str">&quot;%s  %s&quot;</span> <span class="ruby-operator">%</span> [<span class="ruby-identifier">message</span>, <span class="ruby-identifier">dump</span>]
+169:           <span class="ruby-keyword kw">end</span>
+170:         <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001462"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001462'>
+
+
+log
+
+(sql, name) {|| ...}
+
+</a>
+</h3>
+
+<p class="source_link" id="M001462-show-link"><a onclick="toggle('M001462-source'); toggleText('M001462-link'); return false;" href="#" id="M001462-link">Show source...</a></p><div class="source" id="M001462-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/activerecord/lib/active_record/connection_adapters/abstract_adapter.rb, line 129</span>
+129:         <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">log</span>(<span class="ruby-identifier">sql</span>, <span class="ruby-identifier">name</span>)
+130:           <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">block_given?</span>
+131:             <span class="ruby-keyword kw">if</span> <span class="ruby-ivar">@logger</span> <span class="ruby-keyword kw">and</span> <span class="ruby-ivar">@logger</span>.<span class="ruby-identifier">debug?</span>
+132:               <span class="ruby-identifier">result</span> = <span class="ruby-keyword kw">nil</span>
+133:               <span class="ruby-identifier">seconds</span> = <span class="ruby-constant">Benchmark</span>.<span class="ruby-identifier">realtime</span> { <span class="ruby-identifier">result</span> = <span class="ruby-keyword kw">yield</span> }
+134:               <span class="ruby-ivar">@runtime</span> <span class="ruby-operator">+=</span> <span class="ruby-identifier">seconds</span>
+135:               <span class="ruby-identifier">log_info</span>(<span class="ruby-identifier">sql</span>, <span class="ruby-identifier">name</span>, <span class="ruby-identifier">seconds</span>)
+136:               <span class="ruby-identifier">result</span>
+137:             <span class="ruby-keyword kw">else</span>
+138:               <span class="ruby-keyword kw">yield</span>
+139:             <span class="ruby-keyword kw">end</span>
+140:           <span class="ruby-keyword kw">else</span>
+141:             <span class="ruby-identifier">log_info</span>(<span class="ruby-identifier">sql</span>, <span class="ruby-identifier">name</span>, <span class="ruby-value">0</span>)
+142:             <span class="ruby-keyword kw">nil</span>
+143:           <span class="ruby-keyword kw">end</span>
+144:         <span class="ruby-keyword kw">rescue</span> <span class="ruby-constant">Exception</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">e</span>
+145:           <span class="ruby-comment cmt"># Log message and raise exception.</span>
+146:           <span class="ruby-comment cmt"># Set last_verification to 0, so that connection gets verified</span>
+147:           <span class="ruby-comment cmt"># upon reentering the request loop</span>
+148:           <span class="ruby-ivar">@last_verification</span> = <span class="ruby-value">0</span>
+149:           <span class="ruby-identifier">message</span> = <span class="ruby-node">&quot;#{e.class.name}: #{e.message}: #{sql}&quot;</span>
+150:           <span class="ruby-identifier">log_info</span>(<span class="ruby-identifier">message</span>, <span class="ruby-identifier">name</span>, <span class="ruby-value">0</span>)
+151:           <span class="ruby-identifier">raise</span> <span class="ruby-constant">ActiveRecord</span><span class="ruby-operator">::</span><span class="ruby-constant">StatementInvalid</span>, <span class="ruby-identifier">message</span>
+152:         <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+
+
+
+
+</div><div class="clear" id="footer">Generated on Jan 21, 2008 / Allison 2 &copy; 2007 <a href="http://cloudbur.st">Cloudburst, LLC</a></div></div></body></html>

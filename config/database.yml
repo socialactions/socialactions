@@ -1,14 +1,20 @@
-development: &development
+development:
   adapter: mysql
   database: socialactions_development
-  username: twg
-  password: twgRulez
+  username: root
+  password: 
   host: 127.0.0.1
 
 test:
-  <<: *development
+  adapter: mysql
   database: socialactions_test
-
+  username: root
+  password: 
+  host: 127.0.0.1
+  
 production:
-  <<: *development
+  adapter: mysql
   database: socialactions_production
+  username: root
+  password: 
+  host: 127.0.0.1

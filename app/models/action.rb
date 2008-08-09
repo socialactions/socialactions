@@ -1,6 +1,11 @@
 class Action < ActiveRecord::Base
 
   include GeoKit::Geocoders
+  
+  is_indexed :fields => ['title' , 'description', 'site_id', 'latitude', 'longitude', 'created_at', 'updated_at',
+                        # we should talk about making action_type an id 
+                        # to avoid indexing performance issues
+                        {:field => 'action_type', :facet => true} ]
 
   belongs_to :feed
   belongs_to :site

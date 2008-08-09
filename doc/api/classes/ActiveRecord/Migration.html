@@ -1,0 +1,812 @@
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head><meta content="text/html; charset=utf-8" http-equiv="Content-Type"/><title>Class: ActiveRecord::Migration</title><link type="text/css" href="../.././rdoc-style.css" media="screen" rel="stylesheet"/><script type="text/javascript">
+// Allison template
+// Copyright 2007, 2008 Cloudburst, LLC. Licensed under the AFL 3. See the included LICENSE file.
+
+var href_base = '../.././rdoc-style.css'.replace(/(.*\/).*/, '$1'); // inline js is good for something  
+
+function $(id) {
+    if (document.getElementById)
+      elem = document.getElementById(id);
+    else if ( document.all )
+      elem = eval("document.all." + id);
+    else
+      return false;
+    return elem;
+}
+
+  function toggle(id) {
+    elem = $(id);
+    elemStyle = elem.style;   
+    if (elemStyle.display == "block") {
+      elemStyle.display = "none"
+    } else {
+      elemStyle.display = "block"
+    }
+    return true;
+  }
+
+  function toggleText(id) {
+    elem = $(id)
+    if (m = elem.innerHTML.match(/(Hide)(.*)/)) {
+      elem.innerHTML = "Show" + m[2];
+    } else if (m = elem.innerHTML.match(/(Show)(.*)/)) {
+      elem.innerHTML = "Hide" + m[2];
+    }
+    return true;
+  }
+
+function span(s, klass) {
+  return '<span class="' + klass + '">' + s + '</span>';
+}
+  
+function highlightSymbols() {
+  pres = document.getElementsByTagName('pre');
+  for(var i = 0; i < pres.length; i++) {
+    pre = pres[i];
+    spans = pre.getElementsByTagName('span');
+    for(var k = 0; k < spans.length; k++) {
+      span = spans[k];
+      if (span.className.match(/ruby-identifier/)) {
+        if (span.innerHTML.match(/^:/)) {
+          span.className += " ruby-symbol";
+        }
+      }
+    }
+  }
+}
+
+ function hasClass(obj) {
+     var result = false;
+     if (obj.getAttributeNode("class") != null) {
+         result = obj.getAttributeNode("class").value;
+     }
+     return result;
+  }   
+
+ function stripe() {
+    var even = true;
+    var color = "#e4ebed";
+    var tables = document.getElementsByTagName('table');
+    if (tables.length == 0) { return; }
+    for (var h = 0; h < tables.length; h++) {
+        var trs = tables[h].getElementsByTagName("tr");
+        for (var i = 0; i < trs.length; i++) {
+          var tds = trs[i].getElementsByTagName("td");
+            for (var j = 0; j < tds.length; j++) {       
+              if (hasClass(tds[j]) != "first") {                
+              var mytd = tds[j];
+              if (even) {
+                mytd.style.backgroundColor = color;
+              }         
+            }
+          }
+          even =  ! even;
+      }
+    }
+  }
+  
+function ajaxGet(url) {
+  url = (href_base + url).replace('/./', '/')
+  var req = false;
+
+  if (window.ActiveXObject) {
+    try {
+      // stupid hack because IE7 disables local Ajax with the native xmlhttprequest object
+      // for security purposes. Yet ActiveX still works. Thanks, Microsoft. I hate you. Die.
+      req = new ActiveXObject("MSXML2.XMLHTTP.3.0");
+    } catch (e) {
+      try {
+        /* IE 6 and maybe 5, don't know, don't care */
+        req = new ActiveXObject("Msxml2.XMLHTTP");
+      } catch (e) {
+        try {
+          req = new ActiveXObject("Microsoft.XMLHTTP");
+        } catch (e) {
+          req = false;
+        }
+      }
+    }
+  }
+    
+  /* real browsers */
+  if (!req && window.XMLHttpRequest) {
+    try {
+      req = new XMLHttpRequest();
+    } catch (e) {
+      req = false;
+    }
+  } 
+  
+  if (req) {
+    req.open('GET', url, false);
+    req.send(null);
+    return req.responseText;
+  } else {
+    return "Ajax error";  
+  }
+}
+
+
+function addEvent(elm, evType, fn, useCapture) {
+	if (elm.addEventListener) {
+	  elm.addEventListener(evType, fn, useCapture);  
+  	return true;
+	} else if (elm.attachEvent) {
+  	var r = elm.attachEvent('on' + evType, fn);  
+	  return r;  
+	} else {
+  	elm['on' + evType] = fn;
+	}
+}
+
+function insertIndices() {
+  pages = ["class", "file", "method"]
+  for (x in pages) { 
+    $(pages[x]).innerHTML += ajaxGet('fr_' + pages[x] + '_index.html').replace(/(href=")/g, '$1' + href_base);
+  }
+  /* mouseoverify method links */
+  links = $('method').getElementsByTagName('a');
+  for (var x = 0; x < links.length; x++) {
+    if (m = links[x].innerHTML.match(/(.*)\s\((.*)\)/)) {
+      links[x].innerHTML = m[1] + '<br>';
+      links[x].title = m[2];
+    }
+  }
+  /* this is stupid */
+  $('class').style.display = "block";
+  $('file').style.display = "block";
+  
+  /* has to be here because IE7 does not guarantee the onLoad callback order */
+  abbreviateIndicesInner(["class", "file"], 25, "a");
+  /* same, linkTitle() depends on the class link list */
+  linkTitle();
+}
+
+function abbreviateIndices() {
+  var ids = ["defined_in", "child_of", "includes", "requires", "method", "methods"];
+  abbreviateIndicesInner(ids, 25, 'a');
+  abbreviateIndicesInner(ids, 25, 'span');
+}
+
+function abbreviateIndicesInner(indices, amount, tag) {
+  for (var x = 0; x < indices.length; x++) { 
+    var the_index = $(indices[x]);
+    if (the_index) {
+      links = the_index.getElementsByTagName(tag);
+      for (var y = 0; y < links.length; y++) {
+        var link = links[y];
+        if (link.getElementsByTagName('span').length == 0 && link.getElementsByTagName('a').length == 0) {
+          // avoid nesting
+          link.innerHTML = link.innerHTML.replace(/<br>|\n/gi, '');
+          link.title = link.innerHTML;
+          link.innerHTML = abbreviate(link.innerHTML, amount) + '<br>';
+        }
+      }
+    }
+  }
+}
+
+function linkTitle() {
+  
+  /* grab the correct title element from the index */
+  var index_page = ajaxGet('index.html');
+  title_text = index_page.match(/<title>(.*)<\/title>/m)[1];
+  document.title = title_text + " - " + document.title;
+  var p = $('header').getElementsByTagName('p')[0]
+  if (p.innerHTML.match(/^\s*$/)) {
+    p.innerHTML = title_text;
+  } else {
+    p.innerHTML = title_text + ": " + p.innerHTML;
+  }
+  
+  /* set the link properly */
+  title_link = index_page.match(/<a\s+href="(.*?)"/)[1];
+  var element = $('title');
+  var item_type = "";
+  var item_name = "";
+  if (m = element.innerHTML.match(/(Class:|Module:|File:)\s*(.*)/)) {
+    item_type = m[1];
+    item_name = m[2];
+  } else {
+    item_name = element.innerHTML;
+  }
+  element.innerHTML = '<a href="' + href_base + title_link + '">' + item_type + " " + abbreviate(item_name, 45) + '</a>';
+  element.getElementsByTagName('a')[0].title = item_name
+  
+  /* breadcrumb navigation */
+  items = item_name.split("::");
+  items_new = item_name.split("::");
+  file_links = $('class').getElementsByTagName('a');
+  for (var x = 0; x < items.length - 1; x++ ){
+    var item = items[x];
+    link = ("/classes/" + items.slice(0,x).join("/") + "/" + item + ".html").replace('//', '/');
+    regex = new RegExp(RegExp.escape(link) + '$');
+    for (var y = 0; y < file_links.length; y++) {
+      if (file_links[y].href.match(regex)) {
+         items_new[x] = '<a href="' + href_base + link + '">' + item + '</a>';
+         break;
+      }
+    }  
+  }
+  $('item_name').innerHTML = item_type + ' ' + items_new.join(" :: ");
+}
+
+function abbreviate(s, size) {
+  while (s.length > size) {
+    var old_s = s;
+    s = s.replace(/\s|\n/mg, '');
+    s = s.replace(/([A-Z])[a-z]+/m, '$1');
+    if (!s || old_s == s) {
+      return "..." + s.substring(s.length - size, s.length);
+    }
+  }
+  return s;
+}
+
+function disableSubmit(event) {
+  var keyCode = event.keyCode ? event.keyCode : event.which ? event.which : event.charCode;
+  if (keyCode == 13) {
+    return false;
+  } else {
+    return true;
+  }
+}
+  
+function filterList(id, s, event) {
+  
+  /* some weak escaping */
+  s = s.replace(/[^\w\d\.\_\-\/\:\=\[\]\?\!]/g, '');
+  s = RegExp.escape(s);
+  
+  var show_all = false;
+  if (s.match(/^\s*$/)) {
+    show_all = true;
+  }
+  
+  links = $(id).getElementsByTagName('a')
+  regex = new RegExp(s, 'i');
+  
+  for (var x = 0; x < links.length; x++) {
+    var link = links[x];
+    if (show_all) {
+      link.style.display = 'inline';
+    } else {
+       if (link.innerHTML.match(regex)) {        
+         link.style.display = 'inline';
+       } else {
+         link.style.display = 'none';
+       }
+    }
+  }
+  return true;
+}
+
+RegExp.escape = function(text) {
+  if (!arguments.callee.sRE) {
+    var specials = ['/', '.', '*', '+', '?', '|', '(', ')', '[', ']', '{', '}', '\\'];
+    arguments.callee.sRE = new RegExp(
+      '(\\' + specials.join('|\\') + ')', 'g'
+    );
+  }
+  return text.replace(arguments.callee.sRE, '\\$1');
+}
+
+function hacks() {
+  // show the spacer if necessary, 
+  divs = document.getElementsByTagName('div');
+  for(var x = 0; x < divs.length; x++) {
+    if (divs[x].className && divs[x].className.match(/top/)) {
+      document.getElementById('spacer').style.display = 'block';
+    }
+  }
+  // remove extra colons from tables
+  tds = document.getElementsByTagName('td');
+  for(var x = 0; x < tds.length; x++) {
+    str = tds[x].innerHTML
+    if (str.charAt(str.length - 1) == ":") {
+      tds[x].innerHTML = str.slice(0, str.length - 1)
+    }
+  }
+}
+
+addEvent(window, 'load', insertIndices, false);
+addEvent(window, 'load', abbreviateIndices, false);
+addEvent(window, 'load', stripe, false);
+addEvent(window, 'load', highlightSymbols, false);
+addEvent(window, 'load', hacks, false);
+</script></head><body><div id="container"><div class="curve" id="preheader_curve_0"></div><div class="curve" id="preheader_curve_1"></div><div class="curve" id="preheader_curve_2"></div><div class="curve" id="preheader_curve_3"></div><div class="curve" id="preheader_curve_4"></div><div class="curve" id="preheader_curve_5"></div><div id="header"><p>
+</p><span><h1 id="title">
+Class: ActiveRecord::Migration
+</h1></span>
+</div><div class="clear"></div><div id="left">
+<div class="navigation darker top" id="child_of"><h3>Child of</h3><span>
+
+<a href='../Object.html'>
+Object
+</a>
+</span></div>
+
+<div class="navigation darker top" id="defined_in"><h3>Defined in</h3>
+
+<a href="../../files/vendor/rails/activerecord/lib/active_record/migration_rb.html">vendor/rails/activerecord/lib/active_record/migration.rb</a>
+
+</div>
+
+
+
+<div class="navigation top" id="methods"><h3>Methods</h3>
+
+
+<a href='#M001533'>
+announce<br/>
+</a>
+
+
+
+
+<a href='#M001537'>
+method_missing<br/>
+</a>
+
+
+
+
+<a href='#M001531'>
+migrate<br/>
+</a>
+
+
+
+
+<a href='#M001534'>
+say<br/>
+</a>
+
+
+
+
+<a href='#M001535'>
+say_with_time<br/>
+</a>
+
+
+
+
+<a href='#M001536'>
+suppress_messages<br/>
+</a>
+
+
+
+
+<a href='#M001532'>
+write<br/>
+</a>
+
+
+</div>
+<div id="spacer"></div><div class="navigation darker index" id="class_wrapper"><div class="list_header"><h3>All classes</h3></div><div class="list_header_link"><a onclick="toggle('class'); toggleText('class_link'); return false;" href="#" id="class_link">Hide...</a></div><div class="clear"></div><div id="class"><form><label for="filter_class">Filter:&nbsp;&nbsp;</label><input type="text" onKeyUp="return filterList('class', this.value, event);" onKeyPress="return disableSubmit(event);" id="filter_class"></input></form></div></div><div class="navigation darker index" id="file_wrapper"><div class="list_header"><h3>All files</h3></div><div class="list_header_link"><a onclick="toggle('file'); toggleText('file_link'); return false;" href="#" id="file_link">Hide...</a></div><div class="clear"></div><div id="file"><form><label for="filter_file">Filter:&nbsp;&nbsp;</label><input type="text" onKeyUp="return filterList('file', this.value, event);" onKeyPress="return disableSubmit(event);" id="filter_file"></input></form></div></div><div class="navigation darker index" id="method_wrapper"><div class="list_header"><h3>All methods</h3></div><div class="list_header_link"><a onclick="toggle('method'); toggleText('method_link'); return false;" href="#" id="method_link">Show...</a></div><div class="clear"></div><div id="method"><form><label for="filter_method">Filter:&nbsp;&nbsp;</label><input type="text" onKeyUp="return filterList('method', this.value, event);" onKeyPress="return disableSubmit(event);" id="filter_method"></input></form></div></div></div><div id="content">
+<h1 id="item_name">Class: ActiveRecord::Migration</h1>
+
+<div id="description"><p>
+Migrations can manage the evolution of a schema used by several physical
+databases. It&#8216;s a solution to the common problem of adding a field to
+make a new feature work in your local database, but being unsure of how to
+push that change to other developers and to the production server. With
+migrations, you can describe the transformations in self-contained classes
+that can be checked into version control systems and executed against
+another database that might be one, two, or five versions behind.
+</p>
+<p>
+Example of a simple migration:
+</p>
+<pre>
+  class AddSsl &lt; ActiveRecord::Migration
+    def self.up
+      add_column :accounts, :ssl_enabled, :boolean, :default =&gt; 1
+    end
+
+    def self.down
+      remove_column :accounts, :ssl_enabled
+    end
+  end
+</pre>
+<p>
+This migration will add a boolean flag to the accounts table and remove it
+if you&#8216;re backing out of the migration. It shows how all migrations
+have two class methods <tt>up</tt> and <tt>down</tt> that describes the
+transformations required to implement or remove the migration. These
+methods can consist of both the migration specific methods like add_column
+and remove_column, but may also contain regular Ruby code for generating
+data needed for the transformations.
+</p>
+<p>
+Example of a more complex migration that also needs to initialize data:
+</p>
+<pre>
+  class AddSystemSettings &lt; ActiveRecord::Migration
+    def self.up
+      create_table :system_settings do |t|
+        t.string  :name
+        t.string  :label
+        t.text  :value
+        t.string  :type
+        t.integer  :position
+      end
+
+      SystemSetting.create :name =&gt; &quot;notice&quot;, :label =&gt; &quot;Use notice?&quot;, :value =&gt; 1
+    end
+
+    def self.down
+      drop_table :system_settings
+    end
+  end
+</pre>
+<p>
+This migration first adds the system_settings table, then creates the very
+first row in it using the Active Record model that relies on the table. It
+also uses the more advanced create_table syntax where you can specify a
+complete table schema in one block call.
+</p>
+<h2>Available transformations</h2>
+<ul>
+<li><tt>create_table(name, options)</tt> Creates a table called <tt>name</tt>
+and makes the table object available to a block that can then add columns
+to it, following the same format as add_column. See example above. The
+options hash is for fragments like &quot;DEFAULT CHARSET=UTF-8&quot; that
+are appended to the create table definition.
+
+</li>
+<li><tt>drop_table(name)</tt>: Drops the table called <tt>name</tt>.
+
+</li>
+<li><tt>rename_table(old_name, new_name)</tt>: Renames the table called
+<tt>old_name</tt> to <tt>new_name</tt>.
+
+</li>
+<li><tt>add_column(table_name, column_name, type, options)</tt>: Adds a new
+column to the table called <tt>table_name</tt> named <tt>column_name</tt>
+specified to be one of the following types: :string, :text, :integer,
+:float, :decimal, :datetime, :timestamp, :time, :date, :binary, :boolean. A
+default value can be specified by passing an <tt>options</tt> hash like {
+:default =&gt; 11 }. Other options include :limit and :null (e.g. { :limit
+=&gt; 50, :null =&gt; false }) &#8212; see
+ActiveRecord::ConnectionAdapters::TableDefinition#column for details.
+
+</li>
+<li><tt>rename_column(table_name, column_name, new_column_name)</tt>: Renames a
+column but keeps the type and content.
+
+</li>
+<li><tt>change_column(table_name, column_name, type, options)</tt>: Changes the
+column to a different type using the same parameters as add_column.
+
+</li>
+<li><tt>remove_column(table_name, column_name)</tt>: Removes the column named
+<tt>column_name</tt> from the table called <tt>table_name</tt>.
+
+</li>
+<li><tt>add_index(table_name, column_names, options)</tt>: Adds a new index
+with the name of the column. Other options include :name and :unique (e.g.
+{ :name =&gt; &quot;users_name_index&quot;, :unique =&gt; true }).
+
+</li>
+<li><tt>remove_index(table_name, index_name)</tt>: Removes the index specified
+by <tt>index_name</tt>.
+
+</li>
+</ul>
+<h2>Irreversible transformations</h2>
+<p>
+Some transformations are destructive in a manner that cannot be reversed.
+Migrations of that kind should raise an
+<tt>ActiveRecord::IrreversibleMigration</tt> exception in their
+<tt>down</tt> method.
+</p>
+<h2>Running migrations from within <a href="../Rails.html">Rails</a></h2>
+<p>
+The <a href="../Rails.html">Rails</a> package has several tools to help
+create and apply migrations.
+</p>
+<p>
+To generate a new migration, use <tt>script/generate migration
+MyNewMigration</tt> where MyNewMigration is the name of your migration. The
+generator will create a file <tt>nnn_my_new_migration.rb</tt> in the
+<tt>db/migrate/</tt> directory where <tt>nnn</tt> is the next largest
+migration number. You may then edit the <tt>self.up</tt> and
+<tt>self.down</tt> methods of MyNewMigration.
+</p>
+<p>
+To run migrations against the currently configured database, use <tt>rake
+db:<a href="Migration.html#M001531">migrate</a></tt>. This will update the
+database by running all of the pending migrations, creating the
+<tt>schema_info</tt> table if missing.
+</p>
+<p>
+To roll the database back to a previous migration version, use <tt>rake
+db:<a href="Migration.html#M001531">migrate</a> VERSION=X</tt> where
+<tt>X</tt> is the version to which you wish to downgrade. If any of the
+migrations throw an <tt>ActiveRecord::IrreversibleMigration</tt> exception,
+that step will fail and you&#8216;ll have some manual work to do.
+</p>
+<h2>Database support</h2>
+<p>
+Migrations are currently supported in MySQL, PostgreSQL, SQLite, SQL
+Server, Sybase, and Oracle (all supported databases except DB2).
+</p>
+<h2>More examples</h2>
+<p>
+Not all migrations change the schema. Some just fix the data:
+</p>
+<pre>
+  class RemoveEmptyTags &lt; ActiveRecord::Migration
+    def self.up
+      Tag.find(:all).each { |tag| tag.destroy if tag.pages.empty? }
+    end
+
+    def self.down
+      # not much we can do to restore deleted data
+      raise ActiveRecord::IrreversibleMigration, &quot;Can't recover the deleted tags&quot;
+    end
+  end
+</pre>
+<p>
+Others remove columns when they <a
+href="Migration.html#M001531">migrate</a> up instead of down:
+</p>
+<pre>
+  class RemoveUnnecessaryItemAttributes &lt; ActiveRecord::Migration
+    def self.up
+      remove_column :items, :incomplete_items_count
+      remove_column :items, :completed_items_count
+    end
+
+    def self.down
+      add_column :items, :incomplete_items_count
+      add_column :items, :completed_items_count
+    end
+  end
+</pre>
+<p>
+And sometimes you need to do something in SQL not abstracted directly by
+migrations:
+</p>
+<pre>
+  class MakeJoinUnique &lt; ActiveRecord::Migration
+    def self.up
+      execute &quot;ALTER TABLE `pages_linked_pages` ADD UNIQUE `page_id_linked_page_id` (`page_id`,`linked_page_id`)&quot;
+    end
+
+    def self.down
+      execute &quot;ALTER TABLE `pages_linked_pages` DROP INDEX `page_id_linked_page_id`&quot;
+    end
+  end
+</pre>
+<h2>Using a model after changing its table</h2>
+<p>
+Sometimes you&#8216;ll want to add a column in a migration and populate it
+immediately after. In that case, you&#8216;ll need to make a call to <a
+href="Base.html#M001571">Base#reset_column_information</a> in order to
+ensure that the model has the latest column data from after the new column
+was added. Example:
+</p>
+<pre>
+  class AddPeopleSalary &lt; ActiveRecord::Migration
+    def self.up
+      add_column :people, :salary, :integer
+      Person.reset_column_information
+      Person.find(:all).each do |p|
+        p.update_attribute :salary, SalaryCalculator.compute(p)
+      end
+    end
+  end
+</pre>
+<h2>Controlling verbosity</h2>
+<p>
+By default, migrations will describe the actions they are taking, writing
+them to the console as they happen, along with benchmarks describing how
+long each step took.
+</p>
+<p>
+You can quiet them down by setting ActiveRecord::Migration.verbose = false.
+</p>
+<p>
+You can also insert your own messages and benchmarks by using the <a
+href="Migration.html#M001535">say_with_time</a> method:
+</p>
+<pre>
+  def self.up
+    ...
+    say_with_time &quot;Updating salaries...&quot; do
+      Person.find(:all).each do |p|
+        p.update_attribute :salary, SalaryCalculator.compute(p)
+      end
+    end
+    ...
+  end
+</pre>
+<p>
+The phrase &quot;Updating salaries&#8230;&quot; would then be printed,
+along with the benchmark for the block when the block completes.
+</p>
+</div>
+
+
+
+
+<p></p>
+
+
+
+
+
+
+<h1>Public Class Methods</h1>
+
+
+<a class="small" name="M001533"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001533'>
+
+
+announce
+
+(message)
+
+</a>
+</h3>
+
+<p class="source_link" id="M001533-show-link"><a onclick="toggle('M001533-source'); toggleText('M001533-link'); return false;" href="#" id="M001533-link">Show source...</a></p><div class="source" id="M001533-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/activerecord/lib/active_record/migration.rb, line 252</span>
+252:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">announce</span>(<span class="ruby-identifier">message</span>)
+253:         <span class="ruby-identifier">text</span> = <span class="ruby-node">&quot;#{@version} #{name}: #{message}&quot;</span>
+254:         <span class="ruby-identifier">length</span> = [<span class="ruby-value">0</span>, <span class="ruby-value">75</span> <span class="ruby-operator">-</span> <span class="ruby-identifier">text</span>.<span class="ruby-identifier">length</span>].<span class="ruby-identifier">max</span>
+255:         <span class="ruby-identifier">write</span> <span class="ruby-value str">&quot;== %s %s&quot;</span> <span class="ruby-operator">%</span> [<span class="ruby-identifier">text</span>, <span class="ruby-value str">&quot;=&quot;</span> <span class="ruby-operator">*</span> <span class="ruby-identifier">length</span>]
+256:       <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001537"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001537'>
+
+
+method_missing
+
+(method, *arguments, &amp;block)
+
+</a>
+</h3>
+
+<p class="source_link" id="M001537-show-link"><a onclick="toggle('M001537-source'); toggleText('M001537-link'); return false;" href="#" id="M001537-link">Show source...</a></p><div class="source" id="M001537-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/activerecord/lib/active_record/migration.rb, line 278</span>
+278:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">method_missing</span>(<span class="ruby-identifier">method</span>, <span class="ruby-operator">*</span><span class="ruby-identifier">arguments</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
+279:         <span class="ruby-identifier">arg_list</span> = <span class="ruby-identifier">arguments</span>.<span class="ruby-identifier">map</span>(<span class="ruby-operator">&amp;</span><span class="ruby-identifier">:inspect</span>) <span class="ruby-operator">*</span> <span class="ruby-value str">', '</span>
+280: 
+281:         <span class="ruby-identifier">say_with_time</span> <span class="ruby-node">&quot;#{method}(#{arg_list})&quot;</span> <span class="ruby-keyword kw">do</span>
+282:           <span class="ruby-keyword kw">unless</span> <span class="ruby-identifier">arguments</span>.<span class="ruby-identifier">empty?</span> <span class="ruby-operator">||</span> <span class="ruby-identifier">method</span> <span class="ruby-operator">==</span> <span class="ruby-identifier">:execute</span>
+283:             <span class="ruby-identifier">arguments</span>[<span class="ruby-value">0</span>] = <span class="ruby-constant">Migrator</span>.<span class="ruby-identifier">proper_table_name</span>(<span class="ruby-identifier">arguments</span>.<span class="ruby-identifier">first</span>)
+284:           <span class="ruby-keyword kw">end</span>
+285:           <span class="ruby-constant">ActiveRecord</span><span class="ruby-operator">::</span><span class="ruby-constant">Base</span>.<span class="ruby-identifier">connection</span>.<span class="ruby-identifier">send</span>(<span class="ruby-identifier">method</span>, <span class="ruby-operator">*</span><span class="ruby-identifier">arguments</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
+286:         <span class="ruby-keyword kw">end</span>
+287:       <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001531"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001531'>
+
+
+migrate
+
+(direction)
+
+</a>
+</h3>
+<p>
+Execute this migration in the named direction
+</p>
+
+<p class="source_link" id="M001531-show-link"><a onclick="toggle('M001531-source'); toggleText('M001531-link'); return false;" href="#" id="M001531-link">Show source...</a></p><div class="source" id="M001531-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/activerecord/lib/active_record/migration.rb, line 210</span>
+210:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">migrate</span>(<span class="ruby-identifier">direction</span>)
+211:         <span class="ruby-keyword kw">return</span> <span class="ruby-keyword kw">unless</span> <span class="ruby-identifier">respond_to?</span>(<span class="ruby-identifier">direction</span>)
+212: 
+213:         <span class="ruby-keyword kw">case</span> <span class="ruby-identifier">direction</span>
+214:           <span class="ruby-keyword kw">when</span> <span class="ruby-identifier">:up</span>   <span class="ruby-keyword kw">then</span> <span class="ruby-identifier">announce</span> <span class="ruby-value str">&quot;migrating&quot;</span>
+215:           <span class="ruby-keyword kw">when</span> <span class="ruby-identifier">:down</span> <span class="ruby-keyword kw">then</span> <span class="ruby-identifier">announce</span> <span class="ruby-value str">&quot;reverting&quot;</span>
+216:         <span class="ruby-keyword kw">end</span>
+217: 
+218:         <span class="ruby-identifier">result</span> = <span class="ruby-keyword kw">nil</span>
+219:         <span class="ruby-identifier">time</span> = <span class="ruby-constant">Benchmark</span>.<span class="ruby-identifier">measure</span> { <span class="ruby-identifier">result</span> = <span class="ruby-identifier">send</span>(<span class="ruby-node">&quot;#{direction}_without_benchmarks&quot;</span>) }
+220: 
+221:         <span class="ruby-keyword kw">case</span> <span class="ruby-identifier">direction</span>
+222:           <span class="ruby-keyword kw">when</span> <span class="ruby-identifier">:up</span>   <span class="ruby-keyword kw">then</span> <span class="ruby-identifier">announce</span> <span class="ruby-value str">&quot;migrated (%.4fs)&quot;</span> <span class="ruby-operator">%</span> <span class="ruby-identifier">time</span>.<span class="ruby-identifier">real</span>; <span class="ruby-identifier">write</span>
+223:           <span class="ruby-keyword kw">when</span> <span class="ruby-identifier">:down</span> <span class="ruby-keyword kw">then</span> <span class="ruby-identifier">announce</span> <span class="ruby-value str">&quot;reverted (%.4fs)&quot;</span> <span class="ruby-operator">%</span> <span class="ruby-identifier">time</span>.<span class="ruby-identifier">real</span>; <span class="ruby-identifier">write</span>
+224:         <span class="ruby-keyword kw">end</span>
+225: 
+226:         <span class="ruby-identifier">result</span>
+227:       <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001534"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001534'>
+
+
+say
+
+(message, subitem=false)
+
+</a>
+</h3>
+
+<p class="source_link" id="M001534-show-link"><a onclick="toggle('M001534-source'); toggleText('M001534-link'); return false;" href="#" id="M001534-link">Show source...</a></p><div class="source" id="M001534-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/activerecord/lib/active_record/migration.rb, line 258</span>
+258:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">say</span>(<span class="ruby-identifier">message</span>, <span class="ruby-identifier">subitem</span>=<span class="ruby-keyword kw">false</span>)
+259:         <span class="ruby-identifier">write</span> <span class="ruby-node">&quot;#{subitem ? &quot;   -&gt;&quot; : &quot;--&quot;} #{message}&quot;</span>
+260:       <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001535"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001535'>
+
+
+say_with_time
+
+(message) {|| ...}
+
+</a>
+</h3>
+
+<p class="source_link" id="M001535-show-link"><a onclick="toggle('M001535-source'); toggleText('M001535-link'); return false;" href="#" id="M001535-link">Show source...</a></p><div class="source" id="M001535-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/activerecord/lib/active_record/migration.rb, line 262</span>
+262:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">say_with_time</span>(<span class="ruby-identifier">message</span>)
+263:         <span class="ruby-identifier">say</span>(<span class="ruby-identifier">message</span>)
+264:         <span class="ruby-identifier">result</span> = <span class="ruby-keyword kw">nil</span>
+265:         <span class="ruby-identifier">time</span> = <span class="ruby-constant">Benchmark</span>.<span class="ruby-identifier">measure</span> { <span class="ruby-identifier">result</span> = <span class="ruby-keyword kw">yield</span> }
+266:         <span class="ruby-identifier">say</span> <span class="ruby-value str">&quot;%.4fs&quot;</span> <span class="ruby-operator">%</span> <span class="ruby-identifier">time</span>.<span class="ruby-identifier">real</span>, <span class="ruby-identifier">:subitem</span>
+267:         <span class="ruby-identifier">say</span>(<span class="ruby-node">&quot;#{result} rows&quot;</span>, <span class="ruby-identifier">:subitem</span>) <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">result</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">Integer</span>)
+268:         <span class="ruby-identifier">result</span>
+269:       <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001536"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001536'>
+
+
+suppress_messages
+
+() {|| ...}
+
+</a>
+</h3>
+
+<p class="source_link" id="M001536-show-link"><a onclick="toggle('M001536-source'); toggleText('M001536-link'); return false;" href="#" id="M001536-link">Show source...</a></p><div class="source" id="M001536-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/activerecord/lib/active_record/migration.rb, line 271</span>
+271:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">suppress_messages</span>
+272:         <span class="ruby-identifier">save</span>, <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">verbose</span> = <span class="ruby-identifier">verbose</span>, <span class="ruby-keyword kw">false</span>
+273:         <span class="ruby-keyword kw">yield</span>
+274:       <span class="ruby-keyword kw">ensure</span>
+275:         <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">verbose</span> = <span class="ruby-identifier">save</span>
+276:       <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001532"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001532'>
+
+
+write
+
+(text=&quot;&quot;)
+
+</a>
+</h3>
+
+<p class="source_link" id="M001532-show-link"><a onclick="toggle('M001532-source'); toggleText('M001532-link'); return false;" href="#" id="M001532-link">Show source...</a></p><div class="source" id="M001532-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/activerecord/lib/active_record/migration.rb, line 248</span>
+248:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">write</span>(<span class="ruby-identifier">text</span>=<span class="ruby-value str">&quot;&quot;</span>)
+249:         <span class="ruby-identifier">puts</span>(<span class="ruby-identifier">text</span>) <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">verbose</span>
+250:       <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+
+
+
+
+</div><div class="clear" id="footer">Generated on Jan 21, 2008 / Allison 2 &copy; 2007 <a href="http://cloudbur.st">Cloudburst, LLC</a></div></div></body></html>

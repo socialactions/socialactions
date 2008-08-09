@@ -56,4 +56,9 @@ Rails::Initializer.run do |config|
 
   # Make Active Record use UTC-base instead of local time
   # config.active_record.default_timezone = :utc
+  
+  # We do this to allow search results to be bolded
+  config.action_view.sanitized_allowed_tags = 'strong'
+  config.action_view.sanitized_allowed_attributes = 'id', 'class', 'style'
+
 end

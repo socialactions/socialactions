@@ -1,0 +1,745 @@
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head><meta content="text/html; charset=utf-8" http-equiv="Content-Type"/><title>Module: Rails::Generator::Options</title><link type="text/css" href="../../.././rdoc-style.css" media="screen" rel="stylesheet"/><script type="text/javascript">
+// Allison template
+// Copyright 2007, 2008 Cloudburst, LLC. Licensed under the AFL 3. See the included LICENSE file.
+
+var href_base = '../../.././rdoc-style.css'.replace(/(.*\/).*/, '$1'); // inline js is good for something  
+
+function $(id) {
+    if (document.getElementById)
+      elem = document.getElementById(id);
+    else if ( document.all )
+      elem = eval("document.all." + id);
+    else
+      return false;
+    return elem;
+}
+
+  function toggle(id) {
+    elem = $(id);
+    elemStyle = elem.style;   
+    if (elemStyle.display == "block") {
+      elemStyle.display = "none"
+    } else {
+      elemStyle.display = "block"
+    }
+    return true;
+  }
+
+  function toggleText(id) {
+    elem = $(id)
+    if (m = elem.innerHTML.match(/(Hide)(.*)/)) {
+      elem.innerHTML = "Show" + m[2];
+    } else if (m = elem.innerHTML.match(/(Show)(.*)/)) {
+      elem.innerHTML = "Hide" + m[2];
+    }
+    return true;
+  }
+
+function span(s, klass) {
+  return '<span class="' + klass + '">' + s + '</span>';
+}
+  
+function highlightSymbols() {
+  pres = document.getElementsByTagName('pre');
+  for(var i = 0; i < pres.length; i++) {
+    pre = pres[i];
+    spans = pre.getElementsByTagName('span');
+    for(var k = 0; k < spans.length; k++) {
+      span = spans[k];
+      if (span.className.match(/ruby-identifier/)) {
+        if (span.innerHTML.match(/^:/)) {
+          span.className += " ruby-symbol";
+        }
+      }
+    }
+  }
+}
+
+ function hasClass(obj) {
+     var result = false;
+     if (obj.getAttributeNode("class") != null) {
+         result = obj.getAttributeNode("class").value;
+     }
+     return result;
+  }   
+
+ function stripe() {
+    var even = true;
+    var color = "#e4ebed";
+    var tables = document.getElementsByTagName('table');
+    if (tables.length == 0) { return; }
+    for (var h = 0; h < tables.length; h++) {
+        var trs = tables[h].getElementsByTagName("tr");
+        for (var i = 0; i < trs.length; i++) {
+          var tds = trs[i].getElementsByTagName("td");
+            for (var j = 0; j < tds.length; j++) {       
+              if (hasClass(tds[j]) != "first") {                
+              var mytd = tds[j];
+              if (even) {
+                mytd.style.backgroundColor = color;
+              }         
+            }
+          }
+          even =  ! even;
+      }
+    }
+  }
+  
+function ajaxGet(url) {
+  url = (href_base + url).replace('/./', '/')
+  var req = false;
+
+  if (window.ActiveXObject) {
+    try {
+      // stupid hack because IE7 disables local Ajax with the native xmlhttprequest object
+      // for security purposes. Yet ActiveX still works. Thanks, Microsoft. I hate you. Die.
+      req = new ActiveXObject("MSXML2.XMLHTTP.3.0");
+    } catch (e) {
+      try {
+        /* IE 6 and maybe 5, don't know, don't care */
+        req = new ActiveXObject("Msxml2.XMLHTTP");
+      } catch (e) {
+        try {
+          req = new ActiveXObject("Microsoft.XMLHTTP");
+        } catch (e) {
+          req = false;
+        }
+      }
+    }
+  }
+    
+  /* real browsers */
+  if (!req && window.XMLHttpRequest) {
+    try {
+      req = new XMLHttpRequest();
+    } catch (e) {
+      req = false;
+    }
+  } 
+  
+  if (req) {
+    req.open('GET', url, false);
+    req.send(null);
+    return req.responseText;
+  } else {
+    return "Ajax error";  
+  }
+}
+
+
+function addEvent(elm, evType, fn, useCapture) {
+	if (elm.addEventListener) {
+	  elm.addEventListener(evType, fn, useCapture);  
+  	return true;
+	} else if (elm.attachEvent) {
+  	var r = elm.attachEvent('on' + evType, fn);  
+	  return r;  
+	} else {
+  	elm['on' + evType] = fn;
+	}
+}
+
+function insertIndices() {
+  pages = ["class", "file", "method"]
+  for (x in pages) { 
+    $(pages[x]).innerHTML += ajaxGet('fr_' + pages[x] + '_index.html').replace(/(href=")/g, '$1' + href_base);
+  }
+  /* mouseoverify method links */
+  links = $('method').getElementsByTagName('a');
+  for (var x = 0; x < links.length; x++) {
+    if (m = links[x].innerHTML.match(/(.*)\s\((.*)\)/)) {
+      links[x].innerHTML = m[1] + '<br>';
+      links[x].title = m[2];
+    }
+  }
+  /* this is stupid */
+  $('class').style.display = "block";
+  $('file').style.display = "block";
+  
+  /* has to be here because IE7 does not guarantee the onLoad callback order */
+  abbreviateIndicesInner(["class", "file"], 25, "a");
+  /* same, linkTitle() depends on the class link list */
+  linkTitle();
+}
+
+function abbreviateIndices() {
+  var ids = ["defined_in", "child_of", "includes", "requires", "method", "methods"];
+  abbreviateIndicesInner(ids, 25, 'a');
+  abbreviateIndicesInner(ids, 25, 'span');
+}
+
+function abbreviateIndicesInner(indices, amount, tag) {
+  for (var x = 0; x < indices.length; x++) { 
+    var the_index = $(indices[x]);
+    if (the_index) {
+      links = the_index.getElementsByTagName(tag);
+      for (var y = 0; y < links.length; y++) {
+        var link = links[y];
+        if (link.getElementsByTagName('span').length == 0 && link.getElementsByTagName('a').length == 0) {
+          // avoid nesting
+          link.innerHTML = link.innerHTML.replace(/<br>|\n/gi, '');
+          link.title = link.innerHTML;
+          link.innerHTML = abbreviate(link.innerHTML, amount) + '<br>';
+        }
+      }
+    }
+  }
+}
+
+function linkTitle() {
+  
+  /* grab the correct title element from the index */
+  var index_page = ajaxGet('index.html');
+  title_text = index_page.match(/<title>(.*)<\/title>/m)[1];
+  document.title = title_text + " - " + document.title;
+  var p = $('header').getElementsByTagName('p')[0]
+  if (p.innerHTML.match(/^\s*$/)) {
+    p.innerHTML = title_text;
+  } else {
+    p.innerHTML = title_text + ": " + p.innerHTML;
+  }
+  
+  /* set the link properly */
+  title_link = index_page.match(/<a\s+href="(.*?)"/)[1];
+  var element = $('title');
+  var item_type = "";
+  var item_name = "";
+  if (m = element.innerHTML.match(/(Class:|Module:|File:)\s*(.*)/)) {
+    item_type = m[1];
+    item_name = m[2];
+  } else {
+    item_name = element.innerHTML;
+  }
+  element.innerHTML = '<a href="' + href_base + title_link + '">' + item_type + " " + abbreviate(item_name, 45) + '</a>';
+  element.getElementsByTagName('a')[0].title = item_name
+  
+  /* breadcrumb navigation */
+  items = item_name.split("::");
+  items_new = item_name.split("::");
+  file_links = $('class').getElementsByTagName('a');
+  for (var x = 0; x < items.length - 1; x++ ){
+    var item = items[x];
+    link = ("/classes/" + items.slice(0,x).join("/") + "/" + item + ".html").replace('//', '/');
+    regex = new RegExp(RegExp.escape(link) + '$');
+    for (var y = 0; y < file_links.length; y++) {
+      if (file_links[y].href.match(regex)) {
+         items_new[x] = '<a href="' + href_base + link + '">' + item + '</a>';
+         break;
+      }
+    }  
+  }
+  $('item_name').innerHTML = item_type + ' ' + items_new.join(" :: ");
+}
+
+function abbreviate(s, size) {
+  while (s.length > size) {
+    var old_s = s;
+    s = s.replace(/\s|\n/mg, '');
+    s = s.replace(/([A-Z])[a-z]+/m, '$1');
+    if (!s || old_s == s) {
+      return "..." + s.substring(s.length - size, s.length);
+    }
+  }
+  return s;
+}
+
+function disableSubmit(event) {
+  var keyCode = event.keyCode ? event.keyCode : event.which ? event.which : event.charCode;
+  if (keyCode == 13) {
+    return false;
+  } else {
+    return true;
+  }
+}
+  
+function filterList(id, s, event) {
+  
+  /* some weak escaping */
+  s = s.replace(/[^\w\d\.\_\-\/\:\=\[\]\?\!]/g, '');
+  s = RegExp.escape(s);
+  
+  var show_all = false;
+  if (s.match(/^\s*$/)) {
+    show_all = true;
+  }
+  
+  links = $(id).getElementsByTagName('a')
+  regex = new RegExp(s, 'i');
+  
+  for (var x = 0; x < links.length; x++) {
+    var link = links[x];
+    if (show_all) {
+      link.style.display = 'inline';
+    } else {
+       if (link.innerHTML.match(regex)) {        
+         link.style.display = 'inline';
+       } else {
+         link.style.display = 'none';
+       }
+    }
+  }
+  return true;
+}
+
+RegExp.escape = function(text) {
+  if (!arguments.callee.sRE) {
+    var specials = ['/', '.', '*', '+', '?', '|', '(', ')', '[', ']', '{', '}', '\\'];
+    arguments.callee.sRE = new RegExp(
+      '(\\' + specials.join('|\\') + ')', 'g'
+    );
+  }
+  return text.replace(arguments.callee.sRE, '\\$1');
+}
+
+function hacks() {
+  // show the spacer if necessary, 
+  divs = document.getElementsByTagName('div');
+  for(var x = 0; x < divs.length; x++) {
+    if (divs[x].className && divs[x].className.match(/top/)) {
+      document.getElementById('spacer').style.display = 'block';
+    }
+  }
+  // remove extra colons from tables
+  tds = document.getElementsByTagName('td');
+  for(var x = 0; x < tds.length; x++) {
+    str = tds[x].innerHTML
+    if (str.charAt(str.length - 1) == ":") {
+      tds[x].innerHTML = str.slice(0, str.length - 1)
+    }
+  }
+}
+
+addEvent(window, 'load', insertIndices, false);
+addEvent(window, 'load', abbreviateIndices, false);
+addEvent(window, 'load', stripe, false);
+addEvent(window, 'load', highlightSymbols, false);
+addEvent(window, 'load', hacks, false);
+</script></head><body><div id="container"><div class="curve" id="preheader_curve_0"></div><div class="curve" id="preheader_curve_1"></div><div class="curve" id="preheader_curve_2"></div><div class="curve" id="preheader_curve_3"></div><div class="curve" id="preheader_curve_4"></div><div class="curve" id="preheader_curve_5"></div><div id="header"><p>
+</p><span><h1 id="title">
+Module: Rails::Generator::Options
+</h1></span>
+</div><div class="clear"></div><div id="left">
+
+<div class="navigation darker top" id="defined_in"><h3>Defined in</h3>
+
+<a href="../../../files/vendor/rails/railties/lib/rails_generator/options_rb.html">vendor/rails/railties/lib/rails_generator/options.rb</a>
+
+</div>
+
+
+
+<div class="navigation top" id="methods"><h3>Methods</h3>
+
+
+<a href='#M001650'>
+add_general_options!<br/>
+</a>
+
+
+
+
+<a href='#M001649'>
+add_options!<br/>
+</a>
+
+
+
+
+<a href='#M001648'>
+banner<br/>
+</a>
+
+
+
+
+<a href='#M001643'>
+default_options<br/>
+</a>
+
+
+
+
+<a href='#M001644'>
+full_options<br/>
+</a>
+
+
+
+
+<a href='#M001640'>
+included<br/>
+</a>
+
+
+
+
+<a href='#M001642'>
+mandatory_options<br/>
+</a>
+
+
+
+
+<a href='#M001641'>
+options<br/>
+</a>
+
+
+
+
+<a href='#M001645'>
+parse!<br/>
+</a>
+
+
+
+
+<a href='#M001646'>
+usage<br/>
+</a>
+
+
+
+
+<a href='#M001647'>
+usage_message<br/>
+</a>
+
+
+</div>
+<div id="spacer"></div><div class="navigation darker index" id="class_wrapper"><div class="list_header"><h3>All classes</h3></div><div class="list_header_link"><a onclick="toggle('class'); toggleText('class_link'); return false;" href="#" id="class_link">Hide...</a></div><div class="clear"></div><div id="class"><form><label for="filter_class">Filter:&nbsp;&nbsp;</label><input type="text" onKeyUp="return filterList('class', this.value, event);" onKeyPress="return disableSubmit(event);" id="filter_class"></input></form></div></div><div class="navigation darker index" id="file_wrapper"><div class="list_header"><h3>All files</h3></div><div class="list_header_link"><a onclick="toggle('file'); toggleText('file_link'); return false;" href="#" id="file_link">Hide...</a></div><div class="clear"></div><div id="file"><form><label for="filter_file">Filter:&nbsp;&nbsp;</label><input type="text" onKeyUp="return filterList('file', this.value, event);" onKeyPress="return disableSubmit(event);" id="filter_file"></input></form></div></div><div class="navigation darker index" id="method_wrapper"><div class="list_header"><h3>All methods</h3></div><div class="list_header_link"><a onclick="toggle('method'); toggleText('method_link'); return false;" href="#" id="method_link">Show...</a></div><div class="clear"></div><div id="method"><form><label for="filter_method">Filter:&nbsp;&nbsp;</label><input type="text" onKeyUp="return filterList('method', this.value, event);" onKeyPress="return disableSubmit(event);" id="filter_method"></input></form></div></div></div><div id="content">
+<h1 id="item_name">Module: Rails::Generator::Options</h1>
+
+
+
+
+
+<p></p>
+
+<h1>Child modules and classes</h1><p>Module <a href="Options/ClassMethods.html" class="link">Rails::Generator::Options::ClassMethods</a><br />
+</p>
+
+
+
+<h1>Attributes</h1><p><table><tr><th>Name</th><th>Read/write?</th></tr>
+<tr>
+<td class="highlight">options</td>
+
+
+
+
+<td class="normal">W</td>
+</tr>
+</table></p>
+
+
+<h1>Public Class Methods</h1>
+
+
+<a class="small" name="M001640"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001640'>
+
+
+included
+
+(base)
+
+</a>
+</h3>
+
+<p class="source_link" id="M001640-show-link"><a onclick="toggle('M001640-source'); toggleText('M001640-link'); return false;" href="#" id="M001640-link">Show source...</a></p><div class="source" id="M001640-source"><pre>    <span class="ruby-comment cmt"># File vendor/rails/railties/lib/rails_generator/options.rb, line 6</span>
+ 6:       <span class="ruby-keyword kw">def</span> <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">included</span>(<span class="ruby-identifier">base</span>)
+ 7:         <span class="ruby-identifier">base</span>.<span class="ruby-identifier">extend</span>(<span class="ruby-constant">ClassMethods</span>)
+ 8:         <span class="ruby-keyword kw">class</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-identifier">base</span>
+ 9:           <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">respond_to?</span>(<span class="ruby-identifier">:inherited</span>)
+10:             <span class="ruby-identifier">alias_method</span> <span class="ruby-identifier">:inherited_without_options</span>, <span class="ruby-identifier">:inherited</span>
+11:           <span class="ruby-keyword kw">end</span>
+12:           <span class="ruby-identifier">alias_method</span> <span class="ruby-identifier">:inherited</span>, <span class="ruby-identifier">:inherited_with_options</span>
+13:         <span class="ruby-keyword kw">end</span>
+14:       <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+
+<h1>Public Instance Methods</h1>
+
+
+<a class="small" name="M001641"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001641'>
+
+
+options
+
+()
+
+</a>
+</h3>
+<p>
+Each instance has an <a href="Options.html#M001641">options</a> hash
+that&#8216;s populated by parse.
+</p>
+
+<p class="source_link" id="M001641-show-link"><a onclick="toggle('M001641-source'); toggleText('M001641-link'); return false;" href="#" id="M001641-link">Show source...</a></p><div class="source" id="M001641-source"><pre>    <span class="ruby-comment cmt"># File vendor/rails/railties/lib/rails_generator/options.rb, line 49</span>
+49:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">options</span>
+50:         <span class="ruby-ivar">@options</span> <span class="ruby-operator">||=</span> {}
+51:       <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+
+<h1>Protected Instance Methods</h1>
+
+
+<a class="small" name="M001650"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001650'>
+
+
+add_general_options!
+
+(opt)
+
+</a>
+</h3>
+<p>
+Adds general <a href="Options.html#M001641">options</a> like -h and
+&#8212;quiet. Usually don&#8216;t override.
+</p>
+
+<p class="source_link" id="M001650-show-link"><a onclick="toggle('M001650-source'); toggleText('M001650-link'); return false;" href="#" id="M001650-link">Show source...</a></p><div class="source" id="M001650-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/railties/lib/rails_generator/options.rb, line 119</span>
+119:         <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">add_general_options!</span>(<span class="ruby-identifier">opt</span>)
+120:           <span class="ruby-identifier">opt</span>.<span class="ruby-identifier">separator</span> <span class="ruby-value str">''</span>
+121:           <span class="ruby-identifier">opt</span>.<span class="ruby-identifier">separator</span> <span class="ruby-value str">'Rails Info:'</span>
+122:           <span class="ruby-identifier">opt</span>.<span class="ruby-identifier">on</span>(<span class="ruby-value str">'-v'</span>, <span class="ruby-value str">'--version'</span>, <span class="ruby-value str">'Show the Rails version number and quit.'</span>)
+123:           <span class="ruby-identifier">opt</span>.<span class="ruby-identifier">on</span>(<span class="ruby-value str">'-h'</span>, <span class="ruby-value str">'--help'</span>, <span class="ruby-value str">'Show this help message and quit.'</span>) { <span class="ruby-operator">|</span><span class="ruby-identifier">v</span><span class="ruby-operator">|</span> <span class="ruby-identifier">options</span>[<span class="ruby-identifier">:help</span>] = <span class="ruby-identifier">v</span> }
+124: 
+125:           <span class="ruby-identifier">opt</span>.<span class="ruby-identifier">separator</span> <span class="ruby-value str">''</span>
+126:           <span class="ruby-identifier">opt</span>.<span class="ruby-identifier">separator</span> <span class="ruby-value str">'General Options:'</span>
+127: 
+128:           <span class="ruby-identifier">opt</span>.<span class="ruby-identifier">on</span>(<span class="ruby-value str">'-p'</span>, <span class="ruby-value str">'--pretend'</span>, <span class="ruby-value str">'Run but do not make any changes.'</span>) { <span class="ruby-operator">|</span><span class="ruby-identifier">v</span><span class="ruby-operator">|</span> <span class="ruby-identifier">options</span>[<span class="ruby-identifier">:pretend</span>] = <span class="ruby-identifier">v</span> }
+129:           <span class="ruby-identifier">opt</span>.<span class="ruby-identifier">on</span>(<span class="ruby-value str">'-f'</span>, <span class="ruby-value str">'--force'</span>, <span class="ruby-value str">'Overwrite files that already exist.'</span>) { <span class="ruby-identifier">options</span>[<span class="ruby-identifier">:collision</span>] = <span class="ruby-identifier">:force</span> }
+130:           <span class="ruby-identifier">opt</span>.<span class="ruby-identifier">on</span>(<span class="ruby-value str">'-s'</span>, <span class="ruby-value str">'--skip'</span>, <span class="ruby-value str">'Skip files that already exist.'</span>) { <span class="ruby-identifier">options</span>[<span class="ruby-identifier">:collision</span>] = <span class="ruby-identifier">:skip</span> }
+131:           <span class="ruby-identifier">opt</span>.<span class="ruby-identifier">on</span>(<span class="ruby-value str">'-q'</span>, <span class="ruby-value str">'--quiet'</span>, <span class="ruby-value str">'Suppress normal output.'</span>) { <span class="ruby-operator">|</span><span class="ruby-identifier">v</span><span class="ruby-operator">|</span> <span class="ruby-identifier">options</span>[<span class="ruby-identifier">:quiet</span>] = <span class="ruby-identifier">v</span> }
+132:           <span class="ruby-identifier">opt</span>.<span class="ruby-identifier">on</span>(<span class="ruby-value str">'-t'</span>, <span class="ruby-value str">'--backtrace'</span>, <span class="ruby-value str">'Debugging: show backtrace on errors.'</span>) { <span class="ruby-operator">|</span><span class="ruby-identifier">v</span><span class="ruby-operator">|</span> <span class="ruby-identifier">options</span>[<span class="ruby-identifier">:backtrace</span>] = <span class="ruby-identifier">v</span> }
+133:           <span class="ruby-identifier">opt</span>.<span class="ruby-identifier">on</span>(<span class="ruby-value str">'-c'</span>, <span class="ruby-value str">'--svn'</span>, <span class="ruby-value str">'Modify files with subversion. (Note: svn must be in path)'</span>) <span class="ruby-keyword kw">do</span>
+134:             <span class="ruby-identifier">options</span>[<span class="ruby-identifier">:svn</span>] = <span class="ruby-value">`svn status`</span>.<span class="ruby-identifier">inject</span>({}) <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">opt</span>, <span class="ruby-identifier">e</span><span class="ruby-operator">|</span>
+135:               <span class="ruby-identifier">opt</span>[<span class="ruby-identifier">e</span>.<span class="ruby-identifier">chomp</span>[<span class="ruby-value">7</span><span class="ruby-operator">..</span><span class="ruby-value">-1</span>]] = <span class="ruby-keyword kw">true</span>
+136:               <span class="ruby-identifier">opt</span>
+137:             <span class="ruby-keyword kw">end</span>
+138:           <span class="ruby-keyword kw">end</span>
+139:           <span class="ruby-identifier">opt</span>.<span class="ruby-identifier">on</span>(<span class="ruby-value str">'-g'</span>, <span class="ruby-value str">'--git'</span>, <span class="ruby-value str">'Modify files with git. (Note: git must be in path)'</span>) <span class="ruby-keyword kw">do</span>
+140:             <span class="ruby-identifier">options</span>[<span class="ruby-identifier">:git</span>] = <span class="ruby-value">`git status`</span>.<span class="ruby-identifier">inject</span>({<span class="ruby-identifier">:new</span> =<span class="ruby-operator">&gt;</span> {}, <span class="ruby-identifier">:modified</span> =<span class="ruby-operator">&gt;</span> {}}) <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">opt</span>, <span class="ruby-identifier">e</span><span class="ruby-operator">|</span>
+141:               <span class="ruby-identifier">opt</span>[<span class="ruby-identifier">:new</span>][<span class="ruby-identifier">e</span>.<span class="ruby-identifier">chomp</span>[<span class="ruby-value">14</span><span class="ruby-operator">..</span><span class="ruby-value">-1</span>]] = <span class="ruby-keyword kw">true</span> <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">e</span> <span class="ruby-operator">=~</span> <span class="ruby-regexp re">/new file:/</span>
+142:               <span class="ruby-identifier">opt</span>[<span class="ruby-identifier">:modified</span>][<span class="ruby-identifier">e</span>.<span class="ruby-identifier">chomp</span>[<span class="ruby-value">14</span><span class="ruby-operator">..</span><span class="ruby-value">-1</span>]] = <span class="ruby-keyword kw">true</span> <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">e</span> <span class="ruby-operator">=~</span> <span class="ruby-regexp re">/modified:/</span>
+143:               <span class="ruby-identifier">opt</span>
+144:             <span class="ruby-keyword kw">end</span>
+145:           <span class="ruby-keyword kw">end</span>
+146:         <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001649"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001649'>
+
+
+add_options!
+
+(opt)
+
+</a>
+</h3>
+<p>
+Override to add your <a href="Options.html#M001641">options</a> to the
+parser:
+</p>
+<pre>
+  def add_options!(opt)
+    opt.on('-v', '--verbose') { |value| options[:verbose] = value }
+  end
+</pre>
+
+<p class="source_link" id="M001649-show-link"><a onclick="toggle('M001649-source'); toggleText('M001649-link'); return false;" href="#" id="M001649-link">Show source...</a></p><div class="source" id="M001649-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/railties/lib/rails_generator/options.rb, line 115</span>
+115:         <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">add_options!</span>(<span class="ruby-identifier">opt</span>)
+116:         <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001648"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001648'>
+
+
+banner
+
+()
+
+</a>
+</h3>
+<p>
+Override with your own <a href="Options.html#M001646">usage</a> <a
+href="Options.html#M001648">banner</a>.
+</p>
+
+<p class="source_link" id="M001648-show-link"><a onclick="toggle('M001648-source'); toggleText('M001648-link'); return false;" href="#" id="M001648-link">Show source...</a></p><div class="source" id="M001648-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/railties/lib/rails_generator/options.rb, line 107</span>
+107:         <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">banner</span>
+108:           <span class="ruby-node">&quot;Usage: #{$0} [options]&quot;</span>
+109:         <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001643"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001643'>
+
+
+default_options
+
+()
+
+</a>
+</h3>
+<p>
+Convenient access to class default <a
+href="Options.html#M001641">options</a>.
+</p>
+
+<p class="source_link" id="M001643-show-link"><a onclick="toggle('M001643-source'); toggleText('M001643-link'); return false;" href="#" id="M001643-link">Show source...</a></p><div class="source" id="M001643-source"><pre>    <span class="ruby-comment cmt"># File vendor/rails/railties/lib/rails_generator/options.rb, line 61</span>
+61:         <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">default_options</span>
+62:           <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">class</span>.<span class="ruby-identifier">default_options</span>
+63:         <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001644"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001644'>
+
+
+full_options
+
+(runtime_options = {})
+
+</a>
+</h3>
+<p>
+Merge together our instance <a href="Options.html#M001641">options</a>. In
+increasing precedence:
+</p>
+<pre>
+  default_options   (class default options)
+  options           (instance options)
+  runtime_options   (provided as argument)
+  mandatory_options (class mandatory options)
+</pre>
+
+<p class="source_link" id="M001644-show-link"><a onclick="toggle('M001644-source'); toggleText('M001644-link'); return false;" href="#" id="M001644-link">Show source...</a></p><div class="source" id="M001644-source"><pre>    <span class="ruby-comment cmt"># File vendor/rails/railties/lib/rails_generator/options.rb, line 70</span>
+70:         <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">full_options</span>(<span class="ruby-identifier">runtime_options</span> = {})
+71:           <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">class</span>.<span class="ruby-identifier">full_options</span>(<span class="ruby-identifier">options</span>.<span class="ruby-identifier">merge</span>(<span class="ruby-identifier">runtime_options</span>))
+72:         <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001642"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001642'>
+
+
+mandatory_options
+
+()
+
+</a>
+</h3>
+<p>
+Convenient access to class mandatory <a
+href="Options.html#M001641">options</a>.
+</p>
+
+<p class="source_link" id="M001642-show-link"><a onclick="toggle('M001642-source'); toggleText('M001642-link'); return false;" href="#" id="M001642-link">Show source...</a></p><div class="source" id="M001642-source"><pre>    <span class="ruby-comment cmt"># File vendor/rails/railties/lib/rails_generator/options.rb, line 56</span>
+56:         <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">mandatory_options</span>
+57:           <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">class</span>.<span class="ruby-identifier">mandatory_options</span>
+58:         <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001645"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001645'>
+
+
+parse!
+
+(args, runtime_options = {})
+
+</a>
+</h3>
+<p>
+Parse arguments into the <a href="Options.html#M001641">options</a> hash.
+Classes may customize parsing behavior by overriding these methods:
+</p>
+<pre>
+  #banner                 Usage: ./script/generate [options]
+  #add_options!           Options:
+                            some options..
+  #add_general_options!   General Options:
+                            general options..
+</pre>
+
+<p class="source_link" id="M001645-show-link"><a onclick="toggle('M001645-source'); toggleText('M001645-link'); return false;" href="#" id="M001645-link">Show source...</a></p><div class="source" id="M001645-source"><pre>    <span class="ruby-comment cmt"># File vendor/rails/railties/lib/rails_generator/options.rb, line 81</span>
+81:         <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">parse!</span>(<span class="ruby-identifier">args</span>, <span class="ruby-identifier">runtime_options</span> = {})
+82:           <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">options</span> = {}
+83: 
+84:           <span class="ruby-ivar">@option_parser</span> = <span class="ruby-constant">OptionParser</span>.<span class="ruby-identifier">new</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">opt</span><span class="ruby-operator">|</span>
+85:             <span class="ruby-identifier">opt</span>.<span class="ruby-identifier">banner</span> = <span class="ruby-identifier">banner</span>
+86:             <span class="ruby-identifier">add_options!</span>(<span class="ruby-identifier">opt</span>)
+87:             <span class="ruby-identifier">add_general_options!</span>(<span class="ruby-identifier">opt</span>)
+88:             <span class="ruby-identifier">opt</span>.<span class="ruby-identifier">parse!</span>(<span class="ruby-identifier">args</span>)
+89:           <span class="ruby-keyword kw">end</span>
+90: 
+91:           <span class="ruby-keyword kw">return</span> <span class="ruby-identifier">args</span>
+92:         <span class="ruby-keyword kw">ensure</span>
+93:           <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">options</span> = <span class="ruby-identifier">full_options</span>(<span class="ruby-identifier">runtime_options</span>)
+94:         <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001646"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001646'>
+
+
+usage
+
+(message = usage_message)
+
+</a>
+</h3>
+<p>
+Raise a <a href="Options.html#M001646">usage</a> error. Override <a
+href="Options.html#M001647">usage_message</a> to provide a blurb after the
+option parser summary.
+</p>
+
+<p class="source_link" id="M001646-show-link"><a onclick="toggle('M001646-source'); toggleText('M001646-link'); return false;" href="#" id="M001646-link">Show source...</a></p><div class="source" id="M001646-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/railties/lib/rails_generator/options.rb, line 98</span>
+ 98:         <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">usage</span>(<span class="ruby-identifier">message</span> = <span class="ruby-identifier">usage_message</span>)
+ 99:           <span class="ruby-identifier">raise</span> <span class="ruby-constant">UsageError</span>, <span class="ruby-node">&quot;#{@option_parser}\n#{message}&quot;</span>
+100:         <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001647"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001647'>
+
+
+usage_message
+
+()
+
+</a>
+</h3>
+
+<p class="source_link" id="M001647-show-link"><a onclick="toggle('M001647-source'); toggleText('M001647-link'); return false;" href="#" id="M001647-link">Show source...</a></p><div class="source" id="M001647-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/railties/lib/rails_generator/options.rb, line 102</span>
+102:         <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">usage_message</span>
+103:           <span class="ruby-value str">''</span>
+104:         <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+
+
+
+
+</div><div class="clear" id="footer">Generated on Jan 21, 2008 / Allison 2 &copy; 2007 <a href="http://cloudbur.st">Cloudburst, LLC</a></div></div></body></html>

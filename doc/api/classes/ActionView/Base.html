@@ -1,0 +1,737 @@
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head><meta content="text/html; charset=utf-8" http-equiv="Content-Type"/><title>Class: ActionView::Base</title><link type="text/css" href="../.././rdoc-style.css" media="screen" rel="stylesheet"/><script type="text/javascript">
+// Allison template
+// Copyright 2007, 2008 Cloudburst, LLC. Licensed under the AFL 3. See the included LICENSE file.
+
+var href_base = '../.././rdoc-style.css'.replace(/(.*\/).*/, '$1'); // inline js is good for something  
+
+function $(id) {
+    if (document.getElementById)
+      elem = document.getElementById(id);
+    else if ( document.all )
+      elem = eval("document.all." + id);
+    else
+      return false;
+    return elem;
+}
+
+  function toggle(id) {
+    elem = $(id);
+    elemStyle = elem.style;   
+    if (elemStyle.display == "block") {
+      elemStyle.display = "none"
+    } else {
+      elemStyle.display = "block"
+    }
+    return true;
+  }
+
+  function toggleText(id) {
+    elem = $(id)
+    if (m = elem.innerHTML.match(/(Hide)(.*)/)) {
+      elem.innerHTML = "Show" + m[2];
+    } else if (m = elem.innerHTML.match(/(Show)(.*)/)) {
+      elem.innerHTML = "Hide" + m[2];
+    }
+    return true;
+  }
+
+function span(s, klass) {
+  return '<span class="' + klass + '">' + s + '</span>';
+}
+  
+function highlightSymbols() {
+  pres = document.getElementsByTagName('pre');
+  for(var i = 0; i < pres.length; i++) {
+    pre = pres[i];
+    spans = pre.getElementsByTagName('span');
+    for(var k = 0; k < spans.length; k++) {
+      span = spans[k];
+      if (span.className.match(/ruby-identifier/)) {
+        if (span.innerHTML.match(/^:/)) {
+          span.className += " ruby-symbol";
+        }
+      }
+    }
+  }
+}
+
+ function hasClass(obj) {
+     var result = false;
+     if (obj.getAttributeNode("class") != null) {
+         result = obj.getAttributeNode("class").value;
+     }
+     return result;
+  }   
+
+ function stripe() {
+    var even = true;
+    var color = "#e4ebed";
+    var tables = document.getElementsByTagName('table');
+    if (tables.length == 0) { return; }
+    for (var h = 0; h < tables.length; h++) {
+        var trs = tables[h].getElementsByTagName("tr");
+        for (var i = 0; i < trs.length; i++) {
+          var tds = trs[i].getElementsByTagName("td");
+            for (var j = 0; j < tds.length; j++) {       
+              if (hasClass(tds[j]) != "first") {                
+              var mytd = tds[j];
+              if (even) {
+                mytd.style.backgroundColor = color;
+              }         
+            }
+          }
+          even =  ! even;
+      }
+    }
+  }
+  
+function ajaxGet(url) {
+  url = (href_base + url).replace('/./', '/')
+  var req = false;
+
+  if (window.ActiveXObject) {
+    try {
+      // stupid hack because IE7 disables local Ajax with the native xmlhttprequest object
+      // for security purposes. Yet ActiveX still works. Thanks, Microsoft. I hate you. Die.
+      req = new ActiveXObject("MSXML2.XMLHTTP.3.0");
+    } catch (e) {
+      try {
+        /* IE 6 and maybe 5, don't know, don't care */
+        req = new ActiveXObject("Msxml2.XMLHTTP");
+      } catch (e) {
+        try {
+          req = new ActiveXObject("Microsoft.XMLHTTP");
+        } catch (e) {
+          req = false;
+        }
+      }
+    }
+  }
+    
+  /* real browsers */
+  if (!req && window.XMLHttpRequest) {
+    try {
+      req = new XMLHttpRequest();
+    } catch (e) {
+      req = false;
+    }
+  } 
+  
+  if (req) {
+    req.open('GET', url, false);
+    req.send(null);
+    return req.responseText;
+  } else {
+    return "Ajax error";  
+  }
+}
+
+
+function addEvent(elm, evType, fn, useCapture) {
+	if (elm.addEventListener) {
+	  elm.addEventListener(evType, fn, useCapture);  
+  	return true;
+	} else if (elm.attachEvent) {
+  	var r = elm.attachEvent('on' + evType, fn);  
+	  return r;  
+	} else {
+  	elm['on' + evType] = fn;
+	}
+}
+
+function insertIndices() {
+  pages = ["class", "file", "method"]
+  for (x in pages) { 
+    $(pages[x]).innerHTML += ajaxGet('fr_' + pages[x] + '_index.html').replace(/(href=")/g, '$1' + href_base);
+  }
+  /* mouseoverify method links */
+  links = $('method').getElementsByTagName('a');
+  for (var x = 0; x < links.length; x++) {
+    if (m = links[x].innerHTML.match(/(.*)\s\((.*)\)/)) {
+      links[x].innerHTML = m[1] + '<br>';
+      links[x].title = m[2];
+    }
+  }
+  /* this is stupid */
+  $('class').style.display = "block";
+  $('file').style.display = "block";
+  
+  /* has to be here because IE7 does not guarantee the onLoad callback order */
+  abbreviateIndicesInner(["class", "file"], 25, "a");
+  /* same, linkTitle() depends on the class link list */
+  linkTitle();
+}
+
+function abbreviateIndices() {
+  var ids = ["defined_in", "child_of", "includes", "requires", "method", "methods"];
+  abbreviateIndicesInner(ids, 25, 'a');
+  abbreviateIndicesInner(ids, 25, 'span');
+}
+
+function abbreviateIndicesInner(indices, amount, tag) {
+  for (var x = 0; x < indices.length; x++) { 
+    var the_index = $(indices[x]);
+    if (the_index) {
+      links = the_index.getElementsByTagName(tag);
+      for (var y = 0; y < links.length; y++) {
+        var link = links[y];
+        if (link.getElementsByTagName('span').length == 0 && link.getElementsByTagName('a').length == 0) {
+          // avoid nesting
+          link.innerHTML = link.innerHTML.replace(/<br>|\n/gi, '');
+          link.title = link.innerHTML;
+          link.innerHTML = abbreviate(link.innerHTML, amount) + '<br>';
+        }
+      }
+    }
+  }
+}
+
+function linkTitle() {
+  
+  /* grab the correct title element from the index */
+  var index_page = ajaxGet('index.html');
+  title_text = index_page.match(/<title>(.*)<\/title>/m)[1];
+  document.title = title_text + " - " + document.title;
+  var p = $('header').getElementsByTagName('p')[0]
+  if (p.innerHTML.match(/^\s*$/)) {
+    p.innerHTML = title_text;
+  } else {
+    p.innerHTML = title_text + ": " + p.innerHTML;
+  }
+  
+  /* set the link properly */
+  title_link = index_page.match(/<a\s+href="(.*?)"/)[1];
+  var element = $('title');
+  var item_type = "";
+  var item_name = "";
+  if (m = element.innerHTML.match(/(Class:|Module:|File:)\s*(.*)/)) {
+    item_type = m[1];
+    item_name = m[2];
+  } else {
+    item_name = element.innerHTML;
+  }
+  element.innerHTML = '<a href="' + href_base + title_link + '">' + item_type + " " + abbreviate(item_name, 45) + '</a>';
+  element.getElementsByTagName('a')[0].title = item_name
+  
+  /* breadcrumb navigation */
+  items = item_name.split("::");
+  items_new = item_name.split("::");
+  file_links = $('class').getElementsByTagName('a');
+  for (var x = 0; x < items.length - 1; x++ ){
+    var item = items[x];
+    link = ("/classes/" + items.slice(0,x).join("/") + "/" + item + ".html").replace('//', '/');
+    regex = new RegExp(RegExp.escape(link) + '$');
+    for (var y = 0; y < file_links.length; y++) {
+      if (file_links[y].href.match(regex)) {
+         items_new[x] = '<a href="' + href_base + link + '">' + item + '</a>';
+         break;
+      }
+    }  
+  }
+  $('item_name').innerHTML = item_type + ' ' + items_new.join(" :: ");
+}
+
+function abbreviate(s, size) {
+  while (s.length > size) {
+    var old_s = s;
+    s = s.replace(/\s|\n/mg, '');
+    s = s.replace(/([A-Z])[a-z]+/m, '$1');
+    if (!s || old_s == s) {
+      return "..." + s.substring(s.length - size, s.length);
+    }
+  }
+  return s;
+}
+
+function disableSubmit(event) {
+  var keyCode = event.keyCode ? event.keyCode : event.which ? event.which : event.charCode;
+  if (keyCode == 13) {
+    return false;
+  } else {
+    return true;
+  }
+}
+  
+function filterList(id, s, event) {
+  
+  /* some weak escaping */
+  s = s.replace(/[^\w\d\.\_\-\/\:\=\[\]\?\!]/g, '');
+  s = RegExp.escape(s);
+  
+  var show_all = false;
+  if (s.match(/^\s*$/)) {
+    show_all = true;
+  }
+  
+  links = $(id).getElementsByTagName('a')
+  regex = new RegExp(s, 'i');
+  
+  for (var x = 0; x < links.length; x++) {
+    var link = links[x];
+    if (show_all) {
+      link.style.display = 'inline';
+    } else {
+       if (link.innerHTML.match(regex)) {        
+         link.style.display = 'inline';
+       } else {
+         link.style.display = 'none';
+       }
+    }
+  }
+  return true;
+}
+
+RegExp.escape = function(text) {
+  if (!arguments.callee.sRE) {
+    var specials = ['/', '.', '*', '+', '?', '|', '(', ')', '[', ']', '{', '}', '\\'];
+    arguments.callee.sRE = new RegExp(
+      '(\\' + specials.join('|\\') + ')', 'g'
+    );
+  }
+  return text.replace(arguments.callee.sRE, '\\$1');
+}
+
+function hacks() {
+  // show the spacer if necessary, 
+  divs = document.getElementsByTagName('div');
+  for(var x = 0; x < divs.length; x++) {
+    if (divs[x].className && divs[x].className.match(/top/)) {
+      document.getElementById('spacer').style.display = 'block';
+    }
+  }
+  // remove extra colons from tables
+  tds = document.getElementsByTagName('td');
+  for(var x = 0; x < tds.length; x++) {
+    str = tds[x].innerHTML
+    if (str.charAt(str.length - 1) == ":") {
+      tds[x].innerHTML = str.slice(0, str.length - 1)
+    }
+  }
+}
+
+addEvent(window, 'load', insertIndices, false);
+addEvent(window, 'load', abbreviateIndices, false);
+addEvent(window, 'load', stripe, false);
+addEvent(window, 'load', highlightSymbols, false);
+addEvent(window, 'load', hacks, false);
+</script></head><body><div id="container"><div class="curve" id="preheader_curve_0"></div><div class="curve" id="preheader_curve_1"></div><div class="curve" id="preheader_curve_2"></div><div class="curve" id="preheader_curve_3"></div><div class="curve" id="preheader_curve_4"></div><div class="curve" id="preheader_curve_5"></div><div id="header"><p>
+</p><span><h1 id="title">
+Class: ActionView::Base
+</h1></span>
+</div><div class="clear"></div><div id="left">
+<div class="navigation darker top" id="child_of"><h3>Child of</h3><span>
+
+<a href='../Object.html'>
+Object
+</a>
+</span></div>
+
+<div class="navigation darker top" id="defined_in"><h3>Defined in</h3>
+
+<a href="../../files/vendor/rails/actionpack/lib/action_view/base_rb.html">vendor/rails/actionpack/lib/action_view/base.rb</a>
+
+
+<a href="../../files/vendor/rails/actionpack/lib/action_view/helpers/active_record_helper_rb.html">vendor/rails/actionpack/lib/action_view/helpers/active_record_helper.rb</a>
+
+
+<a href="../../files/vendor/rails/actionpack/lib/action_view/helpers/form_helper_rb.html">vendor/rails/actionpack/lib/action_view/helpers/form_helper.rb</a>
+
+</div>
+
+<div class="navigation top" id="includes"><h3>Includes</h3>
+
+
+<a href='../ERB/Util.html'>
+ERB::Util<br/>
+</a>
+
+
+
+
+CompiledTemplates<br/>
+
+
+
+
+Helpers<br/>
+
+
+</div>
+
+
+<div class="navigation top" id="methods"><h3>Methods</h3>
+
+
+<a href='#M001258'>
+template_format<br/>
+</a>
+
+
+</div>
+<div id="spacer"></div><div class="navigation darker index" id="class_wrapper"><div class="list_header"><h3>All classes</h3></div><div class="list_header_link"><a onclick="toggle('class'); toggleText('class_link'); return false;" href="#" id="class_link">Hide...</a></div><div class="clear"></div><div id="class"><form><label for="filter_class">Filter:&nbsp;&nbsp;</label><input type="text" onKeyUp="return filterList('class', this.value, event);" onKeyPress="return disableSubmit(event);" id="filter_class"></input></form></div></div><div class="navigation darker index" id="file_wrapper"><div class="list_header"><h3>All files</h3></div><div class="list_header_link"><a onclick="toggle('file'); toggleText('file_link'); return false;" href="#" id="file_link">Hide...</a></div><div class="clear"></div><div id="file"><form><label for="filter_file">Filter:&nbsp;&nbsp;</label><input type="text" onKeyUp="return filterList('file', this.value, event);" onKeyPress="return disableSubmit(event);" id="filter_file"></input></form></div></div><div class="navigation darker index" id="method_wrapper"><div class="list_header"><h3>All methods</h3></div><div class="list_header_link"><a onclick="toggle('method'); toggleText('method_link'); return false;" href="#" id="method_link">Show...</a></div><div class="clear"></div><div id="method"><form><label for="filter_method">Filter:&nbsp;&nbsp;</label><input type="text" onKeyUp="return filterList('method', this.value, event);" onKeyPress="return disableSubmit(event);" id="filter_method"></input></form></div></div></div><div id="content">
+<h1 id="item_name">Class: ActionView::Base</h1>
+
+<div id="description"><p>
+Action View templates can be written in three ways. If the template file
+has a +.erb+ (or +.rhtml+) extension then it uses a mixture of ERb
+(included in Ruby) and HTML. If the template file has a +.builder+ (or
++.rxml+) extension then Jim Weirich&#8216;s <a
+href="../Builder/XmlMarkup.html">Builder::XmlMarkup</a> library is used. If
+the template file has a +.rjs+ extension then it will use
+ActionView::Helpers::PrototypeHelper::JavaScriptGenerator.
+</p>
+<h1>ERb</h1>
+<p>
+You trigger ERb by using embeddings such as &lt;% %&gt;, &lt;% -%&gt;, and
+&lt;%= %&gt;. The &lt;%= %&gt; tag set is used when you want output.
+Consider the following loop for names:
+</p>
+<pre>
+  &lt;b&gt;Names of all the people&lt;/b&gt;
+  &lt;% for person in @people %&gt;
+    Name: &lt;%= person.name %&gt;&lt;br/&gt;
+  &lt;% end %&gt;
+</pre>
+<p>
+The loop is setup in regular embedding tags &lt;% %&gt; and the name is
+written using the output embedding tag &lt;%= %&gt;. Note that this is not
+just a usage suggestion. Regular output functions like print or puts
+won&#8216;t work with ERb templates. So this would be wrong:
+</p>
+<pre>
+  Hi, Mr. &lt;% puts &quot;Frodo&quot; %&gt;
+</pre>
+<p>
+If you absolutely must write from within a function, you can use the
+TextHelper#concat
+</p>
+<p>
+&lt;%- and -%&gt; suppress leading and trailing whitespace, including the
+trailing newline, and can be used interchangeably with &lt;% and %&gt;.
+</p>
+<h2>Using sub templates</h2>
+<p>
+Using sub templates allows you to sidestep tedious replication and extract
+common display structures in shared templates. The classic example is the
+use of a header and footer (even though the Action Pack-way would be to use
+Layouts):
+</p>
+<pre>
+  &lt;%= render &quot;shared/header&quot; %&gt;
+  Something really specific and terrific
+  &lt;%= render &quot;shared/footer&quot; %&gt;
+</pre>
+<p>
+As you see, we use the output embeddings for the render methods. The render
+call itself will just return a string holding the result of the rendering.
+The output embedding writes it to the current template.
+</p>
+<p>
+But you don&#8216;t have to restrict yourself to static includes. Templates
+can share variables amongst themselves by using instance variables defined
+using the regular embedding tags. Like this:
+</p>
+<pre>
+  &lt;% @page_title = &quot;A Wonderful Hello&quot; %&gt;
+  &lt;%= render &quot;shared/header&quot; %&gt;
+</pre>
+<p>
+Now the header can pick up on the @page_title variable and use it for
+outputting a title tag:
+</p>
+<pre>
+  &lt;title&gt;&lt;%= @page_title %&gt;&lt;/title&gt;
+</pre>
+<h2>Passing local variables to sub templates</h2>
+<p>
+You can pass local variables to sub templates by using a hash with the
+variable names as keys and the objects as values:
+</p>
+<pre>
+  &lt;%= render &quot;shared/header&quot;, { :headline =&gt; &quot;Welcome&quot;, :person =&gt; person } %&gt;
+</pre>
+<p>
+These can now be accessed in shared/header with:
+</p>
+<pre>
+  Headline: &lt;%= headline %&gt;
+  First name: &lt;%= person.first_name %&gt;
+</pre>
+<p>
+If you need to find out whether a certain local variable has been assigned
+a value in a particular render call, you need to use the following pattern:
+</p>
+<pre>
+  &lt;% if local_assigns.has_key? :headline %&gt;
+    Headline: &lt;%= headline %&gt;
+  &lt;% end %&gt;
+</pre>
+<p>
+Testing using <tt>defined? headline</tt> will not work. This is an
+implementation restriction.
+</p>
+<h2>Template caching</h2>
+<p>
+By default, <a href="../Rails.html">Rails</a> will compile each template to
+a method in order to render it. When you alter a template, <a
+href="../Rails.html">Rails</a> will check the file&#8216;s modification
+time and recompile it.
+</p>
+<h2><a href="../Builder.html">Builder</a></h2>
+<p>
+<a href="../Builder.html">Builder</a> templates are a more programmatic
+alternative to ERb. They are especially useful for generating XML content.
+An <tt>XmlMarkup</tt> object named <tt>xml</tt> is automatically made
+available to templates with a +.builder+ extension.
+</p>
+<p>
+Here are some basic examples:
+</p>
+<pre>
+  xml.em(&quot;emphasized&quot;)                              # =&gt; &lt;em&gt;emphasized&lt;/em&gt;
+  xml.em { xml.b(&quot;emph &amp; bold&quot;) }                    # =&gt; &lt;em&gt;&lt;b&gt;emph &amp;amp; bold&lt;/b&gt;&lt;/em&gt;
+  xml.a(&quot;A Link&quot;, &quot;href&quot;=&gt;&quot;http://onestepback.org&quot;) # =&gt; &lt;a href=&quot;http://onestepback.org&quot;&gt;A Link&lt;/a&gt;
+  xml.target(&quot;name&quot;=&gt;&quot;compile&quot;, &quot;option&quot;=&gt;&quot;fast&quot;)   # =&gt; &lt;target option=&quot;fast&quot; name=&quot;compile&quot;\&gt;
+                                                    # NOTE: order of attributes is not specified.
+</pre>
+<p>
+Any method with a block will be treated as an XML markup tag with nested
+markup in the block. For example, the following:
+</p>
+<pre>
+  xml.div {
+    xml.h1(@person.name)
+    xml.p(@person.bio)
+  }
+</pre>
+<p>
+would produce something like:
+</p>
+<pre>
+  &lt;div&gt;
+    &lt;h1&gt;David Heinemeier Hansson&lt;/h1&gt;
+    &lt;p&gt;A product of Danish Design during the Winter of '79...&lt;/p&gt;
+  &lt;/div&gt;
+</pre>
+<p>
+A full-length RSS example actually used on Basecamp:
+</p>
+<pre>
+  xml.rss(&quot;version&quot; =&gt; &quot;2.0&quot;, &quot;xmlns:dc&quot; =&gt; &quot;http://purl.org/dc/elements/1.1/&quot;) do
+    xml.channel do
+      xml.title(@feed_title)
+      xml.link(@url)
+      xml.description &quot;Basecamp: Recent items&quot;
+      xml.language &quot;en-us&quot;
+      xml.ttl &quot;40&quot;
+
+      for item in @recent_items
+        xml.item do
+          xml.title(item_title(item))
+          xml.description(item_description(item)) if item_description(item)
+          xml.pubDate(item_pubDate(item))
+          xml.guid(@person.firm.account.url + @recent_items.url(item))
+          xml.link(@person.firm.account.url + @recent_items.url(item))
+
+          xml.tag!(&quot;dc:creator&quot;, item.author_name) if item_has_creator?(item)
+        end
+      end
+    end
+  end
+</pre>
+<p>
+More builder documentation can be found at <a
+href="http://builder.rubyforge.org">builder.rubyforge.org</a>.
+</p>
+<h2>JavaScriptGenerator</h2>
+<p>
+JavaScriptGenerator templates end in +.rjs+. Unlike conventional templates
+which are used to render the results of an action, these templates generate
+instructions on how to modify an already rendered page. This makes it easy
+to modify multiple elements on your page in one declarative Ajax response.
+Actions with these templates are called in the background with Ajax and
+make updates to the page where the request originated from.
+</p>
+<p>
+An instance of the JavaScriptGenerator object named <tt>page</tt> is
+automatically made available to your template, which is implicitly wrapped
+in an ActionView::Helpers::PrototypeHelper#update_page block.
+</p>
+<p>
+When an .rjs action is called with <tt>link_to_remote</tt>, the generated
+JavaScript is automatically evaluated. Example:
+</p>
+<pre>
+  link_to_remote :url =&gt; {:action =&gt; 'delete'}
+</pre>
+<p>
+The subsequently rendered +delete.rjs+ might look like:
+</p>
+<pre>
+  page.replace_html  'sidebar', :partial =&gt; 'sidebar'
+  page.remove        &quot;person-#{@person.id}&quot;
+  page.visual_effect :highlight, 'user-list'
+</pre>
+<p>
+This refreshes the sidebar, removes a person element and highlights the
+user list.
+</p>
+<p>
+See the ActionView::Helpers::PrototypeHelper::GeneratorMethods
+documentation for more details.
+</p>
+</div>
+
+
+
+
+<p></p>
+
+
+
+
+<h1>Attributes</h1><p><table><tr><th>Name</th><th>Read/write?</th></tr>
+<tr>
+<td class="highlight">assigns</td>
+
+
+
+
+<td class="normal">RW</td>
+</tr>
+<tr>
+<td class="highlight">base_path</td>
+
+
+
+
+<td class="normal">RW</td>
+</tr>
+<tr>
+<td class="highlight">controller</td>
+
+
+
+
+<td class="normal">RW</td>
+</tr>
+<tr>
+<td class="highlight">current_render_extension</td>
+
+
+
+
+<td class="normal">RW</td>
+</tr>
+<tr>
+<td class="highlight">finder</td>
+
+
+
+
+<td class="normal">R</td>
+</tr>
+<tr>
+<td class="highlight">first_render</td>
+
+
+
+
+<td class="normal">RW</td>
+</tr>
+<tr>
+<td class="highlight">headers</td>
+
+
+
+
+<td class="normal">R</td>
+</tr>
+<tr>
+<td class="highlight">logger</td>
+
+
+
+
+<td class="normal">R</td>
+</tr>
+<tr>
+<td class="highlight">response</td>
+
+
+
+
+<td class="normal">R</td>
+</tr>
+<tr>
+<td class="highlight">template_extension</td>
+
+
+
+
+<td class="normal">RW</td>
+</tr>
+<tr>
+<td class="highlight">template_format</td>
+
+
+
+
+<td class="normal">W</td>
+</tr>
+</table></p>
+
+
+<h1>Public Instance Methods</h1>
+
+
+<a class="small" name="M001258"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001258'>
+
+
+template_format
+
+()
+
+</a>
+</h3>
+<p>
+symbolized version of the :format parameter of the request, or :html by
+default.
+</p>
+<p>
+EXCEPTION: If the :format parameter is not set, the Accept header will be
+examined for whether it contains the JavaScript mime type as its first
+priority. If that&#8216;s the case, it will be used. This ensures that Ajax
+applications can use the same URL to support both JavaScript and
+non-JavaScript users.
+</p>
+
+<p class="source_link" id="M001258-show-link"><a onclick="toggle('M001258-source'); toggleText('M001258-link'); return false;" href="#" id="M001258-link">Show source...</a></p><div class="source" id="M001258-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/actionpack/lib/action_view/base.rb, line 304</span>
+304:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">template_format</span>
+305:       <span class="ruby-keyword kw">return</span> <span class="ruby-ivar">@template_format</span> <span class="ruby-keyword kw">if</span> <span class="ruby-ivar">@template_format</span>
+306: 
+307:       <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">controller</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">controller</span>.<span class="ruby-identifier">respond_to?</span>(<span class="ruby-identifier">:request</span>)
+308:         <span class="ruby-identifier">parameter_format</span> = <span class="ruby-identifier">controller</span>.<span class="ruby-identifier">request</span>.<span class="ruby-identifier">parameters</span>[<span class="ruby-identifier">:format</span>]
+309:         <span class="ruby-identifier">accept_format</span>    = <span class="ruby-identifier">controller</span>.<span class="ruby-identifier">request</span>.<span class="ruby-identifier">accepts</span>.<span class="ruby-identifier">first</span>
+310: 
+311:         <span class="ruby-keyword kw">case</span>
+312:         <span class="ruby-keyword kw">when</span> <span class="ruby-identifier">parameter_format</span>.<span class="ruby-identifier">blank?</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">accept_format</span> <span class="ruby-operator">!=</span> <span class="ruby-identifier">:js</span>
+313:           <span class="ruby-ivar">@template_format</span> = <span class="ruby-identifier">:html</span>
+314:         <span class="ruby-keyword kw">when</span> <span class="ruby-identifier">parameter_format</span>.<span class="ruby-identifier">blank?</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">accept_format</span> <span class="ruby-operator">==</span> <span class="ruby-identifier">:js</span>
+315:           <span class="ruby-ivar">@template_format</span> = <span class="ruby-identifier">:js</span>
+316:         <span class="ruby-keyword kw">else</span>
+317:           <span class="ruby-ivar">@template_format</span> = <span class="ruby-identifier">parameter_format</span>.<span class="ruby-identifier">to_sym</span>
+318:         <span class="ruby-keyword kw">end</span>
+319:       <span class="ruby-keyword kw">else</span>
+320:         <span class="ruby-ivar">@template_format</span> = <span class="ruby-identifier">:html</span>
+321:       <span class="ruby-keyword kw">end</span>
+322:     <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+
+
+
+
+</div><div class="clear" id="footer">Generated on Jan 21, 2008 / Allison 2 &copy; 2007 <a href="http://cloudbur.st">Cloudburst, LLC</a></div></div></body></html>

@@ -1,0 +1,745 @@
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head><meta content="text/html; charset=utf-8" http-equiv="Content-Type"/><title>File: CHANGELOG</title><link type="text/css" href="../../../.././rdoc-style.css" media="screen" rel="stylesheet"/><script type="text/javascript">
+// Allison template
+// Copyright 2007, 2008 Cloudburst, LLC. Licensed under the AFL 3. See the included LICENSE file.
+
+var href_base = '../../../.././rdoc-style.css'.replace(/(.*\/).*/, '$1'); // inline js is good for something  
+
+function $(id) {
+    if (document.getElementById)
+      elem = document.getElementById(id);
+    else if ( document.all )
+      elem = eval("document.all." + id);
+    else
+      return false;
+    return elem;
+}
+
+  function toggle(id) {
+    elem = $(id);
+    elemStyle = elem.style;   
+    if (elemStyle.display == "block") {
+      elemStyle.display = "none"
+    } else {
+      elemStyle.display = "block"
+    }
+    return true;
+  }
+
+  function toggleText(id) {
+    elem = $(id)
+    if (m = elem.innerHTML.match(/(Hide)(.*)/)) {
+      elem.innerHTML = "Show" + m[2];
+    } else if (m = elem.innerHTML.match(/(Show)(.*)/)) {
+      elem.innerHTML = "Hide" + m[2];
+    }
+    return true;
+  }
+
+function span(s, klass) {
+  return '<span class="' + klass + '">' + s + '</span>';
+}
+  
+function highlightSymbols() {
+  pres = document.getElementsByTagName('pre');
+  for(var i = 0; i < pres.length; i++) {
+    pre = pres[i];
+    spans = pre.getElementsByTagName('span');
+    for(var k = 0; k < spans.length; k++) {
+      span = spans[k];
+      if (span.className.match(/ruby-identifier/)) {
+        if (span.innerHTML.match(/^:/)) {
+          span.className += " ruby-symbol";
+        }
+      }
+    }
+  }
+}
+
+ function hasClass(obj) {
+     var result = false;
+     if (obj.getAttributeNode("class") != null) {
+         result = obj.getAttributeNode("class").value;
+     }
+     return result;
+  }   
+
+ function stripe() {
+    var even = true;
+    var color = "#e4ebed";
+    var tables = document.getElementsByTagName('table');
+    if (tables.length == 0) { return; }
+    for (var h = 0; h < tables.length; h++) {
+        var trs = tables[h].getElementsByTagName("tr");
+        for (var i = 0; i < trs.length; i++) {
+          var tds = trs[i].getElementsByTagName("td");
+            for (var j = 0; j < tds.length; j++) {       
+              if (hasClass(tds[j]) != "first") {                
+              var mytd = tds[j];
+              if (even) {
+                mytd.style.backgroundColor = color;
+              }         
+            }
+          }
+          even =  ! even;
+      }
+    }
+  }
+  
+function ajaxGet(url) {
+  url = (href_base + url).replace('/./', '/')
+  var req = false;
+
+  if (window.ActiveXObject) {
+    try {
+      // stupid hack because IE7 disables local Ajax with the native xmlhttprequest object
+      // for security purposes. Yet ActiveX still works. Thanks, Microsoft. I hate you. Die.
+      req = new ActiveXObject("MSXML2.XMLHTTP.3.0");
+    } catch (e) {
+      try {
+        /* IE 6 and maybe 5, don't know, don't care */
+        req = new ActiveXObject("Msxml2.XMLHTTP");
+      } catch (e) {
+        try {
+          req = new ActiveXObject("Microsoft.XMLHTTP");
+        } catch (e) {
+          req = false;
+        }
+      }
+    }
+  }
+    
+  /* real browsers */
+  if (!req && window.XMLHttpRequest) {
+    try {
+      req = new XMLHttpRequest();
+    } catch (e) {
+      req = false;
+    }
+  } 
+  
+  if (req) {
+    req.open('GET', url, false);
+    req.send(null);
+    return req.responseText;
+  } else {
+    return "Ajax error";  
+  }
+}
+
+
+function addEvent(elm, evType, fn, useCapture) {
+	if (elm.addEventListener) {
+	  elm.addEventListener(evType, fn, useCapture);  
+  	return true;
+	} else if (elm.attachEvent) {
+  	var r = elm.attachEvent('on' + evType, fn);  
+	  return r;  
+	} else {
+  	elm['on' + evType] = fn;
+	}
+}
+
+function insertIndices() {
+  pages = ["class", "file", "method"]
+  for (x in pages) { 
+    $(pages[x]).innerHTML += ajaxGet('fr_' + pages[x] + '_index.html').replace(/(href=")/g, '$1' + href_base);
+  }
+  /* mouseoverify method links */
+  links = $('method').getElementsByTagName('a');
+  for (var x = 0; x < links.length; x++) {
+    if (m = links[x].innerHTML.match(/(.*)\s\((.*)\)/)) {
+      links[x].innerHTML = m[1] + '<br>';
+      links[x].title = m[2];
+    }
+  }
+  /* this is stupid */
+  $('class').style.display = "block";
+  $('file').style.display = "block";
+  
+  /* has to be here because IE7 does not guarantee the onLoad callback order */
+  abbreviateIndicesInner(["class", "file"], 25, "a");
+  /* same, linkTitle() depends on the class link list */
+  linkTitle();
+}
+
+function abbreviateIndices() {
+  var ids = ["defined_in", "child_of", "includes", "requires", "method", "methods"];
+  abbreviateIndicesInner(ids, 25, 'a');
+  abbreviateIndicesInner(ids, 25, 'span');
+}
+
+function abbreviateIndicesInner(indices, amount, tag) {
+  for (var x = 0; x < indices.length; x++) { 
+    var the_index = $(indices[x]);
+    if (the_index) {
+      links = the_index.getElementsByTagName(tag);
+      for (var y = 0; y < links.length; y++) {
+        var link = links[y];
+        if (link.getElementsByTagName('span').length == 0 && link.getElementsByTagName('a').length == 0) {
+          // avoid nesting
+          link.innerHTML = link.innerHTML.replace(/<br>|\n/gi, '');
+          link.title = link.innerHTML;
+          link.innerHTML = abbreviate(link.innerHTML, amount) + '<br>';
+        }
+      }
+    }
+  }
+}
+
+function linkTitle() {
+  
+  /* grab the correct title element from the index */
+  var index_page = ajaxGet('index.html');
+  title_text = index_page.match(/<title>(.*)<\/title>/m)[1];
+  document.title = title_text + " - " + document.title;
+  var p = $('header').getElementsByTagName('p')[0]
+  if (p.innerHTML.match(/^\s*$/)) {
+    p.innerHTML = title_text;
+  } else {
+    p.innerHTML = title_text + ": " + p.innerHTML;
+  }
+  
+  /* set the link properly */
+  title_link = index_page.match(/<a\s+href="(.*?)"/)[1];
+  var element = $('title');
+  var item_type = "";
+  var item_name = "";
+  if (m = element.innerHTML.match(/(Class:|Module:|File:)\s*(.*)/)) {
+    item_type = m[1];
+    item_name = m[2];
+  } else {
+    item_name = element.innerHTML;
+  }
+  element.innerHTML = '<a href="' + href_base + title_link + '">' + item_type + " " + abbreviate(item_name, 45) + '</a>';
+  element.getElementsByTagName('a')[0].title = item_name
+  
+  /* breadcrumb navigation */
+  items = item_name.split("::");
+  items_new = item_name.split("::");
+  file_links = $('class').getElementsByTagName('a');
+  for (var x = 0; x < items.length - 1; x++ ){
+    var item = items[x];
+    link = ("/classes/" + items.slice(0,x).join("/") + "/" + item + ".html").replace('//', '/');
+    regex = new RegExp(RegExp.escape(link) + '$');
+    for (var y = 0; y < file_links.length; y++) {
+      if (file_links[y].href.match(regex)) {
+         items_new[x] = '<a href="' + href_base + link + '">' + item + '</a>';
+         break;
+      }
+    }  
+  }
+  $('item_name').innerHTML = item_type + ' ' + items_new.join(" :: ");
+}
+
+function abbreviate(s, size) {
+  while (s.length > size) {
+    var old_s = s;
+    s = s.replace(/\s|\n/mg, '');
+    s = s.replace(/([A-Z])[a-z]+/m, '$1');
+    if (!s || old_s == s) {
+      return "..." + s.substring(s.length - size, s.length);
+    }
+  }
+  return s;
+}
+
+function disableSubmit(event) {
+  var keyCode = event.keyCode ? event.keyCode : event.which ? event.which : event.charCode;
+  if (keyCode == 13) {
+    return false;
+  } else {
+    return true;
+  }
+}
+  
+function filterList(id, s, event) {
+  
+  /* some weak escaping */
+  s = s.replace(/[^\w\d\.\_\-\/\:\=\[\]\?\!]/g, '');
+  s = RegExp.escape(s);
+  
+  var show_all = false;
+  if (s.match(/^\s*$/)) {
+    show_all = true;
+  }
+  
+  links = $(id).getElementsByTagName('a')
+  regex = new RegExp(s, 'i');
+  
+  for (var x = 0; x < links.length; x++) {
+    var link = links[x];
+    if (show_all) {
+      link.style.display = 'inline';
+    } else {
+       if (link.innerHTML.match(regex)) {        
+         link.style.display = 'inline';
+       } else {
+         link.style.display = 'none';
+       }
+    }
+  }
+  return true;
+}
+
+RegExp.escape = function(text) {
+  if (!arguments.callee.sRE) {
+    var specials = ['/', '.', '*', '+', '?', '|', '(', ')', '[', ']', '{', '}', '\\'];
+    arguments.callee.sRE = new RegExp(
+      '(\\' + specials.join('|\\') + ')', 'g'
+    );
+  }
+  return text.replace(arguments.callee.sRE, '\\$1');
+}
+
+function hacks() {
+  // show the spacer if necessary, 
+  divs = document.getElementsByTagName('div');
+  for(var x = 0; x < divs.length; x++) {
+    if (divs[x].className && divs[x].className.match(/top/)) {
+      document.getElementById('spacer').style.display = 'block';
+    }
+  }
+  // remove extra colons from tables
+  tds = document.getElementsByTagName('td');
+  for(var x = 0; x < tds.length; x++) {
+    str = tds[x].innerHTML
+    if (str.charAt(str.length - 1) == ":") {
+      tds[x].innerHTML = str.slice(0, str.length - 1)
+    }
+  }
+}
+
+addEvent(window, 'load', insertIndices, false);
+addEvent(window, 'load', abbreviateIndices, false);
+addEvent(window, 'load', stripe, false);
+addEvent(window, 'load', highlightSymbols, false);
+addEvent(window, 'load', hacks, false);
+</script></head><body><div id="container"><div class="curve" id="preheader_curve_0"></div><div class="curve" id="preheader_curve_1"></div><div class="curve" id="preheader_curve_2"></div><div class="curve" id="preheader_curve_3"></div><div class="curve" id="preheader_curve_4"></div><div class="curve" id="preheader_curve_5"></div><div id="header"><p>
+vendor/rails/activeresource/CHANGELOG
+</p><span><h1 id="title">
+File: CHANGELOG
+</h1></span>
+</div><div class="clear"></div><div id="left">
+
+
+
+
+<div id="spacer"></div><div class="navigation darker index" id="class_wrapper"><div class="list_header"><h3>All classes</h3></div><div class="list_header_link"><a onclick="toggle('class'); toggleText('class_link'); return false;" href="#" id="class_link">Hide...</a></div><div class="clear"></div><div id="class"><form><label for="filter_class">Filter:&nbsp;&nbsp;</label><input type="text" onKeyUp="return filterList('class', this.value, event);" onKeyPress="return disableSubmit(event);" id="filter_class"></input></form></div></div><div class="navigation darker index" id="file_wrapper"><div class="list_header"><h3>All files</h3></div><div class="list_header_link"><a onclick="toggle('file'); toggleText('file_link'); return false;" href="#" id="file_link">Hide...</a></div><div class="clear"></div><div id="file"><form><label for="filter_file">Filter:&nbsp;&nbsp;</label><input type="text" onKeyUp="return filterList('file', this.value, event);" onKeyPress="return disableSubmit(event);" id="filter_file"></input></form></div></div><div class="navigation darker index" id="method_wrapper"><div class="list_header"><h3>All methods</h3></div><div class="list_header_link"><a onclick="toggle('method'); toggleText('method_link'); return false;" href="#" id="method_link">Show...</a></div><div class="clear"></div><div id="method"><form><label for="filter_method">Filter:&nbsp;&nbsp;</label><input type="text" onKeyUp="return filterList('method', this.value, event);" onKeyPress="return disableSubmit(event);" id="filter_method"></input></form></div></div></div><div id="content">
+<h1 id="item_name">File: CHANGELOG</h1>
+
+<div id="description"><p>
+<b>SVN</b>
+</p>
+<ul>
+<li>Use HEAD instead of GET in exists? [bscofield]
+
+</li>
+<li>Fix small documentation typo. Closes 10670 [l.guidi]
+
+</li>
+<li>find_or_create_resource_for handles module nesting. 10646 [xavier]
+
+</li>
+<li>Allow setting ActiveResource::Base#format before site. [rick]
+
+</li>
+<li>Support agnostic formats when calling custom methods. Closes 10635
+[joerichsen]
+
+</li>
+<li>Document custom methods. 10589 [Cheah Chu Yeow]
+
+</li>
+<li>Ruby 1.9 compatibility. [Jeremy Kemper]
+
+</li>
+</ul>
+<p>
+*2.0.2* (December 16th, 2007)
+</p>
+<ul>
+<li>Added more specific exceptions for 400, 401, and 403 (all descending from
+ClientError so existing rescues will work) 10326 [trek]
+
+</li>
+<li>Correct empty response handling. 10445 [seangeo]
+
+</li>
+</ul>
+<p>
+*2.0.1* (December 7th, 2007)
+</p>
+<ul>
+<li>Don&#8216;t cache net/http object so that <a
+href="../../../../classes/ActiveResource.html">ActiveResource</a> is more
+thread-safe. Closes 10142 [kou]
+
+</li>
+<li>Update XML documentation examples to include explicit type attributes.
+Closes 9754 [hasmanyjosh]
+
+</li>
+<li>Added one-off declarations of mock behavior [DHH]. Example:
+
+<pre>
+  Before:
+    ActiveResource::HttpMock.respond_to do |mock|
+      mock.get &quot;/people/1.xml&quot;, {}, &quot;&lt;person&gt;&lt;name&gt;David&lt;/name&gt;&lt;/person&gt;&quot;
+    end
+
+  Now:
+    ActiveResource::HttpMock.respond_to.get &quot;/people/1.xml&quot;, {}, &quot;&lt;person&gt;&lt;name&gt;David&lt;/name&gt;&lt;/person&gt;&quot;
+</pre>
+</li>
+<li>Added ActiveResource.format= which defaults to :xml but can also be set to
+:json [DHH]. Example:
+
+<pre>
+  class Person &lt; ActiveResource::Base
+    self.site   = &quot;http://app/&quot;
+    self.format = :json
+  end
+
+  person = Person.find(1) # =&gt; GET http://app/people/1.json
+  person.name = &quot;David&quot;
+  person.save             # =&gt; PUT http://app/people/1.json {name: &quot;David&quot;}
+
+  Person.format = :xml
+  person.name = &quot;Mary&quot;
+  person.save             # =&gt; PUT http://app/people/1.json &lt;person&gt;&lt;name&gt;Mary&lt;/name&gt;&lt;/person&gt;
+</pre>
+</li>
+<li>Fix reload error when path prefix is used. 8727 [Ian Warshak]
+
+</li>
+<li>Remove ActiveResource::Struct because it hasn&#8216;t proven very useful.
+Creating a new <a
+href="../../../../classes/ActiveResource/Base.html">ActiveResource::Base</a>
+subclass is often less code and always clearer. 8612 [Josh Peek]
+
+</li>
+<li>Fix query methods on resources. [Cody Fauser]
+
+</li>
+<li>pass the prefix_options to the instantiated record when using find without
+a specific id. Closes 8544 [alloy]
+
+</li>
+<li>Recognize and raise an exception on 405 Method Not Allowed responses. 7692
+[Josh Peek]
+
+</li>
+<li>Handle string and symbol param keys when splitting params into prefix
+params and query params.
+
+<pre>
+  Comment.find(:all, :params =&gt; { :article_id =&gt; 5, :page =&gt; 2 }) or Comment.find(:all, :params =&gt; { 'article_id' =&gt; 5, :page =&gt; 2 })
+</pre>
+</li>
+<li>Added find-one with symbol [DHH]. Example: Person.find(:one, :from =&gt;
+:leader) # =&gt; GET /people/leader.xml
+
+</li>
+<li>BACKWARDS INCOMPATIBLE: Changed the finder API to be more extensible with
+:params and more strict usage of scopes [DHH]. Changes:
+
+<pre>
+  Person.find(:all, :title =&gt; &quot;CEO&quot;)      ...becomes: Person.find(:all, :params =&gt; { :title =&gt; &quot;CEO&quot; })
+  Person.find(:managers)                  ...becomes: Person.find(:all, :from =&gt; :managers)
+  Person.find(&quot;/companies/1/manager.xml&quot;) ...becomes: Person.find(:one, :from =&gt; &quot;/companies/1/manager.xml&quot;)
+</pre>
+</li>
+<li>Add support for setting custom headers per Active Resource model [Rick]
+
+<p>
+class Project
+</p>
+<pre>
+  headers['X-Token'] = 'foo'
+</pre>
+<p>
+end
+</p>
+<p>
+# makes the GET request with the custom X-Token header Project.find(:all)
+</p>
+</li>
+<li>Added find-by-path options to ActiveResource::Base.find [DHH]. Examples:
+
+<pre>
+  employees = Person.find(:all, :from =&gt; &quot;/companies/1/people.xml&quot;) # =&gt; GET /companies/1/people.xml
+  manager   = Person.find(&quot;/companies/1/manager.xml&quot;)               # =&gt; GET /companies/1/manager.xml
+</pre>
+</li>
+<li>Added support for using classes from within a single nested module [DHH].
+Example:
+
+<pre>
+  module Highrise
+    class Note &lt; ActiveResource::Base
+      self.site = &quot;http://37s.sunrise.i:3000&quot;
+    end
+
+    class Comment &lt; ActiveResource::Base
+      self.site = &quot;http://37s.sunrise.i:3000&quot;
+    end
+  end
+</pre>
+<p>
+assert_kind_of Highrise::Comment, Note.find(1).comments.first
+</p>
+</li>
+<li>Added load_attributes_from_response as a way of loading attributes from
+other responses than just create [DHH]
+
+<pre>
+  class Highrise::Task &lt; ActiveResource::Base
+    def complete
+      load_attributes_from_response(post(:complete))
+    end
+  end
+</pre>
+<p>
+&#8230;will set &quot;done_at&quot; when complete is called.
+</p>
+</li>
+<li>Added support for calling custom methods 6979 [rwdaigle]
+
+<pre>
+  Person.find(:managers)    # =&gt; GET /people/managers.xml
+  Kase.find(1).post(:close) # =&gt; POST /kases/1/close.xml
+</pre>
+</li>
+<li>Remove explicit prefix_options parameter for
+ActiveResource::Base#initialize. [Rick] <a
+href="../../../../classes/ActiveResource.html">ActiveResource</a> splits
+the prefix_options from it automatically.
+
+</li>
+<li>Allow ActiveResource::Base.delete with custom prefix. [Rick]
+
+</li>
+<li>Add ActiveResource::Base#dup [Rick]
+
+</li>
+<li>Fixed constant warning when fetching the same object multiple times [DHH]
+
+</li>
+<li>Added that saves which get a body response (and not just a 201) will use
+that response to update themselves [DHH]
+
+</li>
+<li>Disregard namespaces from the default element name, so Highrise::Person
+will just try to fetch from &quot;/people&quot;, not
+&quot;/highrise/people&quot; [DHH]
+
+</li>
+<li>Allow array and hash query parameters. 7756 [Greg Spurrier]
+
+</li>
+<li>Loading a resource preserves its prefix_options. 7353 [Ryan Daigle]
+
+</li>
+<li>Carry over the convenience of create from ActiveRecord. Closes 7340. [Ryan
+Daigle]
+
+</li>
+<li>Increase <a
+href="../../../../classes/ActiveResource/Base.html">ActiveResource::Base</a>
+test coverage. Closes 7173, 7174 [Rich Collins]
+
+</li>
+<li>Interpret 422 Unprocessable Entity as ResourceInvalid. 7097 [dkubb]
+
+</li>
+<li>Mega documentation patches. 7025, 7069 [rwdaigle]
+
+</li>
+<li>Base.exists?(id, options) and Base#exists? check whether the resource is
+found. 6970 [rwdaigle]
+
+</li>
+<li>Query string support. [untext, Jeremy Kemper]
+
+<pre>
+  # GET /forums/1/topics.xml?sort=created_at
+  Topic.find(:all, :forum_id =&gt; 1, :sort =&gt; 'created_at')
+</pre>
+</li>
+<li>Base#==, eql?, and hash methods. == returns true if its argument is
+identical to self or if it&#8216;s an instance of the same class, is not
+new?, and has the same id. eql? is an alias for ==. hash delegates to id.
+[Jeremy Kemper]
+
+</li>
+<li>Allow subclassed resources to share the site info [Rick, Jeremy Kemper]
+
+</li>
+</ul>
+<p>
+d
+</p>
+<pre>
+    class BeastResource &lt; ActiveResource::Base
+      self.site = 'http://beast.caboo.se'
+    end
+
+    class Forum &lt; BeastResource
+      # taken from BeastResource
+      # self.site = 'http://beast.caboo.se'
+    end
+
+    class Topic &lt; BeastResource
+      self.site += '/forums/:forum_id'
+    end
+</pre>
+<ul>
+<li>Fix issues with <a
+href="../../../../classes/ActiveResource.html">ActiveResource</a>
+collection handling. Closes 6291. [bmilekic]
+
+</li>
+<li>Use attr_accessor_with_default to dry up attribute initialization.
+References 6538. [Stuart Halloway]
+
+</li>
+<li>Add basic logging support for logging outgoing requests. [Jamis Buck]
+
+</li>
+<li>Add Base.delete for deleting resources without having to instantiate them
+first. [Jamis Buck]
+
+</li>
+<li>Make save behavior mimic AR::Base#save (true on success, false on failure).
+[Jamis Buck]
+
+</li>
+<li>Add Basic HTTP Authentication to <a
+href="../../../../classes/ActiveResource.html">ActiveResource</a> (closes
+6305). [jonathan]
+
+</li>
+<li>Extracted id_from_response as an entry point for customizing how a created
+resource gets its own ID. By default, it extracts from the Location
+response header.
+
+</li>
+<li>Optimistic locking: raise <a
+href="../../../../classes/ActiveResource/ResourceConflict.html">ActiveResource::ResourceConflict</a>
+on 409 Conflict response. [Jeremy Kemper]
+
+<pre>
+  # Example controller action
+  def update
+    @person.save!
+  rescue ActiveRecord::StaleObjectError
+    render :xml =&gt; @person.reload.to_xml, :status =&gt; '409 Conflict'
+  end
+</pre>
+</li>
+<li>Basic validation support [Rick Olson]
+
+<p>
+Parses the xml response of ActiveRecord::Errors#to_xml with a similar
+interface to <a
+href="../../../../classes/ActiveRecord/Errors.html">ActiveRecord::Errors</a>.
+</p>
+<pre>
+  render :xml =&gt; @person.errors.to_xml, :status =&gt; '400 Validation Error'
+</pre>
+</li>
+<li>Deep hashes are converted into collections of resources. [Jeremy Kemper]
+
+<pre>
+  Person.new :name =&gt; 'Bob',
+             :address =&gt; { :id =&gt; 1, :city =&gt; 'Portland' },
+             :contacts =&gt; [{ :id =&gt; 1 }, { :id =&gt; 2 }]
+</pre>
+<p>
+Looks for Address and Contact resources and creates them if unavailable. So
+clients can fetch a complex resource in a single request if you e.g.
+</p>
+<pre>
+  render :xml =&gt; @person.to_xml(:include =&gt; [:address, :contacts])
+</pre>
+<p>
+in your controller action.
+</p>
+</li>
+<li>Major updates [Rick Olson]
+
+<ul>
+<li>Add full support for find/create/update/destroy
+
+</li>
+<li>Add support for specifying prefixes.
+
+</li>
+<li>Allow overriding of element_name, collection_name, and primary key
+
+</li>
+<li>Provide simpler HTTP mock interface for testing
+
+<p>
+# rails routing code map.resources :posts do |post|
+</p>
+<pre>
+  post.resources :comments
+</pre>
+<p>
+end
+</p>
+<p>
+# ActiveResources class Post &lt; <a
+href="../../../../classes/ActiveResource/Base.html">ActiveResource::Base</a>
+</p>
+<pre>
+  self.site = &quot;http://37s.sunrise.i:3000/&quot;
+</pre>
+<p>
+end
+</p>
+<p>
+class Comment &lt; <a
+href="../../../../classes/ActiveResource/Base.html">ActiveResource::Base</a>
+</p>
+<pre>
+  self.site = &quot;http://37s.sunrise.i:3000/posts/:post_id/&quot;
+</pre>
+<p>
+end
+</p>
+<p>
+@post = Post.find 5 @comments = Comment.find :all, :post_id =&gt; @post.id
+</p>
+<p>
+@comment = Comment.new({:body =&gt; &#8216;hello world&#8217;}, {:post_id
+=&gt; @post.id}) @comment.save
+</p>
+</li>
+</ul>
+</li>
+<li>Base.site= accepts URIs. 200...400 are valid response codes. PUT and POST
+request bodies default to &#8217;&#8217;. [Jeremy Kemper]
+
+</li>
+<li>Initial checkin: object-oriented client for restful HTTP resources which
+follow the <a href="../../../../classes/Rails.html">Rails</a> convention.
+[DHH]
+
+</li>
+</ul>
+</div>
+
+
+
+
+<p></p>
+
+
+
+
+
+
+
+</div><div class="clear" id="footer">Generated on Jan 21, 2008 / Allison 2 &copy; 2007 <a href="http://cloudbur.st">Cloudburst, LLC</a></div></div></body></html>

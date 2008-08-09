@@ -1,0 +1,803 @@
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head><meta content="text/html; charset=utf-8" http-equiv="Content-Type"/><title>Class: ActiveRecord::ConnectionAdapters::TableDefinition</title><link type="text/css" href="../../.././rdoc-style.css" media="screen" rel="stylesheet"/><script type="text/javascript">
+// Allison template
+// Copyright 2007, 2008 Cloudburst, LLC. Licensed under the AFL 3. See the included LICENSE file.
+
+var href_base = '../../.././rdoc-style.css'.replace(/(.*\/).*/, '$1'); // inline js is good for something  
+
+function $(id) {
+    if (document.getElementById)
+      elem = document.getElementById(id);
+    else if ( document.all )
+      elem = eval("document.all." + id);
+    else
+      return false;
+    return elem;
+}
+
+  function toggle(id) {
+    elem = $(id);
+    elemStyle = elem.style;   
+    if (elemStyle.display == "block") {
+      elemStyle.display = "none"
+    } else {
+      elemStyle.display = "block"
+    }
+    return true;
+  }
+
+  function toggleText(id) {
+    elem = $(id)
+    if (m = elem.innerHTML.match(/(Hide)(.*)/)) {
+      elem.innerHTML = "Show" + m[2];
+    } else if (m = elem.innerHTML.match(/(Show)(.*)/)) {
+      elem.innerHTML = "Hide" + m[2];
+    }
+    return true;
+  }
+
+function span(s, klass) {
+  return '<span class="' + klass + '">' + s + '</span>';
+}
+  
+function highlightSymbols() {
+  pres = document.getElementsByTagName('pre');
+  for(var i = 0; i < pres.length; i++) {
+    pre = pres[i];
+    spans = pre.getElementsByTagName('span');
+    for(var k = 0; k < spans.length; k++) {
+      span = spans[k];
+      if (span.className.match(/ruby-identifier/)) {
+        if (span.innerHTML.match(/^:/)) {
+          span.className += " ruby-symbol";
+        }
+      }
+    }
+  }
+}
+
+ function hasClass(obj) {
+     var result = false;
+     if (obj.getAttributeNode("class") != null) {
+         result = obj.getAttributeNode("class").value;
+     }
+     return result;
+  }   
+
+ function stripe() {
+    var even = true;
+    var color = "#e4ebed";
+    var tables = document.getElementsByTagName('table');
+    if (tables.length == 0) { return; }
+    for (var h = 0; h < tables.length; h++) {
+        var trs = tables[h].getElementsByTagName("tr");
+        for (var i = 0; i < trs.length; i++) {
+          var tds = trs[i].getElementsByTagName("td");
+            for (var j = 0; j < tds.length; j++) {       
+              if (hasClass(tds[j]) != "first") {                
+              var mytd = tds[j];
+              if (even) {
+                mytd.style.backgroundColor = color;
+              }         
+            }
+          }
+          even =  ! even;
+      }
+    }
+  }
+  
+function ajaxGet(url) {
+  url = (href_base + url).replace('/./', '/')
+  var req = false;
+
+  if (window.ActiveXObject) {
+    try {
+      // stupid hack because IE7 disables local Ajax with the native xmlhttprequest object
+      // for security purposes. Yet ActiveX still works. Thanks, Microsoft. I hate you. Die.
+      req = new ActiveXObject("MSXML2.XMLHTTP.3.0");
+    } catch (e) {
+      try {
+        /* IE 6 and maybe 5, don't know, don't care */
+        req = new ActiveXObject("Msxml2.XMLHTTP");
+      } catch (e) {
+        try {
+          req = new ActiveXObject("Microsoft.XMLHTTP");
+        } catch (e) {
+          req = false;
+        }
+      }
+    }
+  }
+    
+  /* real browsers */
+  if (!req && window.XMLHttpRequest) {
+    try {
+      req = new XMLHttpRequest();
+    } catch (e) {
+      req = false;
+    }
+  } 
+  
+  if (req) {
+    req.open('GET', url, false);
+    req.send(null);
+    return req.responseText;
+  } else {
+    return "Ajax error";  
+  }
+}
+
+
+function addEvent(elm, evType, fn, useCapture) {
+	if (elm.addEventListener) {
+	  elm.addEventListener(evType, fn, useCapture);  
+  	return true;
+	} else if (elm.attachEvent) {
+  	var r = elm.attachEvent('on' + evType, fn);  
+	  return r;  
+	} else {
+  	elm['on' + evType] = fn;
+	}
+}
+
+function insertIndices() {
+  pages = ["class", "file", "method"]
+  for (x in pages) { 
+    $(pages[x]).innerHTML += ajaxGet('fr_' + pages[x] + '_index.html').replace(/(href=")/g, '$1' + href_base);
+  }
+  /* mouseoverify method links */
+  links = $('method').getElementsByTagName('a');
+  for (var x = 0; x < links.length; x++) {
+    if (m = links[x].innerHTML.match(/(.*)\s\((.*)\)/)) {
+      links[x].innerHTML = m[1] + '<br>';
+      links[x].title = m[2];
+    }
+  }
+  /* this is stupid */
+  $('class').style.display = "block";
+  $('file').style.display = "block";
+  
+  /* has to be here because IE7 does not guarantee the onLoad callback order */
+  abbreviateIndicesInner(["class", "file"], 25, "a");
+  /* same, linkTitle() depends on the class link list */
+  linkTitle();
+}
+
+function abbreviateIndices() {
+  var ids = ["defined_in", "child_of", "includes", "requires", "method", "methods"];
+  abbreviateIndicesInner(ids, 25, 'a');
+  abbreviateIndicesInner(ids, 25, 'span');
+}
+
+function abbreviateIndicesInner(indices, amount, tag) {
+  for (var x = 0; x < indices.length; x++) { 
+    var the_index = $(indices[x]);
+    if (the_index) {
+      links = the_index.getElementsByTagName(tag);
+      for (var y = 0; y < links.length; y++) {
+        var link = links[y];
+        if (link.getElementsByTagName('span').length == 0 && link.getElementsByTagName('a').length == 0) {
+          // avoid nesting
+          link.innerHTML = link.innerHTML.replace(/<br>|\n/gi, '');
+          link.title = link.innerHTML;
+          link.innerHTML = abbreviate(link.innerHTML, amount) + '<br>';
+        }
+      }
+    }
+  }
+}
+
+function linkTitle() {
+  
+  /* grab the correct title element from the index */
+  var index_page = ajaxGet('index.html');
+  title_text = index_page.match(/<title>(.*)<\/title>/m)[1];
+  document.title = title_text + " - " + document.title;
+  var p = $('header').getElementsByTagName('p')[0]
+  if (p.innerHTML.match(/^\s*$/)) {
+    p.innerHTML = title_text;
+  } else {
+    p.innerHTML = title_text + ": " + p.innerHTML;
+  }
+  
+  /* set the link properly */
+  title_link = index_page.match(/<a\s+href="(.*?)"/)[1];
+  var element = $('title');
+  var item_type = "";
+  var item_name = "";
+  if (m = element.innerHTML.match(/(Class:|Module:|File:)\s*(.*)/)) {
+    item_type = m[1];
+    item_name = m[2];
+  } else {
+    item_name = element.innerHTML;
+  }
+  element.innerHTML = '<a href="' + href_base + title_link + '">' + item_type + " " + abbreviate(item_name, 45) + '</a>';
+  element.getElementsByTagName('a')[0].title = item_name
+  
+  /* breadcrumb navigation */
+  items = item_name.split("::");
+  items_new = item_name.split("::");
+  file_links = $('class').getElementsByTagName('a');
+  for (var x = 0; x < items.length - 1; x++ ){
+    var item = items[x];
+    link = ("/classes/" + items.slice(0,x).join("/") + "/" + item + ".html").replace('//', '/');
+    regex = new RegExp(RegExp.escape(link) + '$');
+    for (var y = 0; y < file_links.length; y++) {
+      if (file_links[y].href.match(regex)) {
+         items_new[x] = '<a href="' + href_base + link + '">' + item + '</a>';
+         break;
+      }
+    }  
+  }
+  $('item_name').innerHTML = item_type + ' ' + items_new.join(" :: ");
+}
+
+function abbreviate(s, size) {
+  while (s.length > size) {
+    var old_s = s;
+    s = s.replace(/\s|\n/mg, '');
+    s = s.replace(/([A-Z])[a-z]+/m, '$1');
+    if (!s || old_s == s) {
+      return "..." + s.substring(s.length - size, s.length);
+    }
+  }
+  return s;
+}
+
+function disableSubmit(event) {
+  var keyCode = event.keyCode ? event.keyCode : event.which ? event.which : event.charCode;
+  if (keyCode == 13) {
+    return false;
+  } else {
+    return true;
+  }
+}
+  
+function filterList(id, s, event) {
+  
+  /* some weak escaping */
+  s = s.replace(/[^\w\d\.\_\-\/\:\=\[\]\?\!]/g, '');
+  s = RegExp.escape(s);
+  
+  var show_all = false;
+  if (s.match(/^\s*$/)) {
+    show_all = true;
+  }
+  
+  links = $(id).getElementsByTagName('a')
+  regex = new RegExp(s, 'i');
+  
+  for (var x = 0; x < links.length; x++) {
+    var link = links[x];
+    if (show_all) {
+      link.style.display = 'inline';
+    } else {
+       if (link.innerHTML.match(regex)) {        
+         link.style.display = 'inline';
+       } else {
+         link.style.display = 'none';
+       }
+    }
+  }
+  return true;
+}
+
+RegExp.escape = function(text) {
+  if (!arguments.callee.sRE) {
+    var specials = ['/', '.', '*', '+', '?', '|', '(', ')', '[', ']', '{', '}', '\\'];
+    arguments.callee.sRE = new RegExp(
+      '(\\' + specials.join('|\\') + ')', 'g'
+    );
+  }
+  return text.replace(arguments.callee.sRE, '\\$1');
+}
+
+function hacks() {
+  // show the spacer if necessary, 
+  divs = document.getElementsByTagName('div');
+  for(var x = 0; x < divs.length; x++) {
+    if (divs[x].className && divs[x].className.match(/top/)) {
+      document.getElementById('spacer').style.display = 'block';
+    }
+  }
+  // remove extra colons from tables
+  tds = document.getElementsByTagName('td');
+  for(var x = 0; x < tds.length; x++) {
+    str = tds[x].innerHTML
+    if (str.charAt(str.length - 1) == ":") {
+      tds[x].innerHTML = str.slice(0, str.length - 1)
+    }
+  }
+}
+
+addEvent(window, 'load', insertIndices, false);
+addEvent(window, 'load', abbreviateIndices, false);
+addEvent(window, 'load', stripe, false);
+addEvent(window, 'load', highlightSymbols, false);
+addEvent(window, 'load', hacks, false);
+</script></head><body><div id="container"><div class="curve" id="preheader_curve_0"></div><div class="curve" id="preheader_curve_1"></div><div class="curve" id="preheader_curve_2"></div><div class="curve" id="preheader_curve_3"></div><div class="curve" id="preheader_curve_4"></div><div class="curve" id="preheader_curve_5"></div><div id="header"><p>
+</p><span><h1 id="title">
+Class: ActiveRecord::ConnectionAdapters::TableDefinition
+</h1></span>
+</div><div class="clear"></div><div id="left">
+<div class="navigation darker top" id="child_of"><h3>Child of</h3><span>
+
+<a href='../../Object.html'>
+Object
+</a>
+</span></div>
+
+<div class="navigation darker top" id="defined_in"><h3>Defined in</h3>
+
+<a href="../../../files/vendor/rails/activerecord/lib/active_record/connection_adapters/abstract/schema_definitions_rb.html">vendor/rails/activerecord/lib/active_record/connection_adapters/abstract/schema_definitions.rb</a>
+
+</div>
+
+
+
+<div class="navigation top" id="methods"><h3>Methods</h3>
+
+
+<a href='#M001388'>
+[]<br/>
+</a>
+
+
+
+
+<a href='#M001392'>
+belongs_to<br/>
+</a>
+
+
+
+
+<a href='#M001389'>
+column<br/>
+</a>
+
+
+
+
+<a href='#M001386'>
+new<br/>
+</a>
+
+
+
+
+<a href='#M001387'>
+primary_key<br/>
+</a>
+
+
+
+
+<a href='#M001391'>
+references<br/>
+</a>
+
+
+
+
+<a href='#M001390'>
+timestamps<br/>
+</a>
+
+
+
+
+<a href='#M001393'>
+to_sql<br/>
+</a>
+
+
+</div>
+<div id="spacer"></div><div class="navigation darker index" id="class_wrapper"><div class="list_header"><h3>All classes</h3></div><div class="list_header_link"><a onclick="toggle('class'); toggleText('class_link'); return false;" href="#" id="class_link">Hide...</a></div><div class="clear"></div><div id="class"><form><label for="filter_class">Filter:&nbsp;&nbsp;</label><input type="text" onKeyUp="return filterList('class', this.value, event);" onKeyPress="return disableSubmit(event);" id="filter_class"></input></form></div></div><div class="navigation darker index" id="file_wrapper"><div class="list_header"><h3>All files</h3></div><div class="list_header_link"><a onclick="toggle('file'); toggleText('file_link'); return false;" href="#" id="file_link">Hide...</a></div><div class="clear"></div><div id="file"><form><label for="filter_file">Filter:&nbsp;&nbsp;</label><input type="text" onKeyUp="return filterList('file', this.value, event);" onKeyPress="return disableSubmit(event);" id="filter_file"></input></form></div></div><div class="navigation darker index" id="method_wrapper"><div class="list_header"><h3>All methods</h3></div><div class="list_header_link"><a onclick="toggle('method'); toggleText('method_link'); return false;" href="#" id="method_link">Show...</a></div><div class="clear"></div><div id="method"><form><label for="filter_method">Filter:&nbsp;&nbsp;</label><input type="text" onKeyUp="return filterList('method', this.value, event);" onKeyPress="return disableSubmit(event);" id="filter_method"></input></form></div></div></div><div id="content">
+<h1 id="item_name">Class: ActiveRecord::ConnectionAdapters::TableDefinition</h1>
+
+<div id="description"><p>
+Represents a SQL table in an abstract way. Columns are stored as a
+ColumnDefinition in the columns attribute.
+</p>
+</div>
+
+
+
+
+<p></p>
+
+
+
+
+<h1>Attributes</h1><p><table><tr><th>Name</th><th>Read/write?</th></tr>
+<tr>
+<td class="highlight">columns</td>
+
+
+
+
+<td class="normal">RW</td>
+</tr>
+</table></p>
+
+
+<h1>Public Class Methods</h1>
+
+
+<a class="small" name="M001386"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001386'>
+
+
+new
+
+(base)
+
+</a>
+</h3>
+
+<p class="source_link" id="M001386-show-link"><a onclick="toggle('M001386-source'); toggleText('M001386-link'); return false;" href="#" id="M001386-link">Show source...</a></p><div class="source" id="M001386-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/activerecord/lib/active_record/connection_adapters/abstract/schema_definitions.rb, line 277</span>
+277:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">base</span>)
+278:         <span class="ruby-ivar">@columns</span> = []
+279:         <span class="ruby-ivar">@base</span> = <span class="ruby-identifier">base</span>
+280:       <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+
+<h1>Public Instance Methods</h1>
+
+
+<a class="small" name="M001388"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001388'>
+
+
+[]
+
+(name)
+
+</a>
+</h3>
+<p>
+Returns a ColumnDefinition for the <a
+href="TableDefinition.html#M001389">column</a> with name <tt>name</tt>.
+</p>
+
+<p class="source_link" id="M001388-show-link"><a onclick="toggle('M001388-source'); toggleText('M001388-link'); return false;" href="#" id="M001388-link">Show source...</a></p><div class="source" id="M001388-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/activerecord/lib/active_record/connection_adapters/abstract/schema_definitions.rb, line 289</span>
+289:       <span class="ruby-keyword kw">def</span> <span class="ruby-operator">[]</span>(<span class="ruby-identifier">name</span>)
+290:         <span class="ruby-ivar">@columns</span>.<span class="ruby-identifier">find</span> {<span class="ruby-operator">|</span><span class="ruby-identifier">column</span><span class="ruby-operator">|</span> <span class="ruby-identifier">column</span>.<span class="ruby-identifier">name</span>.<span class="ruby-identifier">to_s</span> <span class="ruby-operator">==</span> <span class="ruby-identifier">name</span>.<span class="ruby-identifier">to_s</span>}
+291:       <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001392"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001392'>
+
+
+belongs_to
+
+(*args)
+
+</a>
+</h3>
+<p>
+Alias for <a href="TableDefinition.html#M001391">references</a>
+</p>
+
+</div>
+
+<a class="small" name="M001389"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001389'>
+
+
+column
+
+(name, type, options = {})
+
+</a>
+</h3>
+<p>
+Instantiates a <a href="TableDefinition.html#M001386">new</a> <a
+href="TableDefinition.html#M001389">column</a> for the table. The
+<tt>type</tt> parameter is normally one of the migrations native types,
+which is one of the following: <tt>:<a
+href="TableDefinition.html#M001387">primary_key</a></tt>, <tt>:string</tt>,
+<tt>:text</tt>, <tt>:integer</tt>, <tt>:float</tt>, <tt>:decimal</tt>,
+<tt>:datetime</tt>, <tt>:timestamp</tt>, <tt>:time</tt>, <tt>:date</tt>,
+<tt>:binary</tt>, <tt>:boolean</tt>.
+</p>
+<p>
+You may use a type not in this list as long as it is supported by your
+database (for example, &quot;polygon&quot; in MySQL), but this will not be
+database agnostic and should usually be avoided.
+</p>
+<p>
+Available options are (none of these exists by default):
+</p>
+<ul>
+<li><tt>:limit</tt> - Requests a maximum <a
+href="TableDefinition.html#M001389">column</a> length (<tt>:string</tt>,
+<tt>:text</tt>, <tt>:binary</tt> or <tt>:integer</tt> columns only)
+
+</li>
+<li><tt>:default</tt> - The <a
+href="TableDefinition.html#M001389">column</a>&#8216;s default value. Use
+nil for NULL.
+
+</li>
+<li><tt>:null</tt> - Allows or disallows <tt>NULL</tt> values in the <a
+href="TableDefinition.html#M001389">column</a>. This option could have been
+named <tt>:null_allowed</tt>.
+
+</li>
+<li><tt>:precision</tt> - Specifies the precision for a <tt>:decimal</tt> <a
+href="TableDefinition.html#M001389">column</a>.
+
+</li>
+<li><tt>:scale</tt> - Specifies the scale for a <tt>:decimal</tt> <a
+href="TableDefinition.html#M001389">column</a>.
+
+</li>
+</ul>
+<p>
+Please be aware of different RDBMS implementations behavior with
+<tt>:decimal</tt> columns:
+</p>
+<ul>
+<li>The SQL standard says the default scale should be 0, <tt>:scale</tt> &lt;=
+<tt>:precision</tt>, and makes no comments about the requirements of
+<tt>:precision</tt>.
+
+</li>
+<li>MySQL: <tt>:precision</tt> [1..63], <tt>:scale</tt> [0..30]. Default is
+(10,0).
+
+</li>
+<li>PostgreSQL: <tt>:precision</tt> [1..infinity], <tt>:scale</tt>
+[0..infinity]. No default.
+
+</li>
+<li>SQLite2: Any <tt>:precision</tt> and <tt>:scale</tt> may be used. Internal
+storage as strings. No default.
+
+</li>
+<li>SQLite3: No restrictions on <tt>:precision</tt> and <tt>:scale</tt>, but
+the maximum supported <tt>:precision</tt> is 16. No default.
+
+</li>
+<li>Oracle: <tt>:precision</tt> [1..38], <tt>:scale</tt> [-84..127]. Default is
+(38,0).
+
+</li>
+<li>DB2: <tt>:precision</tt> [1..63], <tt>:scale</tt> [0..62]. Default unknown.
+
+</li>
+<li>Firebird: <tt>:precision</tt> [1..18], <tt>:scale</tt> [0..18]. Default
+(9,0). Internal types NUMERIC and DECIMAL have different storage rules,
+decimal being better.
+
+</li>
+<li>FrontBase?: <tt>:precision</tt> [1..38], <tt>:scale</tt> [0..38]. Default
+(38,0). WARNING Max <tt>:precision</tt>/<tt>:scale</tt> for NUMERIC is 19,
+and DECIMAL is 38.
+
+</li>
+<li>SqlServer?: <tt>:precision</tt> [1..38], <tt>:scale</tt> [0..38]. Default
+(38,0).
+
+</li>
+<li>Sybase: <tt>:precision</tt> [1..38], <tt>:scale</tt> [0..38]. Default
+(38,0).
+
+</li>
+<li>OpenBase?: Documentation unclear. Claims storage in <tt>double</tt>.
+
+</li>
+</ul>
+<p>
+This method returns <tt>self</tt>.
+</p>
+<h2>Examples</h2>
+<pre>
+ # Assuming td is an instance of TableDefinition
+ td.column(:granted, :boolean)
+   #=&gt; granted BOOLEAN
+
+ td.column(:picture, :binary, :limit =&gt; 2.megabytes)
+   #=&gt; picture BLOB(2097152)
+
+ td.column(:sales_stage, :string, :limit =&gt; 20, :default =&gt; 'new', :null =&gt; false)
+   #=&gt; sales_stage VARCHAR(20) DEFAULT 'new' NOT NULL
+
+ def.column(:bill_gates_money, :decimal, :precision =&gt; 15, :scale =&gt; 2)
+   #=&gt; bill_gates_money DECIMAL(15,2)
+
+ def.column(:sensor_reading, :decimal, :precision =&gt; 30, :scale =&gt; 20)
+   #=&gt; sensor_reading DECIMAL(30,20)
+
+ # While &lt;tt&gt;:scale&lt;/tt&gt; defaults to zero on most databases, it
+ # probably wouldn't hurt to include it.
+ def.column(:huge_integer, :decimal, :precision =&gt; 30)
+   #=&gt; huge_integer DECIMAL(30)
+</pre>
+<h2>Short-hand examples</h2>
+<p>
+Instead of calling <a href="TableDefinition.html#M001389">column</a>
+directly, you can also work with the short-hand definitions for the default
+types. They use the type as the method name instead of as a parameter and
+allow for multiple columns to be defined in a single statement.
+</p>
+<p>
+What can be written like this with the regular calls to <a
+href="TableDefinition.html#M001389">column</a>:
+</p>
+<pre>
+  create_table &quot;products&quot;, :force =&gt; true do |t|
+    t.column &quot;shop_id&quot;,    :integer
+    t.column &quot;creator_id&quot;, :integer
+    t.column &quot;name&quot;,       :string,   :default =&gt; &quot;Untitled&quot;
+    t.column &quot;value&quot;,      :string,   :default =&gt; &quot;Untitled&quot;
+    t.column &quot;created_at&quot;, :datetime
+    t.column &quot;updated_at&quot;, :datetime
+  end
+</pre>
+<p>
+Can also be written as follows using the short-hand:
+</p>
+<pre>
+  create_table :products do |t|
+    t.integer :shop_id, :creator_id
+    t.string  :name, :value, :default =&gt; &quot;Untitled&quot;
+    t.timestamps
+  end
+</pre>
+<p>
+There&#8216;s a short-hand method for each of the type values declared at
+the top. And then there&#8216;s <a
+href="TableDefinition.html#M001390">TableDefinition#timestamps</a>
+that&#8216;ll add created_at and updated_at as datetimes.
+</p>
+<p>
+<a href="TableDefinition.html#M001391">TableDefinition#references</a> will
+add an appropriately-named _id <a
+href="TableDefinition.html#M001389">column</a>, plus a corresponding _type
+<a href="TableDefinition.html#M001389">column</a> if the :polymorphic
+option is supplied. If :polymorphic is a hash of options, these will be
+used when creating the _type <a
+href="TableDefinition.html#M001389">column</a>. So what can be written like
+this:
+</p>
+<pre>
+  create_table :taggings do |t|
+    t.integer :tag_id, :tagger_id, :taggable_id
+    t.string  :tagger_type
+    t.string  :taggable_type, :default =&gt; 'Photo'
+  end
+</pre>
+<p>
+Can also be written as follows using <a
+href="TableDefinition.html#M001391">references</a>:
+</p>
+<pre>
+  create_table :taggings do |t|
+    t.references :tag
+    t.references :tagger, :polymorphic =&gt; true
+    t.references :taggable, :polymorphic =&gt; { :default =&gt; 'Photo' }
+  end
+</pre>
+
+<p class="source_link" id="M001389-show-link"><a onclick="toggle('M001389-source'); toggleText('M001389-link'); return false;" href="#" id="M001389-link">Show source...</a></p><div class="source" id="M001389-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/activerecord/lib/active_record/connection_adapters/abstract/schema_definitions.rb, line 417</span>
+417:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">column</span>(<span class="ruby-identifier">name</span>, <span class="ruby-identifier">type</span>, <span class="ruby-identifier">options</span> = {})
+418:         <span class="ruby-identifier">column</span> = <span class="ruby-keyword kw">self</span>[<span class="ruby-identifier">name</span>] <span class="ruby-operator">||</span> <span class="ruby-constant">ColumnDefinition</span>.<span class="ruby-identifier">new</span>(<span class="ruby-ivar">@base</span>, <span class="ruby-identifier">name</span>, <span class="ruby-identifier">type</span>)
+419:         <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">options</span>[<span class="ruby-identifier">:limit</span>]
+420:           <span class="ruby-identifier">column</span>.<span class="ruby-identifier">limit</span> = <span class="ruby-identifier">options</span>[<span class="ruby-identifier">:limit</span>]
+421:         <span class="ruby-keyword kw">elsif</span> <span class="ruby-identifier">native</span>[<span class="ruby-identifier">type</span>.<span class="ruby-identifier">to_sym</span>].<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">Hash</span>)
+422:           <span class="ruby-identifier">column</span>.<span class="ruby-identifier">limit</span> = <span class="ruby-identifier">native</span>[<span class="ruby-identifier">type</span>.<span class="ruby-identifier">to_sym</span>][<span class="ruby-identifier">:limit</span>]
+423:         <span class="ruby-keyword kw">end</span>
+424:         <span class="ruby-identifier">column</span>.<span class="ruby-identifier">precision</span> = <span class="ruby-identifier">options</span>[<span class="ruby-identifier">:precision</span>]
+425:         <span class="ruby-identifier">column</span>.<span class="ruby-identifier">scale</span> = <span class="ruby-identifier">options</span>[<span class="ruby-identifier">:scale</span>]
+426:         <span class="ruby-identifier">column</span>.<span class="ruby-identifier">default</span> = <span class="ruby-identifier">options</span>[<span class="ruby-identifier">:default</span>]
+427:         <span class="ruby-identifier">column</span>.<span class="ruby-identifier">null</span> = <span class="ruby-identifier">options</span>[<span class="ruby-identifier">:null</span>]
+428:         <span class="ruby-ivar">@columns</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-identifier">column</span> <span class="ruby-keyword kw">unless</span> <span class="ruby-ivar">@columns</span>.<span class="ruby-identifier">include?</span> <span class="ruby-identifier">column</span>
+429:         <span class="ruby-keyword kw">self</span>
+430:       <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001387"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001387'>
+
+
+primary_key
+
+(name)
+
+</a>
+</h3>
+<p>
+Appends a primary key definition to the table definition. Can be called
+multiple times, but this is probably not a good idea.
+</p>
+
+<p class="source_link" id="M001387-show-link"><a onclick="toggle('M001387-source'); toggleText('M001387-link'); return false;" href="#" id="M001387-link">Show source...</a></p><div class="source" id="M001387-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/activerecord/lib/active_record/connection_adapters/abstract/schema_definitions.rb, line 284</span>
+284:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">primary_key</span>(<span class="ruby-identifier">name</span>)
+285:         <span class="ruby-identifier">column</span>(<span class="ruby-identifier">name</span>, <span class="ruby-identifier">:primary_key</span>)
+286:       <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001391"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001391'>
+
+
+references
+
+(*args)
+
+</a>
+</h3>
+
+<p class="source_link" id="M001391-show-link"><a onclick="toggle('M001391-source'); toggleText('M001391-link'); return false;" href="#" id="M001391-link">Show source...</a></p><div class="source" id="M001391-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/activerecord/lib/active_record/connection_adapters/abstract/schema_definitions.rb, line 451</span>
+451:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">references</span>(<span class="ruby-operator">*</span><span class="ruby-identifier">args</span>)
+452:         <span class="ruby-identifier">options</span> = <span class="ruby-identifier">args</span>.<span class="ruby-identifier">extract_options!</span>
+453:         <span class="ruby-identifier">polymorphic</span> = <span class="ruby-identifier">options</span>.<span class="ruby-identifier">delete</span>(<span class="ruby-identifier">:polymorphic</span>)
+454:         <span class="ruby-identifier">args</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">col</span><span class="ruby-operator">|</span>
+455:           <span class="ruby-identifier">column</span>(<span class="ruby-node">&quot;#{col}_id&quot;</span>, <span class="ruby-identifier">:integer</span>, <span class="ruby-identifier">options</span>)
+456:           <span class="ruby-identifier">column</span>(<span class="ruby-node">&quot;#{col}_type&quot;</span>, <span class="ruby-identifier">:string</span>, <span class="ruby-identifier">polymorphic</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">Hash</span>) <span class="ruby-operator">?</span> <span class="ruby-identifier">polymorphic</span> <span class="ruby-operator">:</span> <span class="ruby-identifier">options</span>) <span class="ruby-keyword kw">unless</span> <span class="ruby-identifier">polymorphic</span>.<span class="ruby-identifier">nil?</span>
+457:         <span class="ruby-keyword kw">end</span>
+458:       <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001390"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001390'>
+
+
+timestamps
+
+()
+
+</a>
+</h3>
+<p>
+Appends <tt>:datetime</tt> columns <tt>:created_at</tt> and
+<tt>:updated_at</tt> to the table.
+</p>
+
+<p class="source_link" id="M001390-show-link"><a onclick="toggle('M001390-source'); toggleText('M001390-link'); return false;" href="#" id="M001390-link">Show source...</a></p><div class="source" id="M001390-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/activerecord/lib/active_record/connection_adapters/abstract/schema_definitions.rb, line 446</span>
+446:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">timestamps</span>
+447:         <span class="ruby-identifier">column</span>(<span class="ruby-identifier">:created_at</span>, <span class="ruby-identifier">:datetime</span>)
+448:         <span class="ruby-identifier">column</span>(<span class="ruby-identifier">:updated_at</span>, <span class="ruby-identifier">:datetime</span>)
+449:       <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001393"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001393'>
+
+
+to_sql
+
+()
+
+</a>
+</h3>
+<p>
+Returns a String whose contents are the <a
+href="TableDefinition.html#M001389">column</a> definitions concatenated
+together. This string can then be prepended and appended to to generate the
+final SQL to create the table.
+</p>
+
+<p class="source_link" id="M001393-show-link"><a onclick="toggle('M001393-source'); toggleText('M001393-link'); return false;" href="#" id="M001393-link">Show source...</a></p><div class="source" id="M001393-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/activerecord/lib/active_record/connection_adapters/abstract/schema_definitions.rb, line 464</span>
+464:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">to_sql</span>
+465:         <span class="ruby-ivar">@columns</span> <span class="ruby-operator">*</span> <span class="ruby-value str">', '</span>
+466:       <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+
+
+
+
+</div><div class="clear" id="footer">Generated on Jan 21, 2008 / Allison 2 &copy; 2007 <a href="http://cloudbur.st">Cloudburst, LLC</a></div></div></body></html>

@@ -1,0 +1,608 @@
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head><meta content="text/html; charset=utf-8" http-equiv="Content-Type"/><title>Class: Rails::Generator::Commands::Destroy</title><link type="text/css" href="../../../.././rdoc-style.css" media="screen" rel="stylesheet"/><script type="text/javascript">
+// Allison template
+// Copyright 2007, 2008 Cloudburst, LLC. Licensed under the AFL 3. See the included LICENSE file.
+
+var href_base = '../../../.././rdoc-style.css'.replace(/(.*\/).*/, '$1'); // inline js is good for something  
+
+function $(id) {
+    if (document.getElementById)
+      elem = document.getElementById(id);
+    else if ( document.all )
+      elem = eval("document.all." + id);
+    else
+      return false;
+    return elem;
+}
+
+  function toggle(id) {
+    elem = $(id);
+    elemStyle = elem.style;   
+    if (elemStyle.display == "block") {
+      elemStyle.display = "none"
+    } else {
+      elemStyle.display = "block"
+    }
+    return true;
+  }
+
+  function toggleText(id) {
+    elem = $(id)
+    if (m = elem.innerHTML.match(/(Hide)(.*)/)) {
+      elem.innerHTML = "Show" + m[2];
+    } else if (m = elem.innerHTML.match(/(Show)(.*)/)) {
+      elem.innerHTML = "Hide" + m[2];
+    }
+    return true;
+  }
+
+function span(s, klass) {
+  return '<span class="' + klass + '">' + s + '</span>';
+}
+  
+function highlightSymbols() {
+  pres = document.getElementsByTagName('pre');
+  for(var i = 0; i < pres.length; i++) {
+    pre = pres[i];
+    spans = pre.getElementsByTagName('span');
+    for(var k = 0; k < spans.length; k++) {
+      span = spans[k];
+      if (span.className.match(/ruby-identifier/)) {
+        if (span.innerHTML.match(/^:/)) {
+          span.className += " ruby-symbol";
+        }
+      }
+    }
+  }
+}
+
+ function hasClass(obj) {
+     var result = false;
+     if (obj.getAttributeNode("class") != null) {
+         result = obj.getAttributeNode("class").value;
+     }
+     return result;
+  }   
+
+ function stripe() {
+    var even = true;
+    var color = "#e4ebed";
+    var tables = document.getElementsByTagName('table');
+    if (tables.length == 0) { return; }
+    for (var h = 0; h < tables.length; h++) {
+        var trs = tables[h].getElementsByTagName("tr");
+        for (var i = 0; i < trs.length; i++) {
+          var tds = trs[i].getElementsByTagName("td");
+            for (var j = 0; j < tds.length; j++) {       
+              if (hasClass(tds[j]) != "first") {                
+              var mytd = tds[j];
+              if (even) {
+                mytd.style.backgroundColor = color;
+              }         
+            }
+          }
+          even =  ! even;
+      }
+    }
+  }
+  
+function ajaxGet(url) {
+  url = (href_base + url).replace('/./', '/')
+  var req = false;
+
+  if (window.ActiveXObject) {
+    try {
+      // stupid hack because IE7 disables local Ajax with the native xmlhttprequest object
+      // for security purposes. Yet ActiveX still works. Thanks, Microsoft. I hate you. Die.
+      req = new ActiveXObject("MSXML2.XMLHTTP.3.0");
+    } catch (e) {
+      try {
+        /* IE 6 and maybe 5, don't know, don't care */
+        req = new ActiveXObject("Msxml2.XMLHTTP");
+      } catch (e) {
+        try {
+          req = new ActiveXObject("Microsoft.XMLHTTP");
+        } catch (e) {
+          req = false;
+        }
+      }
+    }
+  }
+    
+  /* real browsers */
+  if (!req && window.XMLHttpRequest) {
+    try {
+      req = new XMLHttpRequest();
+    } catch (e) {
+      req = false;
+    }
+  } 
+  
+  if (req) {
+    req.open('GET', url, false);
+    req.send(null);
+    return req.responseText;
+  } else {
+    return "Ajax error";  
+  }
+}
+
+
+function addEvent(elm, evType, fn, useCapture) {
+	if (elm.addEventListener) {
+	  elm.addEventListener(evType, fn, useCapture);  
+  	return true;
+	} else if (elm.attachEvent) {
+  	var r = elm.attachEvent('on' + evType, fn);  
+	  return r;  
+	} else {
+  	elm['on' + evType] = fn;
+	}
+}
+
+function insertIndices() {
+  pages = ["class", "file", "method"]
+  for (x in pages) { 
+    $(pages[x]).innerHTML += ajaxGet('fr_' + pages[x] + '_index.html').replace(/(href=")/g, '$1' + href_base);
+  }
+  /* mouseoverify method links */
+  links = $('method').getElementsByTagName('a');
+  for (var x = 0; x < links.length; x++) {
+    if (m = links[x].innerHTML.match(/(.*)\s\((.*)\)/)) {
+      links[x].innerHTML = m[1] + '<br>';
+      links[x].title = m[2];
+    }
+  }
+  /* this is stupid */
+  $('class').style.display = "block";
+  $('file').style.display = "block";
+  
+  /* has to be here because IE7 does not guarantee the onLoad callback order */
+  abbreviateIndicesInner(["class", "file"], 25, "a");
+  /* same, linkTitle() depends on the class link list */
+  linkTitle();
+}
+
+function abbreviateIndices() {
+  var ids = ["defined_in", "child_of", "includes", "requires", "method", "methods"];
+  abbreviateIndicesInner(ids, 25, 'a');
+  abbreviateIndicesInner(ids, 25, 'span');
+}
+
+function abbreviateIndicesInner(indices, amount, tag) {
+  for (var x = 0; x < indices.length; x++) { 
+    var the_index = $(indices[x]);
+    if (the_index) {
+      links = the_index.getElementsByTagName(tag);
+      for (var y = 0; y < links.length; y++) {
+        var link = links[y];
+        if (link.getElementsByTagName('span').length == 0 && link.getElementsByTagName('a').length == 0) {
+          // avoid nesting
+          link.innerHTML = link.innerHTML.replace(/<br>|\n/gi, '');
+          link.title = link.innerHTML;
+          link.innerHTML = abbreviate(link.innerHTML, amount) + '<br>';
+        }
+      }
+    }
+  }
+}
+
+function linkTitle() {
+  
+  /* grab the correct title element from the index */
+  var index_page = ajaxGet('index.html');
+  title_text = index_page.match(/<title>(.*)<\/title>/m)[1];
+  document.title = title_text + " - " + document.title;
+  var p = $('header').getElementsByTagName('p')[0]
+  if (p.innerHTML.match(/^\s*$/)) {
+    p.innerHTML = title_text;
+  } else {
+    p.innerHTML = title_text + ": " + p.innerHTML;
+  }
+  
+  /* set the link properly */
+  title_link = index_page.match(/<a\s+href="(.*?)"/)[1];
+  var element = $('title');
+  var item_type = "";
+  var item_name = "";
+  if (m = element.innerHTML.match(/(Class:|Module:|File:)\s*(.*)/)) {
+    item_type = m[1];
+    item_name = m[2];
+  } else {
+    item_name = element.innerHTML;
+  }
+  element.innerHTML = '<a href="' + href_base + title_link + '">' + item_type + " " + abbreviate(item_name, 45) + '</a>';
+  element.getElementsByTagName('a')[0].title = item_name
+  
+  /* breadcrumb navigation */
+  items = item_name.split("::");
+  items_new = item_name.split("::");
+  file_links = $('class').getElementsByTagName('a');
+  for (var x = 0; x < items.length - 1; x++ ){
+    var item = items[x];
+    link = ("/classes/" + items.slice(0,x).join("/") + "/" + item + ".html").replace('//', '/');
+    regex = new RegExp(RegExp.escape(link) + '$');
+    for (var y = 0; y < file_links.length; y++) {
+      if (file_links[y].href.match(regex)) {
+         items_new[x] = '<a href="' + href_base + link + '">' + item + '</a>';
+         break;
+      }
+    }  
+  }
+  $('item_name').innerHTML = item_type + ' ' + items_new.join(" :: ");
+}
+
+function abbreviate(s, size) {
+  while (s.length > size) {
+    var old_s = s;
+    s = s.replace(/\s|\n/mg, '');
+    s = s.replace(/([A-Z])[a-z]+/m, '$1');
+    if (!s || old_s == s) {
+      return "..." + s.substring(s.length - size, s.length);
+    }
+  }
+  return s;
+}
+
+function disableSubmit(event) {
+  var keyCode = event.keyCode ? event.keyCode : event.which ? event.which : event.charCode;
+  if (keyCode == 13) {
+    return false;
+  } else {
+    return true;
+  }
+}
+  
+function filterList(id, s, event) {
+  
+  /* some weak escaping */
+  s = s.replace(/[^\w\d\.\_\-\/\:\=\[\]\?\!]/g, '');
+  s = RegExp.escape(s);
+  
+  var show_all = false;
+  if (s.match(/^\s*$/)) {
+    show_all = true;
+  }
+  
+  links = $(id).getElementsByTagName('a')
+  regex = new RegExp(s, 'i');
+  
+  for (var x = 0; x < links.length; x++) {
+    var link = links[x];
+    if (show_all) {
+      link.style.display = 'inline';
+    } else {
+       if (link.innerHTML.match(regex)) {        
+         link.style.display = 'inline';
+       } else {
+         link.style.display = 'none';
+       }
+    }
+  }
+  return true;
+}
+
+RegExp.escape = function(text) {
+  if (!arguments.callee.sRE) {
+    var specials = ['/', '.', '*', '+', '?', '|', '(', ')', '[', ']', '{', '}', '\\'];
+    arguments.callee.sRE = new RegExp(
+      '(\\' + specials.join('|\\') + ')', 'g'
+    );
+  }
+  return text.replace(arguments.callee.sRE, '\\$1');
+}
+
+function hacks() {
+  // show the spacer if necessary, 
+  divs = document.getElementsByTagName('div');
+  for(var x = 0; x < divs.length; x++) {
+    if (divs[x].className && divs[x].className.match(/top/)) {
+      document.getElementById('spacer').style.display = 'block';
+    }
+  }
+  // remove extra colons from tables
+  tds = document.getElementsByTagName('td');
+  for(var x = 0; x < tds.length; x++) {
+    str = tds[x].innerHTML
+    if (str.charAt(str.length - 1) == ":") {
+      tds[x].innerHTML = str.slice(0, str.length - 1)
+    }
+  }
+}
+
+addEvent(window, 'load', insertIndices, false);
+addEvent(window, 'load', abbreviateIndices, false);
+addEvent(window, 'load', stripe, false);
+addEvent(window, 'load', highlightSymbols, false);
+addEvent(window, 'load', hacks, false);
+</script></head><body><div id="container"><div class="curve" id="preheader_curve_0"></div><div class="curve" id="preheader_curve_1"></div><div class="curve" id="preheader_curve_2"></div><div class="curve" id="preheader_curve_3"></div><div class="curve" id="preheader_curve_4"></div><div class="curve" id="preheader_curve_5"></div><div id="header"><p>
+</p><span><h1 id="title">
+Class: Rails::Generator::Commands::Destroy
+</h1></span>
+</div><div class="clear"></div><div id="left">
+<div class="navigation darker top" id="child_of"><h3>Child of</h3><span>
+
+<a href='RewindBase.html'>
+RewindBase
+</a>
+</span></div>
+
+<div class="navigation darker top" id="defined_in"><h3>Defined in</h3>
+
+<a href="../../../../files/vendor/rails/railties/lib/rails_generator/commands_rb.html">vendor/rails/railties/lib/rails_generator/commands.rb</a>
+
+</div>
+
+
+
+<div class="navigation top" id="methods"><h3>Methods</h3>
+
+
+<a href='#M001663'>
+complex_template<br/>
+</a>
+
+
+
+
+<a href='#M001662'>
+directory<br/>
+</a>
+
+
+
+
+<a href='#M001660'>
+file<br/>
+</a>
+
+
+
+
+<a href='#M001664'>
+migration_template<br/>
+</a>
+
+
+
+
+<a href='#M001665'>
+route_resources<br/>
+</a>
+
+
+
+
+<a href='#M001661'>
+template<br/>
+</a>
+
+
+</div>
+<div id="spacer"></div><div class="navigation darker index" id="class_wrapper"><div class="list_header"><h3>All classes</h3></div><div class="list_header_link"><a onclick="toggle('class'); toggleText('class_link'); return false;" href="#" id="class_link">Hide...</a></div><div class="clear"></div><div id="class"><form><label for="filter_class">Filter:&nbsp;&nbsp;</label><input type="text" onKeyUp="return filterList('class', this.value, event);" onKeyPress="return disableSubmit(event);" id="filter_class"></input></form></div></div><div class="navigation darker index" id="file_wrapper"><div class="list_header"><h3>All files</h3></div><div class="list_header_link"><a onclick="toggle('file'); toggleText('file_link'); return false;" href="#" id="file_link">Hide...</a></div><div class="clear"></div><div id="file"><form><label for="filter_file">Filter:&nbsp;&nbsp;</label><input type="text" onKeyUp="return filterList('file', this.value, event);" onKeyPress="return disableSubmit(event);" id="filter_file"></input></form></div></div><div class="navigation darker index" id="method_wrapper"><div class="list_header"><h3>All methods</h3></div><div class="list_header_link"><a onclick="toggle('method'); toggleText('method_link'); return false;" href="#" id="method_link">Show...</a></div><div class="clear"></div><div id="method"><form><label for="filter_method">Filter:&nbsp;&nbsp;</label><input type="text" onKeyUp="return filterList('method', this.value, event);" onKeyPress="return disableSubmit(event);" id="filter_method"></input></form></div></div></div><div id="content">
+<h1 id="item_name">Class: Rails::Generator::Commands::Destroy</h1>
+
+<div id="description"><p>
+Undo the actions performed by a generator. Rewind the action manifest and
+attempt to completely erase the results of each action.
+</p>
+</div>
+
+
+
+
+<p></p>
+
+
+
+
+
+
+<h1>Public Instance Methods</h1>
+
+
+<a class="small" name="M001663"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001663'>
+
+
+complex_template
+
+(*args)
+
+</a>
+</h3>
+
+<p class="source_link" id="M001663-show-link"><a onclick="toggle('M001663-source'); toggleText('M001663-link'); return false;" href="#" id="M001663-link">Show source...</a></p><div class="source" id="M001663-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/railties/lib/rails_generator/commands.rb, line 502</span>
+502:         <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">complex_template</span>(<span class="ruby-operator">*</span><span class="ruby-identifier">args</span>)
+503:           <span class="ruby-comment cmt"># nothing should be done here</span>
+504:         <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001662"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001662'>
+
+
+directory
+
+(relative_path)
+
+</a>
+</h3>
+<p>
+Remove each <a href="Destroy.html#M001662">directory</a> in the given path
+from right to left. Remove each subdirectory if it exists and is a <a
+href="Destroy.html#M001662">directory</a>.
+</p>
+
+<p class="source_link" id="M001662-show-link"><a onclick="toggle('M001662-source'); toggleText('M001662-link'); return false;" href="#" id="M001662-link">Show source...</a></p><div class="source" id="M001662-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/railties/lib/rails_generator/commands.rb, line 466</span>
+466:         <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">directory</span>(<span class="ruby-identifier">relative_path</span>)
+467:           <span class="ruby-identifier">parts</span> = <span class="ruby-identifier">relative_path</span>.<span class="ruby-identifier">split</span>(<span class="ruby-value str">'/'</span>)
+468:           <span class="ruby-keyword kw">until</span> <span class="ruby-identifier">parts</span>.<span class="ruby-identifier">empty?</span>
+469:             <span class="ruby-identifier">partial</span> = <span class="ruby-constant">File</span>.<span class="ruby-identifier">join</span>(<span class="ruby-identifier">parts</span>)
+470:             <span class="ruby-identifier">path</span> = <span class="ruby-identifier">destination_path</span>(<span class="ruby-identifier">partial</span>)
+471:             <span class="ruby-keyword kw">if</span> <span class="ruby-constant">File</span>.<span class="ruby-identifier">exist?</span>(<span class="ruby-identifier">path</span>)
+472:               <span class="ruby-keyword kw">if</span> <span class="ruby-constant">Dir</span>[<span class="ruby-constant">File</span>.<span class="ruby-identifier">join</span>(<span class="ruby-identifier">path</span>, <span class="ruby-value str">'*'</span>)].<span class="ruby-identifier">empty?</span>
+473:                 <span class="ruby-identifier">logger</span>.<span class="ruby-identifier">rmdir</span> <span class="ruby-identifier">partial</span>
+474:                 <span class="ruby-keyword kw">unless</span> <span class="ruby-identifier">options</span>[<span class="ruby-identifier">:pretend</span>]
+475:                   <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">options</span>[<span class="ruby-identifier">:svn</span>]
+476:                     <span class="ruby-comment cmt"># If the directory has been marked to be added</span>
+477:                     <span class="ruby-comment cmt"># but has not yet been checked in, revert and delete</span>
+478:                     <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">options</span>[<span class="ruby-identifier">:svn</span>][<span class="ruby-identifier">relative_path</span>]
+479:                       <span class="ruby-identifier">system</span>(<span class="ruby-node">&quot;svn revert #{path}&quot;</span>)
+480:                       <span class="ruby-constant">FileUtils</span>.<span class="ruby-identifier">rmdir</span>(<span class="ruby-identifier">path</span>)
+481:                     <span class="ruby-keyword kw">else</span>
+482:                     <span class="ruby-comment cmt"># If the directory is not in the status list, it</span>
+483:                     <span class="ruby-comment cmt"># has no modifications so we can simply remove it</span>
+484:                       <span class="ruby-identifier">system</span>(<span class="ruby-node">&quot;svn rm #{path}&quot;</span>)
+485:                     <span class="ruby-keyword kw">end</span>
+486:                   <span class="ruby-comment cmt"># I don't think git needs to remove directories?..</span>
+487:                   <span class="ruby-comment cmt"># or maybe they have special consideration...</span>
+488:                   <span class="ruby-keyword kw">else</span>
+489:                     <span class="ruby-constant">FileUtils</span>.<span class="ruby-identifier">rmdir</span>(<span class="ruby-identifier">path</span>)
+490:                   <span class="ruby-keyword kw">end</span>
+491:                 <span class="ruby-keyword kw">end</span>
+492:               <span class="ruby-keyword kw">else</span>
+493:                 <span class="ruby-identifier">logger</span>.<span class="ruby-identifier">notempty</span> <span class="ruby-identifier">partial</span>
+494:               <span class="ruby-keyword kw">end</span>
+495:             <span class="ruby-keyword kw">else</span>
+496:               <span class="ruby-identifier">logger</span>.<span class="ruby-identifier">missing</span> <span class="ruby-identifier">partial</span>
+497:             <span class="ruby-keyword kw">end</span>
+498:             <span class="ruby-identifier">parts</span>.<span class="ruby-identifier">pop</span>
+499:           <span class="ruby-keyword kw">end</span>
+500:         <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001660"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001660'>
+
+
+file
+
+(relative_source, relative_destination, file_options = {})
+
+</a>
+</h3>
+<p>
+Remove a <a href="Destroy.html#M001660">file</a> if it exists and is a <a
+href="Destroy.html#M001660">file</a>.
+</p>
+
+<p class="source_link" id="M001660-show-link"><a onclick="toggle('M001660-source'); toggleText('M001660-link'); return false;" href="#" id="M001660-link">Show source...</a></p><div class="source" id="M001660-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/railties/lib/rails_generator/commands.rb, line 421</span>
+421:         <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">file</span>(<span class="ruby-identifier">relative_source</span>, <span class="ruby-identifier">relative_destination</span>, <span class="ruby-identifier">file_options</span> = {})
+422:           <span class="ruby-identifier">destination</span> = <span class="ruby-identifier">destination_path</span>(<span class="ruby-identifier">relative_destination</span>)
+423:           <span class="ruby-keyword kw">if</span> <span class="ruby-constant">File</span>.<span class="ruby-identifier">exist?</span>(<span class="ruby-identifier">destination</span>)
+424:             <span class="ruby-identifier">logger</span>.<span class="ruby-identifier">rm</span> <span class="ruby-identifier">relative_destination</span>
+425:             <span class="ruby-keyword kw">unless</span> <span class="ruby-identifier">options</span>[<span class="ruby-identifier">:pretend</span>]
+426:               <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">options</span>[<span class="ruby-identifier">:svn</span>]
+427:                 <span class="ruby-comment cmt"># If the file has been marked to be added</span>
+428:                 <span class="ruby-comment cmt"># but has not yet been checked in, revert and delete</span>
+429:                 <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">options</span>[<span class="ruby-identifier">:svn</span>][<span class="ruby-identifier">relative_destination</span>]
+430:                   <span class="ruby-identifier">system</span>(<span class="ruby-node">&quot;svn revert #{destination}&quot;</span>)
+431:                   <span class="ruby-constant">FileUtils</span>.<span class="ruby-identifier">rm</span>(<span class="ruby-identifier">destination</span>)
+432:                 <span class="ruby-keyword kw">else</span>
+433:                 <span class="ruby-comment cmt"># If the directory is not in the status list, it</span>
+434:                 <span class="ruby-comment cmt"># has no modifications so we can simply remove it</span>
+435:                   <span class="ruby-identifier">system</span>(<span class="ruby-node">&quot;svn rm #{destination}&quot;</span>)
+436:                 <span class="ruby-keyword kw">end</span>
+437:               <span class="ruby-keyword kw">elsif</span> <span class="ruby-identifier">options</span>[<span class="ruby-identifier">:git</span>]
+438:                 <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">options</span>[<span class="ruby-identifier">:git</span>][<span class="ruby-identifier">:new</span>][<span class="ruby-identifier">relative_destination</span>]
+439:                   <span class="ruby-comment cmt"># file has been added, but not committed</span>
+440:                   <span class="ruby-identifier">system</span>(<span class="ruby-node">&quot;git reset HEAD #{relative_destination}&quot;</span>)
+441:                   <span class="ruby-constant">FileUtils</span>.<span class="ruby-identifier">rm</span>(<span class="ruby-identifier">destination</span>)
+442:                 <span class="ruby-keyword kw">elsif</span> <span class="ruby-identifier">options</span>[<span class="ruby-identifier">:git</span>][<span class="ruby-identifier">:modified</span>][<span class="ruby-identifier">relative_destination</span>]
+443:                   <span class="ruby-comment cmt"># file is committed and modified</span>
+444:                   <span class="ruby-identifier">system</span>(<span class="ruby-node">&quot;git rm -f #{relative_destination}&quot;</span>)
+445:                 <span class="ruby-keyword kw">else</span>
+446:                   <span class="ruby-comment cmt"># If the directory is not in the status list, it</span>
+447:                   <span class="ruby-comment cmt"># has no modifications so we can simply remove it</span>
+448:                   <span class="ruby-identifier">system</span>(<span class="ruby-node">&quot;git rm #{relative_destination}&quot;</span>)
+449:                 <span class="ruby-keyword kw">end</span>
+450:               <span class="ruby-keyword kw">else</span>
+451:                 <span class="ruby-constant">FileUtils</span>.<span class="ruby-identifier">rm</span>(<span class="ruby-identifier">destination</span>)
+452:               <span class="ruby-keyword kw">end</span>
+453:             <span class="ruby-keyword kw">end</span>
+454:           <span class="ruby-keyword kw">else</span>
+455:             <span class="ruby-identifier">logger</span>.<span class="ruby-identifier">missing</span> <span class="ruby-identifier">relative_destination</span>
+456:             <span class="ruby-keyword kw">return</span>
+457:           <span class="ruby-keyword kw">end</span>
+458:         <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001664"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001664'>
+
+
+migration_template
+
+(relative_source, relative_destination, template_options = {})
+
+</a>
+</h3>
+<p>
+When deleting a migration, it knows to delete every <a
+href="Destroy.html#M001660">file</a> named &quot;[0-9]*_#{file_name}&quot;.
+</p>
+
+<p class="source_link" id="M001664-show-link"><a onclick="toggle('M001664-source'); toggleText('M001664-link'); return false;" href="#" id="M001664-link">Show source...</a></p><div class="source" id="M001664-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/railties/lib/rails_generator/commands.rb, line 507</span>
+507:         <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">migration_template</span>(<span class="ruby-identifier">relative_source</span>, <span class="ruby-identifier">relative_destination</span>, <span class="ruby-identifier">template_options</span> = {})
+508:           <span class="ruby-identifier">migration_directory</span> <span class="ruby-identifier">relative_destination</span>
+509: 
+510:           <span class="ruby-identifier">migration_file_name</span> = <span class="ruby-identifier">template_options</span>[<span class="ruby-identifier">:migration_file_name</span>] <span class="ruby-operator">||</span> <span class="ruby-identifier">file_name</span>
+511:           <span class="ruby-keyword kw">unless</span> <span class="ruby-identifier">migration_exists?</span>(<span class="ruby-identifier">migration_file_name</span>)
+512:             <span class="ruby-identifier">puts</span> <span class="ruby-node">&quot;There is no migration named #{migration_file_name}&quot;</span>
+513:             <span class="ruby-keyword kw">return</span>
+514:           <span class="ruby-keyword kw">end</span>
+515: 
+516: 
+517:           <span class="ruby-identifier">existing_migrations</span>(<span class="ruby-identifier">migration_file_name</span>).<span class="ruby-identifier">each</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">file_path</span><span class="ruby-operator">|</span>
+518:             <span class="ruby-identifier">file</span>(<span class="ruby-identifier">relative_source</span>, <span class="ruby-identifier">file_path</span>, <span class="ruby-identifier">template_options</span>)
+519:           <span class="ruby-keyword kw">end</span>
+520:         <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001665"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001665'>
+
+
+route_resources
+
+(*resources)
+
+</a>
+</h3>
+
+<p class="source_link" id="M001665-show-link"><a onclick="toggle('M001665-source'); toggleText('M001665-link'); return false;" href="#" id="M001665-link">Show source...</a></p><div class="source" id="M001665-source"><pre>     <span class="ruby-comment cmt"># File vendor/rails/railties/lib/rails_generator/commands.rb, line 522</span>
+522:         <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">route_resources</span>(<span class="ruby-operator">*</span><span class="ruby-identifier">resources</span>)
+523:           <span class="ruby-identifier">resource_list</span> = <span class="ruby-identifier">resources</span>.<span class="ruby-identifier">map</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">r</span><span class="ruby-operator">|</span> <span class="ruby-identifier">r</span>.<span class="ruby-identifier">to_sym</span>.<span class="ruby-identifier">inspect</span> }.<span class="ruby-identifier">join</span>(<span class="ruby-value str">', '</span>)
+524:           <span class="ruby-identifier">look_for</span> = <span class="ruby-node">&quot;\n  map.resources #{resource_list}\n&quot;</span>
+525:           <span class="ruby-identifier">logger</span>.<span class="ruby-identifier">route</span> <span class="ruby-node">&quot;map.resources #{resource_list}&quot;</span>
+526:           <span class="ruby-identifier">gsub_file</span> <span class="ruby-value str">'config/routes.rb'</span>, <span class="ruby-node">/(#{look_for})/</span><span class="ruby-identifier">mi</span>, <span class="ruby-value str">''</span>
+527:         <span class="ruby-keyword kw">end</span></pre></div>
+</div>
+
+<a class="small" name="M001661"><br/></a>
+<div class="method_block"><h3>
+<a href='#M001661'>
+
+
+template
+
+(relative_source, relative_destination, file_options = {})
+
+</a>
+</h3>
+<p>
+Alias for <a href="Destroy.html#M001660">file</a>
+</p>
+
+</div>
+
+
+
+
+
+</div><div class="clear" id="footer">Generated on Jan 21, 2008 / Allison 2 &copy; 2007 <a href="http://cloudbur.st">Cloudburst, LLC</a></div></div></body></html>
