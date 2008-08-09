@@ -1,22 +1,22 @@
 #search_basic.search_box
   - form_for @search, :url => actions_path, :html => {:method => :get} do |f|
     Search Term:
-    = text_field_tag :keywords, @search.keywords, :size => 22, :id => 'keywords_basic'
+    = text_field_tag :q, @search.q, :size => 22, :id => 'q_basic'
     &nbsp;
     = submit_tag 'Search'
-  = link_to_function('Advanced search...', '$("#keywords_advanced").val($("#keywords_basic").val()); $("#search_advanced").toggle(); $("#search_basic").toggle();')
+  = link_to_function('Advanced search...', '$("#q_advanced").val($("#q_basic").val()); $("#search_advanced").toggle(); $("#search_basic").toggle();')
 
 #search_advanced.search_box{:style => 'display: none;'}
   #firstrow
     %h2 Find an Action
-    = link_to_function('Basic search...', '$("#keywords_basic").val($("#keywords_advanced").val()); $("#search_advanced").toggle(); $("#search_basic").toggle();')
+    = link_to_function('Basic search...', '$("#q_basic").val($("#q_advanced").val()); $("#search_advanced").toggle(); $("#search_basic").toggle();')
 
   - form_for @search, :url => actions_path, :html => {:method => :get} do |f|
 
     %table{ :border=>"0", :cellpadding=>"0", :cellspacing=>"0" }
       %tr.first
         %td Search Term:
-        %td= text_field_tag :keywords, @search.keywords, {:size => 22, :id => 'keywords_advanced'}
+        %td= text_field_tag :q, @search.q, {:size => 22, :id => 'q_advanced'}
         
         %td
           = submit_tag 'Search'
