@@ -20,7 +20,7 @@ class Search < ActiveRecord::BaseWithoutTable
       @search = Action.find(:all, :origin => [current_latitude, current_longitude], :conditions => build_conditions)
     else
       #Action.paginate(:all, :page => page, :order => build_order, :conditions => build_conditions)
-      # TODO figure out random for sort_by, figure out filter by created_at > created.days.ago
+      # TODO figure out random for sort_by
       @search = Ultrasphinx::Search.new(
                 :query => build_query,
                 :per_page => 10,
@@ -58,11 +58,14 @@ class Search < ActiveRecord::BaseWithoutTable
   end
   
   def build_filters
-    unless sites.length == 0
-      {'site_id' => sites}
-    else
-      {}
+    filters = {}
+    if sites.length > 0
+      filters['site_id'] = sites
     end
+    if !created.nil?
+      filters['created_at'] = created.days.ago.to_i..Time.now.to_i
+    end
+    filters
   end
 
   def build_conditions
