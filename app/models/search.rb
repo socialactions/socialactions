@@ -19,7 +19,7 @@ class Search < ActiveRecord::BaseWithoutTable
     if kind == 'map'
       @search = Action.find(:all, :origin => [current_latitude, current_longitude], :conditions => build_conditions)
     else
-      #Action.paginate(:all, :page => page, :order => build_order, :conditions => build_conditions)
+      # Action.paginate(:all, :page => page, :order => build_order, :conditions => build_conditions)
       # TODO figure out random for sort_by
       @search = Ultrasphinx::Search.new(
                 :query => build_query,
@@ -63,7 +63,9 @@ class Search < ActiveRecord::BaseWithoutTable
       filters['site_id'] = sites
     end
     if !created.nil?
-      filters['created_at'] = created.days.ago.to_i..Time.now.to_i
+      start_time = created == 0 ? Time.today.to_i : created.days.ago.to_i
+      puts "HERE!!!!!!!!!!!!!!!!!!!11 #{start_time} and #{Time.now.to_i}"
+      filters['created_at'] = start_time..Time.now.to_i
     end
     filters
   end
