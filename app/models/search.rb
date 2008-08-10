@@ -64,7 +64,6 @@ class Search < ActiveRecord::BaseWithoutTable
     end
     if !created.nil?
       start_time = created == 0 ? Time.today.to_i : created.days.ago.to_i
-      puts "HERE!!!!!!!!!!!!!!!!!!!11 #{start_time} and #{Time.now.to_i}"
       filters['created_at'] = start_time..Time.now.to_i
     end
     filters
