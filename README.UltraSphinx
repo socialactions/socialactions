@@ -1,7 +1,6 @@
 The following gems are required for UltraSphinx:
 
  gem install chronic
- gem install hpricot
 
  And, of course, you need Sphinx itself, 
  get download and compile/install instructions at:

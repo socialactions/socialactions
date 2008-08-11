@@ -10,35 +10,27 @@ class Search < ActiveRecord::BaseWithoutTable
     :before_match => '<strong style="color:red">',
     :after_match => '</strong>',
     :chunk_separator => "...",
-    :limit => 1024,
+    :limit => 200,
     :around => 3,
     :content_methods => [['title'],['description']]
   })
 
   def results(page)
     if kind == 'map'
-      @search = Action.find(:all, :origin => [current_latitude, current_longitude], :conditions => build_conditions)
+      Action.find(:all, :origin => [current_latitude, current_longitude], :conditions => build_conditions)
     else
-      #Action.paginate(:all, :page => page, :order => build_order, :conditions => build_conditions)
-      # TODO figure out random for sort_by, figure out filter by created_at > created.days.ago
-      @search = Ultrasphinx::Search.new(
-                :query => build_query,
-                :per_page => 10,
-                :page => page || 1,
-                :sort_mode => 'descending',
-                :sort_by => 'created_at',
-                :filters => build_filters,
-                :facets => ['action_type']
-                #, :weights => {}
-      )
-      #TODO do we want excerpt to be conditional in whether we're on web site or not?
-      @search.excerpt
-      @search.results
+      # TODO figure out random for sort_by
+      Ultrasphinx::Search.new(
+                              :query => build_query,
+                              :per_page => 10,
+                              :page => page || 1,
+                              :sort_mode => 'descending',
+                              :sort_by => 'created_at',
+                              :filters => build_filters,
+                              :facets => ['action_type']
+                              #, :weights => {}
+                              ).run
     end
-  end
-  
-  def paginate_object
-    @search
   end
   
   def to_s
@@ -58,11 +50,15 @@ class Search < ActiveRecord::BaseWithoutTable
   end
   
   def build_filters
-    unless sites.length == 0
-      {'site_id' => sites}
-    else
-      {}
+    filters = {}
+    if sites.length > 0
+      filters['site_id'] = sites
     end
+    if !created.nil?
+      start_time = created == 0 ? Time.today.to_i : created.days.ago.to_i
+      filters['created_at'] = start_time..Time.now.to_i
+    end
+    filters
   end
 
   def build_conditions

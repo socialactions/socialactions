@@ -25,5 +25,5 @@
     = tag_list_for action
     %br/
   .action-description
-    = shorten_and_clean(action.description)
+    = sanitize(action.description)
   = link_to action.url, action.url, :class => 'action-url'
