@@ -10,35 +10,27 @@ class Search < ActiveRecord::BaseWithoutTable
     :before_match => '<strong style="color:red">',
     :after_match => '</strong>',
     :chunk_separator => "...",
-    :limit => 1024,
+    :limit => 200,
     :around => 3,
     :content_methods => [['title'],['description']]
   })
 
   def results(page)
     if kind == 'map'
-      @search = Action.find(:all, :origin => [current_latitude, current_longitude], :conditions => build_conditions)
+      Action.find(:all, :origin => [current_latitude, current_longitude], :conditions => build_conditions)
     else
-      # Action.paginate(:all, :page => page, :order => build_order, :conditions => build_conditions)
       # TODO figure out random for sort_by
-      @search = Ultrasphinx::Search.new(
-                :query => build_query,
-                :per_page => 10,
-                :page => page || 1,
-                :sort_mode => 'descending',
-                :sort_by => 'created_at',
-                :filters => build_filters,
-                :facets => ['action_type']
-                #, :weights => {}
-      )
-      #TODO do we want excerpt to be conditional in whether we're on web site or not?
-      @search.excerpt
-      @search.results
+      Ultrasphinx::Search.new(
+                              :query => build_query,
+                              :per_page => 10,
+                              :page => page || 1,
+                              :sort_mode => 'descending',
+                              :sort_by => 'created_at',
+                              :filters => build_filters,
+                              :facets => ['action_type']
+                              #, :weights => {}
+                              ).run
     end
-  end
-  
-  def paginate_object
-    @search
   end
   
   def to_s

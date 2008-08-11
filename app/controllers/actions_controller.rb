@@ -4,7 +4,7 @@ class ActionsController < ApplicationController
     @search = Search.new(search_params)
     @actions = @search.results(params[:page])
     respond_to do |format|
-      format.html
+      format.html { @actions.excerpt }
       format.xml { render :xml => @actions }
       format.js  { render :json => @actions }
       format.rss { render :layout => false }

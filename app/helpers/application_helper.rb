@@ -36,10 +36,6 @@ module ApplicationHelper
     end.join(', ')
   end
 
-  def shorten_and_clean(text)
-    truncate_html(sanitize(text),200)
-  end
-  
   def feed_url
     formatted_actions_url(:rss, search_params_readable).gsub('&amp;', '&')
   end
