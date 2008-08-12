@@ -1,8 +1,9 @@
 class Search < ActiveRecord::BaseWithoutTable
   column :q, :string
   column :action_type, :string
-  column :created, :integer
+  #column :created, :integer
   attr_accessor :sites, :kind, :ip_address
+  attr_accessor :created
   
   validates_inclusion_of :created, :in => %w{ 30 14 7 2 1 }
   
@@ -24,8 +25,8 @@ class Search < ActiveRecord::BaseWithoutTable
                               :query => build_query,
                               :per_page => 10,
                               :page => page || 1,
-                              :sort_mode => 'descending',
-                              :sort_by => 'created_at',
+                              #:sort_mode => 'descending',
+                              #:sort_by => 'created_at',
                               :filters => build_filters,
                               :facets => ['action_type']
                               #, :weights => {}
@@ -36,7 +37,7 @@ class Search < ActiveRecord::BaseWithoutTable
   def to_s
     output = []
     output << "Query: #{q}" if q?
-    output << "Created: #{created}" if created?
+    output << "Created: #{created}" unless created.blank?
     output << "Action Type: #{action_type}" if action_type?
     output.join(', ')
   end
@@ -54,8 +55,9 @@ class Search < ActiveRecord::BaseWithoutTable
     if sites.length > 0
       filters['site_id'] = sites
     end
-    if !created.nil?
-      start_time = created == 0 ? Time.today.to_i : created.days.ago.to_i
+    self.created = 7 if created.blank?
+    if created != 'all'
+      start_time = created.to_i == 0 ? Time.today.to_i : created.to_i.days.ago.to_i
       filters['created_at'] = start_time..Time.now.to_i
     end
     filters

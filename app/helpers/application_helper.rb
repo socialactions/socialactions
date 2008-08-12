@@ -24,7 +24,7 @@ module ApplicationHelper
   
   def options_for_created_select
     [
-      ['Any Time', nil],
+      ['Any Time', 'all'],
       ['Last 30 days', 30],
     	['Last 14 days',14],
     	['Last week', 7],
