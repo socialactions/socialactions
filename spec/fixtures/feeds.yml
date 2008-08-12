@@ -199,7 +199,7 @@ idealist_org_events:
   name: Idealist.org Events
   url: http://www.idealist.org/if/idealist/en/SiteIndex/Search/viewAsRSS?assetTags=EVENT_TYPE&assetTypes=Event&fetchLimit=30&languageDesignations=en&onlyFetchAssetProperties=1&siteClassifierName=idealist&sortOrderings=beginDate&validStatusTypes=APPROVED&validSta
   tag_finder: 
-  location_finder:
+  location_finder: '^\d\d\d\d-\d\d-\d\d, ([^\n]*)$'
   last_accessed: <%= 1.day.ago %>
   site: idealist_org
   action_type: Event

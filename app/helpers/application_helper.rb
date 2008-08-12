@@ -10,12 +10,15 @@ module ApplicationHelper
   
   def options_for_action_type_select
     [
-    	['All actions', "all"],
-      ['Affinity Group'],
-      ['Group Fundraiser'],
-      ['Micro-credit Loan'],
-      ['Petition'],
-      ['Pledged Action']
+     ['All actions', "all"],
+     ['Affinity Group'],
+     ['Group Fundraiser'],
+     ['Micro-credit Loan'],
+     ['Petition'],
+     ['Pledged Action'],
+     ['Event'],
+     ['Volunteer'],
+     ['Campaign']
     ]
   end
   
