@@ -73,3 +73,7 @@ pincgiving:
 microgiving:
   name: MicroGiving
   url: http://www.microgiving.com
+
+idealist_org:
+  name: Idealist.org
+  url:  http://www.idealist.org
