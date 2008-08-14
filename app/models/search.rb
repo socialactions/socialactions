@@ -4,6 +4,7 @@ class Search < ActiveRecord::BaseWithoutTable
   #column :created, :integer
   column :limit, :integer
   column :order, :string
+  column :match, :string
   attr_accessor :sites, :kind, :ip_address
   attr_accessor :created
   
@@ -30,6 +31,12 @@ class Search < ActiveRecord::BaseWithoutTable
         sort_by = 'created_at'
       else
         raise 'unknown value for order'
+      end
+
+      if match =='any'
+        self.q = q.scan(/("[^"]*"|[^\s]+)/).join(' OR ')
+      elsif !match.blank? and match != 'all'
+        raise 'unknown value for match'
       end
 
       # TODO figure out random for sort_by
