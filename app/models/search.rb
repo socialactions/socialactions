@@ -39,7 +39,7 @@ class Search < ActiveRecord::BaseWithoutTable
                               :per_page => limit,
                               :page => page || 1,
                               :sort_mode => sort_mode,
-                              :sort_by => order,
+                              :sort_by => sort_by,
                               :filters => build_filters,
                               :facets => ['action_type']
                               #, :weights => {}
