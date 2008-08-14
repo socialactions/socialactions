@@ -9,7 +9,6 @@ class ApplicationController < ActionController::Base
   protect_from_forgery # :secret => '1a6bbb367383c24380852761da6c194f'
   
   def search_params
-    params[:created] = 'all' if params[:q].blank?
     params[:sites] = params[:sites].split(',') if (params[:sites].is_a? String)
     params.slice(:q, :action_type, :created, :sites, :kind, :ip_address).delete_if{|k,v| v.nil? || v.empty?}
   end
