@@ -44,6 +44,17 @@ class Action < ActiveRecord::Base
     10
   end
 
+  def self.json_options
+    { :only => [:title, 
+                :description, 
+                :url, 
+                :action_type, 
+                :location, 
+                :created_at],
+      :include => {:site => {:only => [:name, :url]} }
+    }
+  end
+
 protected
   def fix_quoted_html(text)
     text.gsub(/\&lt;/, '<').gsub(/\&gt;/, '>')
