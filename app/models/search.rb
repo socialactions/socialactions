@@ -2,6 +2,9 @@ class Search < ActiveRecord::BaseWithoutTable
   column :q, :string
   column :action_type, :string
   #column :created, :integer
+  column :limit, :integer
+  column :order, :string
+  column :match, :string
   attr_accessor :sites, :kind, :ip_address
   attr_accessor :created
   
@@ -20,13 +23,23 @@ class Search < ActiveRecord::BaseWithoutTable
     if kind == 'map'
       Action.find(:all, :origin => [current_latitude, current_longitude], :conditions => build_conditions)
     else
+      if order == 'relevance' or order.blank?
+        sort_mode = 'relevance'
+        sort_by = nil
+      elsif order == 'created_at'
+        sort_mode = 'descending'
+        sort_by = 'created_at'
+      else
+        raise 'unknown value for order'
+      end
+
       # TODO figure out random for sort_by
       Ultrasphinx::Search.new(
                               :query => build_query,
-                              :per_page => 10,
+                              :per_page => limit,
                               :page => page || 1,
-                              #:sort_mode => 'descending',
-                              #:sort_by => 'created_at',
+                              :sort_mode => sort_mode,
+                              :sort_by => sort_by,
                               :filters => build_filters,
                               :facets => ['action_type']
                               #, :weights => {}
@@ -43,10 +56,17 @@ class Search < ActiveRecord::BaseWithoutTable
   end
   
   def build_query
+    query = q
+    if match =='any'
+      query = query.scan(/("[^"]*"|[^\s]+)/).join(' OR ')
+    elsif !match.blank? and match != 'all'
+      raise 'unknown value for match'
+    end
+
     unless action_type.nil? or action_type == 'all'
-      "action_type:\"#{action_type}\" AND (#{q})"
+      "action_type:\"#{action_type}\" AND (#{query})"
     else
-      q  
+      query
     end
   end
   
