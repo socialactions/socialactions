@@ -33,8 +33,6 @@ class Search < ActiveRecord::BaseWithoutTable
         raise 'unknown value for order'
       end
 
-      warn build_query
-
       # TODO figure out random for sort_by
       Ultrasphinx::Search.new(
                               :query => build_query,
