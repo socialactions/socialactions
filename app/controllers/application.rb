@@ -10,9 +10,10 @@ class ApplicationController < ActionController::Base
   
   def search_params
     params[:created] = 'all' if params[:q].blank?
+    params[:order] = 'created_at' if params[:q].blank?
     params[:limit] = '10' if params[:limit].blank?
     params[:sites] = params[:sites].split(',') if (params[:sites].is_a? String)
-    params.slice(:q, :action_type, :created, :sites, :kind, :ip_address, :limit).delete_if{|k,v| v.nil? || v.empty?}
+    params.slice(:q, :action_type, :created, :sites, :kind, :ip_address, :limit, :order).delete_if{|k,v| v.nil? || v.empty?}
   end
   helper_method :search_params
   

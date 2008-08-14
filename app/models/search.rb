@@ -3,6 +3,7 @@ class Search < ActiveRecord::BaseWithoutTable
   column :action_type, :string
   #column :created, :integer
   column :limit, :integer
+  column :order, :string
   attr_accessor :sites, :kind, :ip_address
   attr_accessor :created
   
@@ -21,13 +22,23 @@ class Search < ActiveRecord::BaseWithoutTable
     if kind == 'map'
       Action.find(:all, :origin => [current_latitude, current_longitude], :conditions => build_conditions)
     else
+      if order == 'relevance' or order.blank?
+        sort_mode = 'relevance'
+        sort_by = nil
+      elsif order == 'created_at'
+        sort_mode = 'descending'
+        sort_by = 'created_at'
+      else
+        raise 'unknown value for order'
+      end
+
       # TODO figure out random for sort_by
       Ultrasphinx::Search.new(
                               :query => build_query,
                               :per_page => limit,
                               :page => page || 1,
-                              #:sort_mode => 'descending',
-                              #:sort_by => 'created_at',
+                              :sort_mode => sort_mode,
+                              :sort_by => order,
                               :filters => build_filters,
                               :facets => ['action_type']
                               #, :weights => {}
