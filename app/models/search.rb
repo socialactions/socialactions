@@ -33,11 +33,7 @@ class Search < ActiveRecord::BaseWithoutTable
         raise 'unknown value for order'
       end
 
-      if match =='any'
-        self.q = q.scan(/("[^"]*"|[^\s]+)/).join(' OR ')
-      elsif !match.blank? and match != 'all'
-        raise 'unknown value for match'
-      end
+      warn build_query
 
       # TODO figure out random for sort_by
       Ultrasphinx::Search.new(
@@ -62,10 +58,17 @@ class Search < ActiveRecord::BaseWithoutTable
   end
   
   def build_query
+    query = q
+    if match =='any'
+      query = query.scan(/("[^"]*"|[^\s]+)/).join(' OR ')
+    elsif !match.blank? and match != 'all'
+      raise 'unknown value for match'
+    end
+
     unless action_type.nil? or action_type == 'all'
-      "action_type:\"#{action_type}\" AND (#{q})"
+      "action_type:\"#{action_type}\" AND (#{query})"
     else
-      q  
+      query
     end
   end
   
