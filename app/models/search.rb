@@ -2,6 +2,7 @@ class Search < ActiveRecord::BaseWithoutTable
   column :q, :string
   column :action_type, :string
   #column :created, :integer
+  column :limit, :integer
   attr_accessor :sites, :kind, :ip_address
   attr_accessor :created
   
@@ -23,7 +24,7 @@ class Search < ActiveRecord::BaseWithoutTable
       # TODO figure out random for sort_by
       Ultrasphinx::Search.new(
                               :query => build_query,
-                              :per_page => 10,
+                              :per_page => limit,
                               :page => page || 1,
                               #:sort_mode => 'descending',
                               #:sort_by => 'created_at',
