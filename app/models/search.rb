@@ -58,7 +58,7 @@ class Search < ActiveRecord::BaseWithoutTable
   def build_query
     query = q
     if match =='any'
-      query = query.scan(/("[^"]*"|[^\s]+)/).join(' OR ')
+      query = query.to_s.scan(/("[^"]*"|[^\s]+)/).join(' OR ')
     elsif !match.blank? and match != 'all'
       raise 'unknown value for match'
     end
