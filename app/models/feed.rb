@@ -12,6 +12,7 @@ class Feed < ActiveRecord::Base
       action.update_from_feed_item(item)
       action.save!
     end
+    update_attribute(:needs_updating, false)
   end
 
   def feed
@@ -26,7 +27,7 @@ class Feed < ActiveRecord::Base
         begin
           feed.parse
         rescue
-          puts "ERROR on feed #{feed.name}"
+          puts "ERROR on feed #{feed.name}: #{$!}"
         end
       end
     end
