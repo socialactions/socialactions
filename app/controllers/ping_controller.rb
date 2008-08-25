@@ -10,5 +10,7 @@ class PingController < ApplicationController
       #warn url
     end
     #warn params.inspect
+
+    render :layout => false
   end
 end
