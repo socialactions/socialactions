@@ -6,7 +6,7 @@ class Feed < ActiveRecord::Base
   belongs_to :site
   has_many :actions
 
-  def parse    
+  def parse
     feed.items.each do |item|
       action = actions.find_or_create_by_url(item.link)
       action.update_from_feed_item(item)
@@ -19,8 +19,9 @@ class Feed < ActiveRecord::Base
   end
 
   class << self
-    def parse_all
-      find(:all).each do |feed| 
+    def parse_all(options = {})
+      conditions = options[:all] ? nil : ['needs_updating = 1']
+      find(:all, :conditions => conditions).each do |feed| 
         puts "Parsing #{feed.name}"
         begin
           feed.parse
