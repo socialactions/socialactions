@@ -4,7 +4,7 @@
   .action-source
     .action-byline= "Created on #{link_to action.site.name, action.site.url} by TODO"
     .action-created= action.created_at.to_s(:default)
-    .action-type= "#{action.action_type} "
+    .action-type= "#{action.action_type.name} "
   %span{:class => 'action-goal'}
     %strong
       Goal: 

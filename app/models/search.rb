@@ -1,6 +1,6 @@
 class Search < ActiveRecord::BaseWithoutTable
   column :q, :string
-  column :action_type, :string
+  column :action_type, :integer
   #column :created, :integer
   column :limit, :integer
   column :order, :string
@@ -40,8 +40,7 @@ class Search < ActiveRecord::BaseWithoutTable
                               :page => page || 1,
                               :sort_mode => sort_mode,
                               :sort_by => sort_by,
-                              :filters => build_filters,
-                              :facets => ['action_type']
+                              :filters => build_filters
                               #, :weights => {}
                               ).run
     end
@@ -51,7 +50,7 @@ class Search < ActiveRecord::BaseWithoutTable
     output = []
     output << "Query: #{q}" if q?
     output << "Created: #{created}" unless created.blank?
-    output << "Action Type: #{action_type}" if action_type?
+    output << "Action Type: #{ActionType.find_by_id(action_type).name}" if action_type?
     output.join(', ')
   end
   
@@ -63,11 +62,7 @@ class Search < ActiveRecord::BaseWithoutTable
       raise 'unknown value for match'
     end
 
-    unless action_type.nil? or action_type == 'all'
-      "action_type:\"#{action_type}\" AND (#{query})"
-    else
-      query
-    end
+    query
   end
   
   def build_filters
@@ -81,6 +76,10 @@ class Search < ActiveRecord::BaseWithoutTable
       self.created = created.to_i
       start_time = created == 0 ? Time.today.to_i : created.days.ago.to_i
       filters['created_at'] = start_time..Time.now.to_i
+    end
+    
+    if !action_type.nil? && action_type > 0
+      filters['action_type_id'] = [action_type]
     end
 
     filters
