@@ -9,7 +9,7 @@ xml.rss :version => "2.0" do
       xml.item do
         xml.title       action.title
         xml.category    action.action_type.name
-        xml.description shorten_and_clean(action.description)
+        xml.description sanitize(action.description)
         xml.pubDate     action.created_at.strftime("%Y-%m-%dT%H:%M:%SZ")
         xml.link        action_url(action)
         xml.guid        action_url(action)
