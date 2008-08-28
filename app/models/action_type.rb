@@ -10,4 +10,13 @@ class ActionType < ActiveRecord::Base
     end
     arrary_of_name_id_arrays
   end
+  
+  def self.find_all_as_id_array
+    action_types = self.find(:all)
+    arrary_of_ids = []
+    action_types.each do |action_type|
+      arrary_of_ids << action_type.id
+    end
+    arrary_of_ids
+  end
 end
