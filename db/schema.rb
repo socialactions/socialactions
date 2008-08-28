@@ -17,6 +17,9 @@ ActiveRecord::Schema.define(:version => 18) do
     t.datetime "updated_at"
   end
 
+  add_index "action_types", ["id", "name"], :name => "index_action_types_on_id_and_name", :unique => true
+  add_index "action_types", ["name"], :name => "index_action_types_on_name", :unique => true
+
   create_table "actions", :force => true do |t|
     t.text     "description"
     t.string   "url"
@@ -42,7 +45,6 @@ ActiveRecord::Schema.define(:version => 18) do
     t.string   "tag_finder"
     t.integer  "site_id"
     t.string   "location_finder"
-    t.string   "action_type_old"
     t.integer  "action_type_id"
   end
 

@@ -27,6 +27,8 @@ class RefactorActionType < ActiveRecord::Migration
     
     remove_column :actions, :action_type_old
     remove_column :feeds, :action_type_old
+    add_index(:action_types, [:id, :name], :unique => true)
+    add_index(:action_types, [:name], :unique => true)
   end
 
   def self.down
