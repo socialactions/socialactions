@@ -5,6 +5,8 @@ class RefactorActionType < ActiveRecord::Migration
       
       t.timestamps
     end
+    add_index(:action_types, [:id, :name], :unique => true)
+    add_index(:action_types, [:name], :unique => true)
     
     rename_column :actions, :action_type, :action_type_old
     add_column :actions, :action_type_id, :integer
@@ -18,17 +20,22 @@ class RefactorActionType < ActiveRecord::Migration
     actions = Action.find(:all)
     feeds = Feed.find(:all)
     
+    action_types = ['Group Fundraiser','Campaign','Pledged Action','Event','Affinity Group','Volunteer','Micro-credit Loan','Petition']
+    
+    action_types.each do |action_type|
+      ActionType.new(:name => action_type).save!
+    end
+    
     records = feeds + actions 
     records.each do |record|
-      record.action_type = ActionType.find_or_create_by_name(record.action_type_old)
+      record.action_type = ActionType.find_by_name(record.action_type_old)
       record.save!
     end
     # end data migration
     
     remove_column :actions, :action_type_old
     remove_column :feeds, :action_type_old
-    add_index(:action_types, [:id, :name], :unique => true)
-    add_index(:action_types, [:name], :unique => true)
+
   end
 
   def self.down
