@@ -18,10 +18,12 @@ class ActionsController < ApplicationController
       respond_to do |format|
         format.html { @actions.excerpt }
         format.json  { render :json => @actions.results.to_json(Action.json_options) }
-        format.rss { render :layout => false }
+        format.rss
+        format.atom
       end
     rescue Exception => message
       # not the best rescue ever, as it always assumes status 400
+      headers['Content-Type'] = 'text/plain'
       render :text => message, :status=>400
     end
   end
