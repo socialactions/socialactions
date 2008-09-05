@@ -7,12 +7,13 @@ class Feed < ActiveRecord::Base
   belongs_to :action_type
   has_many :actions
 
-  def parse    
+  def parse
     feed.items.each do |item|
       action = actions.find_or_create_by_url(item.link)
       action.update_from_feed_item(item)
       action.save!
     end
+    update_attribute(:needs_updating, false)
   end
 
   def feed
@@ -20,13 +21,14 @@ class Feed < ActiveRecord::Base
   end
 
   class << self
-    def parse_all
-      find(:all).each do |feed| 
+    def parse_all(options = {})
+      conditions = options[:all] ? nil : ['needs_updating = 1']
+      find(:all, :conditions => conditions).each do |feed| 
         puts "Parsing #{feed.name}"
         begin
           feed.parse
         rescue
-          puts "ERROR on feed #{feed.name}"
+          puts "ERROR on feed #{feed.name}: #{$!}"
         end
       end
     end

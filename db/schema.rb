@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 18) do
+ActiveRecord::Schema.define(:version => 19) do
 
   create_table "action_types", :force => true do |t|
     t.string   "name"
@@ -46,6 +46,7 @@ ActiveRecord::Schema.define(:version => 18) do
     t.integer  "site_id"
     t.string   "location_finder"
     t.integer  "action_type_id"
+    t.boolean  "needs_updating"
   end
 
   create_table "sites", :force => true do |t|
