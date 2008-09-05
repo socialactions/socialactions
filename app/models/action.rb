@@ -3,11 +3,12 @@ class Action < ActiveRecord::Base
   include GeoKit::Geocoders
   
   is_indexed :fields => ['title' , 'description', 'site_id', 'latitude', 'longitude', 'created_at', 'updated_at',
-                        {:field => 'action_type', :facet => true} ],
+                        'action_type_id' ],
                         :delta => true
 
   belongs_to :feed
   belongs_to :site
+  belongs_to :action_type
   
   acts_as_taggable
   acts_as_mappable :lat_column_name => :latitude, :lng_column_name => :longitude
@@ -47,11 +48,11 @@ class Action < ActiveRecord::Base
   def self.json_options
     { :only => [:title, 
                 :description, 
-                :url, 
-                :action_type, 
+                :url,  
                 :location, 
                 :created_at],
-      :include => {:site => {:only => [:name, :url]} }
+      :include => {:site => {:only => [:name, :url]}, 
+                   :action_type => {:only => [:name, :id]}}
     }
   end
 
