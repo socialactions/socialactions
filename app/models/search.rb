@@ -32,7 +32,7 @@ class Search < ActiveRecord::BaseWithoutTable
                                  :per_page => limit,
                                  :page => page || 1,
                                  :filters => build_filters
-                                }.merge build_sort
+                                }.merge(build_sort)
                               ).run
     end
   end
