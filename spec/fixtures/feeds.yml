@@ -5,7 +5,7 @@ global_giving:
   location_finder: 
   last_accessed: <%= 1.day.ago %>
   site: global_giving
-  action_type: Group Fundraiser
+  action_type_id: 1
 
 pledge_bank:
   name: PledgeBank
@@ -14,7 +14,7 @@ pledge_bank:
   location_finder: 
   last_accessed: <%= 1.day.ago %>
   site: pledge_bank
-  action_type: Pledged Action
+  action_type_id: 3
 
 change_org_giving:
   name: Change.org Giving Networks
@@ -23,7 +23,7 @@ change_org_giving:
   location_finder: 
   last_accessed: <%= 1.day.ago %>
   site: change_org
-  action_type: Group Fundraiser
+  action_type_id: 1
   
 change_org_changes:
   name: Change.org Changes 
@@ -32,7 +32,7 @@ change_org_changes:
   location_finder: 
   last_accessed: <%= 1.day.ago %>
   site: change_org
-  action_type: Affinity Group
+  action_type_id: 5
 
 razoo_acts:
   name: Razoo Acts
@@ -41,7 +41,7 @@ razoo_acts:
   location_finder: 
   last_accessed: %= 1.day.ago %>
   site: razoo
-  action_type: Pledged Action
+  action_type_id: 3
   
 razoo_goals:
   name: Razoo Goals
@@ -50,7 +50,7 @@ razoo_goals:
   location_finder: 
   last_accessed: <%= 1.day.ago %>
   site: razoo
-  action_type: Group Fundraiser
+  action_type_id: 1
 
 democracy_in_action:
   name: DemocracyinAction
@@ -59,7 +59,7 @@ democracy_in_action:
   location_finder: 
   last_accessed: <%= 1.day.ago %>
   site: democracy_in_action
-  action_type: Group Fundraiser
+  action_type_id: 1
 
 care_2_petitions:
   name: Care2 Petitions
@@ -68,7 +68,8 @@ care_2_petitions:
   tag_finder: 
   last_accessed: <%= 1.day.ago %>
   site: care_2_petitions
-  action_type: Petition
+  action_type_id: 8
+
 the_point:
   name: ThePoint
   url: http://www.thepoint.com/rss
@@ -76,7 +77,7 @@ the_point:
   location_finder: 
   last_accessed: <%= 1.day.ago %>
   site: the_point
-  action_type: Pledged Action
+  action_type_id: 3
 
 give_meaning_proposals:
   name: GiveMeaning Proposals 
@@ -85,7 +86,7 @@ give_meaning_proposals:
   location_finder: 
   last_accessed: <%= 1.day.ago %>
   site: give_meaning
-  action_type: Pledged Action
+  action_type_id: 3
 
 give_meaning_projects:
   name: GiveMeaning Projects
@@ -94,7 +95,7 @@ give_meaning_projects:
   location_finder: 
   last_accessed: <%= 1.day.ago %>
   site: give_meaning
-  action_type: Pledged Action
+  action_type_id: 3
   
 changing_the_present:
   name: ChangingthePresent New Drives
@@ -103,7 +104,7 @@ changing_the_present:
   location_finder: 
   last_accessed: <%= 1.day.ago %>
   site: changing_the_present
-  action_type: Group Fundraiser
+  action_type_id: 1
 
 fundable:
   name: Fundable
@@ -112,7 +113,7 @@ fundable:
   location_finder: 
   last_accessed: <%= 1.day.ago %>
   site: fundable
-  action_type: Group Fundraiser
+  action_type_id: 1
   
 bring_light:
   name: BringLight
@@ -121,7 +122,7 @@ bring_light:
   location_finder: 
   last_accessed: <%= 1.day.ago %>
   site: bring_light
-  action_type: Group Fundraiser
+  action_type_id: 1
 
 kiva:
   name: Kiva
@@ -130,7 +131,7 @@ kiva:
   location_finder: 
   last_accessed: <%= 1.day.ago %>
   site: kiva
-  action_type: Micro-credit Loan
+  action_type_id: 7
   
 six_degrees:
   name: SixDegrees
@@ -139,7 +140,7 @@ six_degrees:
   location_finder: 
   last_accessed: <%= 1.day.ago %>
   site: six_degrees
-  action_type: Group Fundraiser
+  action_type_id: 1
 
 first_giving:
   name: Firstgiving
@@ -148,7 +149,7 @@ first_giving:
   location_finder: 
   last_accessed: <%= 1.day.ago %>
   site: first_giving
-  action_type: Group Fundraiser
+  action_type_id: 1
 
 zazengo:
   name: Latest Zazengo Projects
@@ -157,7 +158,7 @@ zazengo:
   location_finder: "<span class=\"street-address\">([\w\s,]+)</span>"
   last_accessed: <%= 1.day.ago %>
   site: zazengo
-  action_type: Affinity Group
+  action_type_id: 5
 
 helpalot:
   name: Helpalot
@@ -166,7 +167,7 @@ helpalot:
   location_finder: "<br /><br />\n([\w\s,]+)\n<br />"
   last_accessed: <%= 1.day.ago %>
   site: helpalot
-  action_type: Affinity Group
+  action_type_id: 5
 
 donorschoose:
   name: DonorsChoose
@@ -175,7 +176,7 @@ donorschoose:
   location_finder: "<br />([\w\s,]+)<br />Level:"
   last_accessed: <%= 1.day.ago %>
   site: donorschoose
-  action_type: Group Fundraiser
+  action_type_id: 1
 
 pincgiving:
   name: PincGiving
@@ -184,7 +185,7 @@ pincgiving:
   location_finder:
   last_accessed: <%= 1.day.ago %>
   site: pincgiving
-  action_type: Group Fundraiser  
+  action_type_id: 1
   
 microgiving:
   name: MicroGiving
@@ -193,7 +194,7 @@ microgiving:
   location_finder:
   last_accessed: <%= 1.day.ago %>
   site: microgiving
-  action_type: Group Fundraiser
+  action_type_id: 1
 
 idealist_org_events:
   name: Idealist.org Events
@@ -202,7 +203,7 @@ idealist_org_events:
   location_finder: '^\d\d\d\d-\d\d-\d\d, ([^\n]*)$'
   last_accessed: <%= 1.day.ago %>
   site: idealist_org
-  action_type: Event
+  action_type_id: 4
 
 idealist_org_volunteer:
   name: Idealist.org Volunteer Opportunities
@@ -211,7 +212,7 @@ idealist_org_volunteer:
   location_finder:
   last_accessed: <%= 1.day.ago %>
   site: idealist_org
-  action_type: Volunteer
+  action_type_id: 6
 
 idealist_org_campaigns:
   name: Idealist.org Campaigns
@@ -220,4 +221,41 @@ idealist_org_campaigns:
   location_finder:
   last_accessed: <%= 1.day.ago %>
   site: idealist_org
-  action_type: Campaign
+  action_type_id: 2
+
+volunteer_match:
+  name: VolunteerMatch
+  url: http://www.volunteermatch.org/search/index.jsp?rss=true&k=all&v=true
+  tag_finder: 
+  location_finder:
+  last_accessed: <%= 1.day.ago %>
+  site: volunteer_match
+  action_type_id: 6
+
+nabuur:
+  name: NABUUR
+  url: http://www.nabuur.com/feed/tasks/rss
+  tag_finder: 
+  location_finder:
+  last_accessed: <%= 1.day.ago %>
+  site: nabuur
+  action_type_id: 6
+
+charity_focus:
+  name: CharityFocus
+  url: http://charityfocus.org/rss/actions.php
+  tag_finder: 
+  location_finder:
+  last_accessed: <%= 1.day.ago %>
+  site: charity_focus
+  action_type_id: 9
+
+delicious_takeaction:
+  name: Delicious TakeAction Tag
+  url: http://feeds.delicious.com/v2/atom/tag/takeaction
+  tag_finder: 
+  location_finder:
+  last_accessed: <%= 1.day.ago %>
+  site: delicious
+  action_type_id: 10
+

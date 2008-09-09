@@ -77,3 +77,19 @@ microgiving:
 idealist_org:
   name: Idealist.org
   url:  http://www.idealist.org
+
+volunteer_match:
+  name: VolunteerMatch
+  url: http://www.volunteermatch.org
+
+nabuur:
+  name: NABUUR
+  url: http://www.nabuur.com
+
+charity_focus:
+  name: CharityFocus
+  url: http://charityfocus.org
+
+delicious:
+  name: Delicious
+  url: http://delicious.com

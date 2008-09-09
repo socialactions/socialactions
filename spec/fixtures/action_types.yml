@@ -1,0 +1,30 @@
+group_fundraiser: 
+    name: Group Fundraiser
+    id: 1
+campaign: 
+    name: Campaign
+    id: 2
+pledged_action: 
+    name: Pledged Action
+    id: 3
+event: 
+    name: Event
+    id: 4
+affinity_group: 
+    name: Affinity Group
+    id: 5
+volunteer: 
+    name: Volunteer
+    id: 6
+micro_credit_loan: 
+    name: Micro-credit Loan
+    id: 7
+petition: 
+    name: Petition
+    id: 8
+individual_action:
+    name: Individual Action
+    id: 9
+unknown:
+    name: Unknown
+    id: 10
