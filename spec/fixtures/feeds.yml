@@ -221,3 +221,40 @@ idealist_org_campaigns:
   last_accessed: <%= 1.day.ago %>
   site: idealist_org
   action_type: Campaign
+
+volunteer_match:
+  name: VolunteerMatch
+  url: http://www.volunteermatch.org/search/index.jsp?rss=true&k=all&v=true
+  tag_finder: 
+  location_finder:
+  last_accessed: <%= 1.day.ago %>
+  site: volunteer_match
+  action_type: Volunteer
+
+nabuur:
+  name: NABUUR
+  url: http://www.nabuur.com/feed/tasks/rss
+  tag_finder: 
+  location_finder:
+  last_accessed: <%= 1.day.ago %>
+  site: nabuur
+  action_type: Volunteer
+
+charity_focus:
+  name: CharityFocus
+  url: http://charityfocus.org/rss/actions.php
+  tag_finder: 
+  location_finder:
+  last_accessed: <%= 1.day.ago %>
+  site: charity_focus
+  action_type: Individual Action
+
+delicious_takeaction:
+  name: Delicious TakeAction Tag
+  url: http://feeds.delicious.com/v2/atom/tag/takeaction
+  tag_finder: 
+  location_finder:
+  last_accessed: <%= 1.day.ago %>
+  site: delicious
+  action_type: Unknown
+
