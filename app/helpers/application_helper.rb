@@ -9,7 +9,7 @@ module ApplicationHelper
   end
   
   def options_for_action_type_select
-    [['All actions', 0]] + ActionType.find_all_as_name_id_array
+    [['All actions', '']] + ActionType.find_all_as_name_id_array
   end
   
   def options_for_created_select
