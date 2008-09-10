@@ -15,7 +15,7 @@ xml.feed :xmlns => 'http://www.w3.org/2005/Atom' do
 
       xml.title action.title
       xml.content sanitize(action.description), :type => 'html'
-      xml.link :href => action_url(action)
+      xml.link :href => action.url # action_url(action)
       xml.category :term => action.action_type.name
     end
   end
