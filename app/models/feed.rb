@@ -24,11 +24,11 @@ class Feed < ActiveRecord::Base
       conditions = options[:all] ? nil : ['needs_updating = 1']
       find(:all, :conditions => conditions).each do |feed| 
         puts "Parsing #{feed.name}"
-        #begin
+        begin
           feed.parse
-        #rescue
-        #  puts "ERROR on feed #{feed.name}: #{$!}"
-        #end
+        rescue
+          puts "ERROR on feed #{feed.name}: #{$!}"
+        end
       end
     end
   end
