@@ -99,7 +99,7 @@ give_meaning_projects:
   
 changing_the_present:
   name: ChangingthePresent New Drives
-  url: http://www.changingthepresent.com/drives/rss
+  url: http://www.changingthepresent.org/drives/rss
   tag_finder: 
   location_finder: 
   last_accessed: <%= 1.day.ago %>
