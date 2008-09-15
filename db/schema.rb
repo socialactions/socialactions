@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 19) do
+ActiveRecord::Schema.define(:version => 20) do
 
   create_table "action_types", :force => true do |t|
     t.string   "name"
@@ -47,6 +47,7 @@ ActiveRecord::Schema.define(:version => 19) do
     t.string   "location_finder"
     t.integer  "action_type_id"
     t.boolean  "needs_updating"
+    t.boolean  "is_donorschoose_json", :default => false
   end
 
   create_table "sites", :force => true do |t|

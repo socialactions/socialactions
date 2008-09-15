@@ -259,3 +259,12 @@ delicious_takeaction:
   site: delicious
   action_type_id: 10
 
+donorschoose_json:
+  name: DonorsChoose JSON
+  url: http://api.donorschoose.org/common/json_feed.html?subject1=-1&action=browse&APIKey=DONORSCHOOSE
+  tag_finder:
+  location_finder:
+  last_accessed: <%= 1.day.ago %>
+  site: donorschoose
+  action_type_id: 1
+  is_donorschoose_json: true
