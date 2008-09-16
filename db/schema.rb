@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 19) do
+ActiveRecord::Schema.define(:version => 22) do
 
   create_table "action_types", :force => true do |t|
     t.string   "name"
@@ -36,6 +36,36 @@ ActiveRecord::Schema.define(:version => 19) do
 
   add_index "actions", ["url"], :name => "index_actions_on_url"
 
+  create_table "donations", :force => true do |t|
+    t.integer  "action_id"
+    t.string   "ein"
+    t.string   "designation"
+    t.string   "dedication"
+    t.string   "disclosure"
+    t.string   "amount"
+    t.string   "identifier"
+    t.string   "fee_option"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "donors", :force => true do |t|
+    t.integer  "donation_id"
+    t.string   "ip_address"
+    t.string   "first_name"
+    t.string   "last_name"
+    t.string   "email"
+    t.string   "cc_email"
+    t.string   "address1"
+    t.string   "address2"
+    t.string   "city"
+    t.string   "state"
+    t.string   "zip"
+    t.string   "phone"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
   create_table "feeds", :force => true do |t|
     t.string   "name"
     t.string   "url"
@@ -47,6 +77,7 @@ ActiveRecord::Schema.define(:version => 19) do
     t.string   "location_finder"
     t.integer  "action_type_id"
     t.boolean  "needs_updating"
+    t.boolean  "donations",       :default => false, :null => false
   end
 
   create_table "sites", :force => true do |t|
