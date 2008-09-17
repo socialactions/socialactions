@@ -16,27 +16,25 @@ class Action < ActiveRecord::Base
   
   before_save :look_for_tags, :look_for_location, :geocode_lookup, :denormalize
   
-  def update_from_feed_item(item)
-    puts "  -- Action: #{item.title}"
-    self.title = item.title
-    self.url = item.link
-    self.description = description_for(item)
-    self.created_at = item.pubDate if item.pubDate
-    self.created_at = item.dc_date if item.dc_date
-    self.created_at = item.updated if item.updated
-    figure_out_address_from(item)
+  def update_from_feed_entry(entry)
+    puts "  -- Action: #{entry.title}"
+    self.title = entry.title # TODO: handle text vs. html here
+    self.url = entry.link
+    self.description = description_for(entry)
+    self.created_at = entry.updated_time || Time.now
+    figure_out_address_from(entry)
   end
   
   def description=(new_description)
     write_attribute(:description, fix_quoted_html(new_description))
   end
   
-  # Seems like Atom uses <content> not <description> ?? 
-  def description_for(item)
-    if item.description
-      item.description
-    elsif item.content
-      item.content
+  def description_for(entry)
+    # TODO: handle text vs. html here
+    if entry.content && !entry.content[0].value.blank?
+      entry.content[0].value
+    elsif !entry.summary.blank?
+      entry.summary
     else
       ""
     end
@@ -78,10 +76,10 @@ protected
     end
   end
 
-  def figure_out_address_from(item)
-    if item.geo_lat and item.geo_long
-      self.latitude = item.geo_lat
-      self.longitude = item.geo_long
+  def figure_out_address_from(entry)
+    if entry.geo_lat and entry.geo_long
+      self.latitude = entry.geo_lat
+      self.longitude = entry.geo_long
     end
   end
   
