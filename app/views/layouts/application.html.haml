@@ -22,7 +22,7 @@
       #container.clear-block
         #sidebar-left.column.sidebar
           %p= link_to('Are you reading the Social Actions blog?', 'http://blog.socialactions.com/')
-          %p= link_to image_tag('ca_get_alerts.gif'), "http://www.cellalert.net/RSS?id=1&created=#{URI.encode(params[:created] || '')}&limit=#{URI.encode(params[:limit] || '')}&x=#{URI.encode(params[:q] || '')}"
+          %p= link_to image_tag('ca_get_alerts.gif'), "http://www.cellalert.net/RSS?id=1&created=#{URI.encode(params[:created] || '7')}&limit=#{URI.encode(params[:limit] || '')}&x=#{URI.encode(params[:q] || '')}"
         #main.column
           #squeeze
             = yield
