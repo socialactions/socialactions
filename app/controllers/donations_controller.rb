@@ -25,10 +25,10 @@ class DonationsController < ApplicationController
 
     # TODO: encapsulate this in controller or model method...
     res = Net::HTTP.post_form(URI.parse('http://qa4.networkforgood.org/PartnerDonationService/DonateService.asmx/MakeCCDonation'),
-                              { 'PartnerID' => nil,
-                                'PartnerPW' => nil,
-                                'PartnerSource' => nil,
-                                'PartnerCampaign' => nil,
+                              { 'PartnerID' => DONATENOW_AUTH['PartnerID'],
+                                'PartnerPW' => DONATENOW_AUTH['PartnerPW'],
+                                'PartnerSource' => DONATENOW_AUTH['PartnerSource'],
+                                'PartnerCampaign' => DONATENOW_AUTH['PartnerCampaign'],
                                 'NpoEin' => nil,
                                 'Designation' => nil,
                                 'Dedication' => nil,
