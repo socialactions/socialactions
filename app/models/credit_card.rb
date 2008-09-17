@@ -6,10 +6,10 @@ class CreditCard < ActiveRecord::Base
   end
 
   column :donation_id,  :integer
-  column :type,         :string
+  column :card_type,         :string
   column :name,         :string
   column :number,       :string
-  column :expiry_date, :integer
+  column :expiry_date, :datetime
   column :csc,          :integer
                                        
   validates_presence_of   :type

@@ -6,6 +6,8 @@
     %h2 Donate Now
     
     - form_for @donation do |f|
+      = hidden_field_tag :social_action, @action.id
+
       %p
         I want to contribute: &nbsp;$&nbsp;
         = f.text_field :amount, :size => 5, :maxlength => 10
@@ -144,7 +146,7 @@
               = required_image
               Type of Card:
             %td.tSmall
-              = c.select :type, card_types_for_select
+              = c.select :card_type, card_types_for_select
 
           %tr
             %td{ :align => "right" }
@@ -187,7 +189,8 @@
       %br/
       %p
         %a{ :href => "nfg_step3.html" }
-          %img{ :src => "btn_donate_now.gif", :border => "0" }/
+          %img{ :src => "btn_donate_now.gif", :border => "0", :alt => "Donate Now" }/
+        = submit_tag 'Donate Now'
       %p{ :style => "text-align:right;" }
         %img{ :src => "powered_by_networkforgood.jpg", :height => "35", :alt => "Powered by NetworkforGood", :width => "160" }/
     %a.action-url{ :href => "http://www.networkforgood.org/pca/Badge.aspx?BadgeId=111783" }
