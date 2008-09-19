@@ -23,6 +23,7 @@ class Action < ActiveRecord::Base
     self.description = description_for(entry)
     self.created_at = entry.updated_time || Time.now
     figure_out_address_from(entry)
+    self.ein = entry.cb_ein # "legacy" support for 6deg pre-RSSA EIN
   end
   
   def description=(new_description)

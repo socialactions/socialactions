@@ -54,9 +54,9 @@ class DonationsController < ApplicationController
                         'CSC' => @credit_card.csc
                       })
     http = Net::HTTP.new(url.host, url.port)
-    http.use_ssl = url.scheme == 'https'
+    http.use_ssl = (url.scheme == 'https')
     http.verify_mode = OpenSSL::SSL::VERIFY_NONE
-    res = http.start{|http| http.request(req)}
+    res = http.request(req)
 
     puts "#{res.code} #{res.message}"
     puts res.body
