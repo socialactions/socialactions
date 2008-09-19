@@ -5,5 +5,6 @@ class Donation < ActiveRecord::Base
   
   validates_presence_of     :amount
   validates_numericality_of :amount
-  
+
+  validates_presence_of :disclosure
 end

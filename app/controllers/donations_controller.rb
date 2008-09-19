@@ -23,6 +23,11 @@ class DonationsController < ApplicationController
     # @donation.donorIpAddress                = request.remote_ip
     # if @donation.valid? && @donation.process
 
+    unless @donation.valid?
+      render :action => 'new'
+      return
+    end
+
     # TODO: encapsulate this in controller or model method...
     url = URI.parse('https://qa4.networkforgood.org/PartnerDonationService/DonateService.asmx/MakeCCDonation')
     req = Net::HTTP::Post.new(url.path)
@@ -30,7 +35,7 @@ class DonationsController < ApplicationController
                         'PartnerPW' => DONATENOW_AUTH['PartnerPW'],
                         'PartnerSource' => DONATENOW_AUTH['PartnerSource'],
                         'PartnerCampaign' => DONATENOW_AUTH['PartnerCampaign'],
-                        'NpoEin' => nil,
+                        'NpoEin' => @action.ein,
                         'Designation' => nil,
                         'Dedication' => nil,
                         'DonorNpoDisclosure' => @donation.disclosure,
@@ -59,8 +64,32 @@ class DonationsController < ApplicationController
     res = http.request(req)
 
     puts "#{res.code} #{res.message}"
-    puts res.body
-    puts res.inspect
+
+    unless res.is_a? Net::HTTPSuccess
+      flash[:notice] = "There was an error processing your donation.  Please make sure all required fields are filled out."
+      #redirect_to :action => 'new', :social_action => @action.id
+      render :action => 'new'
+      puts res.body
+      return
+    end
+
+    dnres = Hash.from_xml(res.body)['DonationReturnData']
+
+    require 'pp'
+    pp dnres
+
+    unless dnres['StatusCode'] == 'Success'
+      flash[:notice] = "There was an error processing your donation: #{dnres['ErrorDetails']}"
+      #redirect_to :action => 'new', :social_action => @action.id
+      render :action => 'new'
+      return
+    end
+
+    @chargeid = dnres['ChargeId']
+
+    #puts "#{res.code} #{res.message}"
+    #puts res.body
+    #puts res.inspect
 
 
     #   @measurement = Measurement.create!(
@@ -81,8 +110,6 @@ protected
 
   def load_action
     @action = Action.find(params[:social_action])
-  #rescue ActiveRecord::RecordNotFound
-  #  redirect_to :back
   end
 
 end
