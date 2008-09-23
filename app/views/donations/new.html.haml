@@ -4,6 +4,8 @@
   
   .donations
     %h2 Donate Now
+
+    = error_messages_for 'donation'
     
     - form_for @donation do |f|
       = hidden_field_tag :social_action, @action.id

@@ -16,16 +16,9 @@ class DonationsController < ApplicationController
     @donor = @donation.donor = Donor.new(params[:donor])
     @credit_card = @donation.credit_card = CreditCard.new(params[:credit_card])
     @donation.action = @action
-    # @donation.designation                   = current_project.name
-    # @donation.partnerTransactionIdentifier  = "#{current_project.id}_#{current_user.id || ''}_#{Time.now.to_i}"
-    # @donation.designation                   = current_project.name
-    # @donation.npoEin                        = current_project.ein
-    # @donation.donorIpAddress                = request.remote_ip
-    # if @donation.valid? && @donation.process
 
     unless @donation.valid?
-      render :action => 'new'
-      return
+      return render(:action => 'new')
     end
 
     # TODO: encapsulate this in controller or model method...
@@ -66,11 +59,9 @@ class DonationsController < ApplicationController
     puts "#{res.code} #{res.message}"
 
     unless res.is_a? Net::HTTPSuccess
-      flash[:notice] = "There was an error processing your donation.  Please make sure all required fields are filled out."
-      #redirect_to :action => 'new', :social_action => @action.id
-      render :action => 'new'
+      @donation.errors.add_to_base "There was a problem communicating with the donation processing service."
       puts res.body
-      return
+      return render(:action => 'new')
     end
 
     dnres = Hash.from_xml(res.body)['DonationReturnData']
@@ -79,10 +70,19 @@ class DonationsController < ApplicationController
     pp dnres
 
     unless dnres['StatusCode'] == 'Success'
-      flash[:notice] = "There was an error processing your donation: #{dnres['ErrorDetails']}"
-      #redirect_to :action => 'new', :social_action => @action.id
-      render :action => 'new'
-      return
+      if dnres['Message']
+        @donation.errors.add_to_base dnres['Message']
+      else
+        errs = dnres['ErrorDetails']['ErrorInfo']
+        errs = [errs] if errs.is_a?(Hash)
+        
+        errs.each do |err|
+          @donation.errors.add_to_base err['ErrData']
+          puts "adding to @donation: #{err['ErrData']}"
+        end
+      end
+      
+      return render(:action => 'new')
     end
 
     @chargeid = dnres['ChargeId']
@@ -90,20 +90,6 @@ class DonationsController < ApplicationController
     #puts "#{res.code} #{res.message}"
     #puts res.body
     #puts res.inspect
-
-
-    #   @measurement = Measurement.create!(
-    #     :user_id    => current_user.id, 
-    #     :project_id => current_project.id,
-    #     :metric_id  => Metric.donation_metric.id,
-    #     :quantity   => @donation.amount
-    #   )
-    #   flash[:notice] = "The transaction was completed successfully. Thank you for your donation."
-    #   redirect_to project_path(current_project)
-    # else
-    #   flash[:error] = "There was an error while processing your donation: #{@donation.error_message}" if !@donation.error_message.empty?
-    #   render :action => 'new'
-    # end
   end
 
 protected 
