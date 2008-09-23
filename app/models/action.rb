@@ -13,7 +13,9 @@ class Action < ActiveRecord::Base
   acts_as_taggable
   acts_as_mappable :lat_column_name => :latitude, :lng_column_name => :longitude
   
-  before_save :look_for_tags, :look_for_location, :geocode_lookup, :denormalize
+  before_create :look_for_tags, :look_for_location, :geocode_lookup
+  before_save :update_short_url, :denormalize
+
   
   def update_from_feed_entry(entry)
     puts "  -- Action: #{entry.title}"
@@ -38,6 +40,14 @@ class Action < ActiveRecord::Base
       ""
     end
   end
+  
+  def url
+    if self.short_url.nil?
+      read_attribute(:url)
+    else
+      self.short_url
+    end
+  end
 
   def self.per_page
     10
@@ -53,7 +63,11 @@ class Action < ActiveRecord::Base
                    :action_type => {:only => [:name, :id]}}
     }
   end
-
+  
+  def self.xml_options
+    {:except => [:short_url]}
+  end
+  
 protected
   def fix_quoted_html(text)
     text.gsub(/\&lt;/, '<').gsub(/\&gt;/, '>')
@@ -97,6 +111,16 @@ protected
   def denormalize
     self.site_id = self.feed.site_id
     self.action_type = self.feed.action_type
+  end
+  
+  def update_short_url
+    begin
+      Redirect.create(:cookie => 'social_actions', :url => self.read_attribute(:url))
+      redirect = Redirect.get(:slug, :cookie => 'social_actions', :url => self.read_attribute(:url))
+      self.short_url = redirect['url']
+    rescue
+      # It's ok, it's works just fine without the short url, we want to just continue
+    end
   end
   
 end
