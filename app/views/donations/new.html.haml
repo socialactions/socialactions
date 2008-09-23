@@ -44,7 +44,6 @@
         = required_image
         indicates required
 
-
       %table{ :cellpadding => "3" }
         %tr
           %td{ :colspan => "2" }
@@ -123,15 +122,8 @@
             %td
               = d.text_field :email, :size => 30, :maxlength => 100
 
-          %tr
-            %td{ :align => "right" }
-              CC E-mail Address:
-            %td
-              = d.text_field :cc_email, :size => 30, :maxlength => 100
-
         - fields_for @credit_card do |c|
           %tr
-            Start Payment Method
             %td{ :colspan => "2" }
               %br/
               %p
@@ -190,10 +182,7 @@
               Deduct the 4.75% processing fee from the donation amount forwarded to my charity(ies).
       %br/
       %p
-        %a{ :href => "nfg_step3.html" }
-          %img{ :src => "btn_donate_now.gif", :border => "0", :alt => "Donate Now" }/
-        = submit_tag 'Donate Now'
+        = image_submit_tag 'btn_donate_now.gif', :alt => 'Donate Now'
       %p{ :style => "text-align:right;" }
-        %img{ :src => "powered_by_networkforgood.jpg", :height => "35", :alt => "Powered by NetworkforGood", :width => "160" }/
+        %img{ :src => "/images/powered_by_networkforgood.jpg", :height => "35", :alt => "Powered by NetworkforGood", :width => "160" }/
     %a.action-url{ :href => "http://www.networkforgood.org/pca/Badge.aspx?BadgeId=111783" }
-      http://www.networkforgood.org/pca/Badge.aspx?BadgeId=111783

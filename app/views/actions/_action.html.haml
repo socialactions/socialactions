@@ -26,8 +26,9 @@
     %br/
   .action-description
     = sanitize(action.description)
-  - if action.feed.donations?
+  - if action.feed.donations? and controller.controller_name == 'actions'
     .donations
       = link_to image_tag('btn_donate_now.gif'), new_donation_path(:social_action => action.id)
 
-  = link_to action.url, action.url, :class => 'action-url'
+  - if controller.controller_name == 'actions'
+    = link_to action.url, action.url, :class => 'action-url'
