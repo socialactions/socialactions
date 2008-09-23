@@ -116,9 +116,13 @@ protected
   end
   
   def update_short_url
-    Redirect.create(:cookie => 'social_actions', :url => self.read_attribute(:url))
-    redirect = Redirect.get(:slug, :cookie => 'social_actions', :url => self.read_attribute(:url))
-    self.short_url = redirect['url']
+    begin
+      Redirect.create(:cookie => 'social_actions', :url => self.read_attribute(:url))
+      redirect = Redirect.get(:slug, :cookie => 'social_actions', :url => self.read_attribute(:url))
+      self.short_url = redirect['url']
+    rescue
+      # It's ok, it's works just fine without the short url, we want to just continue
+    end
   end
   
 end
