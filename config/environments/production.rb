@@ -20,3 +20,4 @@ config.action_view.cache_template_loading            = true
 
 # Location of Spin Doctor Application
 Redirect.site = "http://localhost:3004/"
+Redirect.off = true

@@ -23,3 +23,4 @@ config.action_mailer.delivery_method = :test
 
 # Location of Spin Doctor Application
 Redirect.site = "http://localhost:3004/"
+Redirect.off = true

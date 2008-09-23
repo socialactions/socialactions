@@ -19,3 +19,4 @@ config.action_mailer.raise_delivery_errors = false
 
 # Location of Spin Doctor Application
 Redirect.site = "http://localhost:3004/"
+Redirect.off = true

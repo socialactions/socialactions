@@ -42,7 +42,7 @@ class Action < ActiveRecord::Base
   end
   
   def url
-    if self.short_url.nil?
+    if self.short_url.nil? || Redirect.off?
       read_attribute(:url)
     else
       self.short_url
