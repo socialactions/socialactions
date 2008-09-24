@@ -259,3 +259,57 @@ delicious_takeaction:
   site: delicious
   action_type_id: 10
 
+takingitglobal_petitions:
+  name: TakingITGlobal Petitions
+  url: http://feed.takingitglobal.org/feed.atom?type=petitions
+  tag_finder: 
+  location_finder:
+  last_accessed: <%= 1.day.ago %>
+  site: taking_it_global
+  action_type_id: 8
+
+takingitglobal_commitments:
+  name: TakingITGlobal Commitments
+  url: http://feed.takingitglobal.org/feed.atom?type=commitments
+  tag_finder: 
+  location_finder:
+  last_accessed: <%= 1.day.ago %>
+  site: taking_it_global
+  action_type_id: 3
+
+christmasfuture_volunteer:
+  name: ChristmasFuture Volunteer
+  url: http://www.christmasfuture.org/blog/category/volunteer-opportunities/feed
+  tag_finder: 
+  location_finder:
+  last_accessed: <%= 1.day.ago %>
+  site: christmas_future
+  action_type_id: 6
+
+global_giving_uk:
+  name: GlobalGiving UK
+  url: http://feeds.feedburner.com/GlobalGivingUKProjects
+  tag_finder: 
+  location_finder:
+  last_accessed: <%= 1.day.ago %>
+  site: global_giving_uk
+  action_type_id: 1
+
+prax:
+  name: Prax
+  url: http://prax.ca/action_rss.xml
+  tag_finder: 
+  location_finder:
+  last_accessed: <%= 1.day.ago %>
+  site: prax
+  action_type_id: 8
+
+amazee:
+  name: Amazee
+  url: http://www.amazee.com/news.rss
+  tag_finder: 
+  location_finder:
+  last_accessed: <%= 1.day.ago %>
+  site: amazee
+  action_type_id: 2
+
