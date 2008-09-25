@@ -32,6 +32,7 @@ ActiveRecord::Schema.define(:version => 20) do
     t.string   "location"
     t.integer  "site_id"
     t.integer  "action_type_id"
+    t.string   "short_url"
   end
 
   add_index "actions", ["url"], :name => "index_actions_on_url"
