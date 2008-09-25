@@ -1,50 +1,64 @@
-    <div id="footer-wrapper">
-      <div id="footer">
-        
-<div id="block-block-10" class="block block-block">  
-  <div class="blockinner">
-    <h2 class="title">  </h2>
-    <div class="content">
-      <div>
-<div style="float:left;width:190px;margin-right:10px;margin-top:7px;margin-bottom:10px;"><p>
-<strong>Site Links</strong><br/>
-<a href="http://socialactions.com/take-action">Take Action</a><br/>
-<a href="http://socialactions.com/meet-the-platforms">Meet the Platforms</a><br/>
-<a href="http://blog.socialactions.com">Join Our Blog</a><br/>
-<a href="http://socialactions.com/labs">Social Actions Labs</a><br/>
-<a href="http://socialactions.com/contact">Contact</a><br/>
-</p>
-</div>
-<div style="float:left;width:160px;margin-right:10px;margin-top:7px;margin-bottom:10px;"><p>
-<strong>About</strong><br/>
-<a href="http://socialactions.com/about/vision-and-mission">Vision and Mission</a><br/>
-<a href="http://socialactions.com/about/who-we-are">Who We Are</a><br/>
-<a href="http://socialactions.com/about/press">Press</a><br/>
-<a href="http://socialactions.com/about/awards-and-grants">Awards</a><br/>
-<a href="http://socialactions.com/about/faq">FAQ</a><br/>
-</p></div>
-<div style="float:left;width:190px;margin-right:10px;margin-top:7px;margin-bottom:10px;"><p>
-<strong>Services</strong><br/>
-<a href="http://socialactions.com/services/individuals">Individuals</a><br/>
-<a href="http://socialactions.com/services/nonprofits">Nonprofits</a><br/>
-<a href="http://socialactions.com/services/publishers">Publishers</a><br/>
-<a href="http://socialactions.com/services/platforms">Platforms</a><br/>
-<a href="http://socialactions.com/services/philanthropies">Philanthropies</a><br/>
-</p></div>
-<div style="float:right;width:260px;height:120px;margin-top:7px;margin-bottom:10px;background-color:#eeeeee;text-align:center"><p><br/>Check out<br/> <strong><a href="http://www.socialactions.com/labs">Social Actions<br/>Labs</a></strong></p></div>
-</div>
-<p style="clear:both"><div style="text-align:left"><a href="http://creativecommons.org/licenses/by-nc-sa/2.5/"><img src="/images/creativecommons.gif" border="0" align="left" style="margin:5px 10px 20px 0px"></a>&copy; Copyright 2008 <a href="http://socialactions.com/peter">Peter Deitz</a>, <a href="http://creativecommons.org/licenses/by-nc-sa/2.5/">Some Rights Reserved</a>.<br/><a href="http://socialactions.com/">Home</a> | <a href="http://socialactions.com/contact">Contact</a></div></p>    </div>    
-  </div>
-</div>
-      </div> <!-- /footer -->
-    </div> <!-- /footer-wrapper -->
+<div id="footer-wrapper">
+  <div id="footer">
+    <div id="block-block-10" class="block block-block">  
+      <div class="blockinner">
+	<h2 class="title">  </h2>
+	<div class="content">
+	  <div>
+	    <div style="float:left;width:190px;margin-right:10px;margin-top:7px;margin-bottom:10px;">
+	      <p>
+		<strong>Site Links</strong><br/>
+		<a href="http://socialactions.com/take-action">Take Action</a><br/>
+		<a href="http://socialactions.com/meet-the-platforms">Meet the Platforms</a><br/>
+		<a href="http://blog.socialactions.com">Join Our Blog</a><br/>
+		<a href="http://socialactions.com/labs">Social Actions Labs</a><br/>
+		<a href="http://socialactions.com/contact">Contact</a><br/>
+	      </p>
+	    </div>
+	    <div style="float:left;width:160px;margin-right:10px;margin-top:7px;margin-bottom:10px;">
+	      <p>
+		<strong>About</strong><br/>
+		<a href="http://socialactions.com/about/vision-and-mission">Vision and Mission</a><br/>
+		<a href="http://socialactions.com/about/who-we-are">Who We Are</a><br/>
+		<a href="http://socialactions.com/about/press">Press</a><br/>
+		<a href="http://socialactions.com/about/awards-and-grants">Awards</a><br/>
+		<a href="http://socialactions.com/about/faq">FAQ</a><br/>
+	      </p>
+	    </div>
+	    <div style="float:left;width:190px;margin-right:10px;margin-top:7px;margin-bottom:10px;">
+	      <p>
+		<strong>Services</strong><br/>
+		<a href="http://socialactions.com/services/individuals">Individuals</a><br/>
+		<a href="http://socialactions.com/services/nonprofits">Nonprofits</a><br/>
+		<a href="http://socialactions.com/services/publishers">Publishers</a><br/>
+		<a href="http://socialactions.com/services/platforms">Platforms</a><br/>
+		<a href="http://socialactions.com/services/philanthropies">Philanthropies</a><br/>
+	      </p>
+	    </div>
+	    <!--
+		<div style="float:right;width:260px;height:120px;margin-top:7px;margin-bottom:10px;background-color:#eeeeee;text-align:center">
+		  -->
+	    <div style="float:right;width:154px;height:55px;margin-top:7px;margin-bottom:10px;background-color:#eeeeee;text-align:center">
+	      <%= link_to image_tag('ca_get_alerts.gif', :title => "Cell Alert delivers you only the social actions you want via email."), "http://www.cellalert.net/RSS?id=1&created=#{URI.encode(params[:created] || '7')}&limit=#{URI.encode(params[:limit] || '')}&x=#{URI.encode(params[:q] || '')}" %>
+	      <!-- <p><br/>Check out<br/> <strong><a href="http://www.socialactions.com/labs">Social Actions<br/>Labs</a></strong></p> -->
+	    </div>
+	  </div>
+	  <p style="clear:both">
+	    <div style="text-align:left"><a href="http://creativecommons.org/licenses/by-nc-sa/2.5/"><img src="/images/creativecommons.gif" border="0" align="left" style="margin:5px 10px 20px 0px"></a>&copy; Copyright 2008 <a href="http://socialactions.com/peter">Peter Deitz</a>, <a href="http://creativecommons.org/licenses/by-nc-sa/2.5/">Some Rights Reserved</a>.<br/><a href="http://socialactions.com/">Home</a> | <a href="http://socialactions.com/contact">Contact</a>
+	    </div>
+	  </p>    
+	</div>    
+      </div>
+    </div>
+  </div> <!-- /footer -->
+</div> <!-- /footer-wrapper -->
 
 <script type="text/javascript">
-var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
-document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+  var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+  document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
 </script>
 <script type="text/javascript">
-var pageTracker = _gat._getTracker("UA-772094-7");
-pageTracker._initData();
-pageTracker._trackPageview();
+  var pageTracker = _gat._getTracker("UA-772094-7");
+  pageTracker._initData();
+  pageTracker._trackPageview();
 </script>

@@ -93,3 +93,23 @@ charity_focus:
 delicious:
   name: Delicious
   url: http://delicious.com
+
+taking_it_global:
+  name: TakingITGlobal
+  url: http://takingitglobal.org
+
+christmas_future:
+  name: ChristmasFuture
+  url: http://christmasfuture.org
+
+global_giving_uk:
+  name: GlobalGiving UK
+  url: http://globalgiving.co.uk
+
+prax:
+  name: Prax
+  url: http://prax.ca
+
+amazee:
+  name: Amazee
+  url: http://amazee.com

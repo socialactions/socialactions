@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 23) do
+ActiveRecord::Schema.define(:version => 24) do
 
   create_table "action_types", :force => true do |t|
     t.string   "name"
@@ -32,6 +32,7 @@ ActiveRecord::Schema.define(:version => 23) do
     t.string   "location"
     t.integer  "site_id"
     t.integer  "action_type_id"
+    t.string   "short_url"
     t.string   "ein"
   end
 
