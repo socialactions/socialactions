@@ -1,6 +1,7 @@
 # auth info for DonateNow integration
 
 DONATENOW_AUTH = {
+  'API_URL' => 'https://qa4.networkforgood.org/PartnerDonationService/DonateService.asmx/MakeCCDonation'
   'PartnerID' => 'your partner ID',
   'PartnerPW' => 'your partner passwd',
   'PartnerSource' => 'your partner source',

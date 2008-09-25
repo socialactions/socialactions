@@ -22,7 +22,7 @@ class DonationsController < ApplicationController
     end
 
     # TODO: encapsulate this in controller or model method...
-    url = URI.parse('https://qa4.networkforgood.org/PartnerDonationService/DonateService.asmx/MakeCCDonation')
+    url = URI.parse(DONATENOW_AUTH['API_URL'])
     req = Net::HTTP::Post.new(url.path)
     req.set_form_data({ 'PartnerID' => DONATENOW_AUTH['PartnerID'],
                         'PartnerPW' => DONATENOW_AUTH['PartnerPW'],
@@ -56,18 +56,18 @@ class DonationsController < ApplicationController
     http.verify_mode = OpenSSL::SSL::VERIFY_NONE
     res = http.request(req)
 
-    puts "#{res.code} #{res.message}"
+    #puts "#{res.code} #{res.message}"
 
     unless res.is_a? Net::HTTPSuccess
       @donation.errors.add_to_base "There was a problem communicating with the donation processing service."
-      puts res.body
+      #puts res.body
       return render(:action => 'new')
     end
 
     dnres = Hash.from_xml(res.body)['DonationReturnData']
 
-    require 'pp'
-    pp dnres
+    #require 'pp'
+    #pp dnres
 
     unless dnres['StatusCode'] == 'Success'
       if dnres['Message']
@@ -78,7 +78,6 @@ class DonationsController < ApplicationController
         
         errs.each do |err|
           @donation.errors.add_to_base err['ErrData']
-          puts "adding to @donation: #{err['ErrData']}"
         end
       end
       
@@ -86,10 +85,6 @@ class DonationsController < ApplicationController
     end
 
     @chargeid = dnres['ChargeId']
-
-    #puts "#{res.code} #{res.message}"
-    #puts res.body
-    #puts res.inspect
   end
 
 protected 
