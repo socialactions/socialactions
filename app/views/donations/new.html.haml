@@ -166,21 +166,6 @@
               = c.date_select :expiry_date, :discard_day => true, :start_year => Time.now.year, :order => [:month, :year]
 
       %br/
-      %p{ :style => "margin-left:0px;padding-left:0px" }
-        %strong
-          Choose a Fee Option
-      %table#theTemplate__ctl10_rblFeeOption{ :border => "0" }
-        %tr
-          %td
-            = f.radio_button :fee_option, 'add'
-            %label{ :for => "donation_disclosure_add" }
-              Add the 4.75% processing fee to my donation so that 100% of my donation goes to my charity(ies).
-        %tr
-          %td
-            = f.radio_button :fee_option, 'deduct'
-            %label{ :for => "donation_disclosure_deduct" }
-              Deduct the 4.75% processing fee from the donation amount forwarded to my charity(ies).
-      %br/
       %p
         = image_submit_tag 'btn_donate_now.gif', :alt => 'Donate Now'
       %p{ :style => "text-align:right;" }
