@@ -41,6 +41,7 @@ ActiveRecord::Schema.define(:version => 22) do
     t.integer  "goal_number_of_contributors"
     t.string   "initiator_name"
     t.string   "initiator_url"
+    t.string   "initiator_email"
     t.datetime "expires_at"
     t.string   "dcterms_valid"
     t.string   "platform_name"

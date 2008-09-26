@@ -8,6 +8,7 @@ class AddRssaFieldsToActions < ActiveRecord::Migration
     add_column :actions, :goal_number_of_contributors, :integer
     add_column :actions, :initiator_name, :string
     add_column :actions, :initiator_url, :string
+    add_column :actions, :initiator_email, :string
     add_column :actions, :expires_at, :datetime
     add_column :actions, :dcterms_valid, :string
     add_column :actions, :platform_name, :string
@@ -30,6 +31,7 @@ class AddRssaFieldsToActions < ActiveRecord::Migration
     remove_column :actions, :goal_number_of_contributors
     remove_column :actions, :initiator_name
     remove_column :actions, :initiator_url
+    remove_column :actions, :initiator_email
     remove_column :actions, :expires_at
     remove_column :actions, :dcterms_valid
     remove_column :actions, :platform_name
