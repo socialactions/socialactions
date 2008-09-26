@@ -8,7 +8,7 @@ class Feed < ActiveRecord::Base
 
   def parse
     if is_donorschoose_json?
-      DonorsChooseParser.parse(self)
+      DonorsChooseParser.new(self).parse
     else
       feed.items.each do |entry|
         action = actions.find_or_create_by_url(entry.link)
