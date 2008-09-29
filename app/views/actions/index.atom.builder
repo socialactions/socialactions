@@ -51,7 +51,7 @@ xml.feed(:xmlns => 'http://www.w3.org/2005/Atom',
           action.initiator_organization_url.blank? and
           action.initiator_organization_ein.blank? and
           action.initiator_organization_email.blank?
-        xml.rssa :initiator_organization do
+        xml.rssa :initiatorOrganization do
           xml.rssa :name, action.initiator_organization_name unless action.initiator_organization_name.blank?
           xml.rssa :url, action.initiator_organization_url unless action.initiator_organization_url.blank?
           xml.rssa :ein, action.initiator_organization_ein unless action.initiator_organization_ein.blank?
