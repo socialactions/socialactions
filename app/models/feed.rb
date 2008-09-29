@@ -1,5 +1,6 @@
 require 'open-uri'
 require 'rfeedparser'
+require 'feedparser_rssa_patch'
 
 class Feed < ActiveRecord::Base
   belongs_to :site

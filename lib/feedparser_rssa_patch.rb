@@ -1,6 +1,14 @@
 module FeedParser
   module FeedParserMixin
 
+    alias_method :startup_orig, :startup
+    def startup(baseuri=nil, baselang=nil, encoding='utf-8')
+      rv = startup_orig(baseuri, baselang, encoding)
+      @namespaces['http://rssa.org/spec/1.0beta'] = 'rssa'
+      @matchnamespaces['http://rssa.org/spec/1.0beta'] = 'rssa'
+      rv
+    end
+
     def _start_rssa_goal(attrsD)
       @ingoal = true
       push('rssa:goal', true)
@@ -28,6 +36,7 @@ module FeedParser
       value = pop('rssa:type')
       _save_goal('rssa_type', value)
     end
+
     def _start_rssa_completed(attrsD)
       push('rssa:completed', true)
     end
@@ -35,6 +44,16 @@ module FeedParser
     def _end_rssa_completed
       value = pop('rssa:completed')
       _save_goal('rssa_completed', value)
+    end
+
+
+    def _start_rssa_numberofcontributors(attrsD)
+      push('rssa:numberOfContributors', true)
+    end
+
+    def _end_rssa_numberofcontributors
+      value = pop('rssa:numberOfContributors')
+      _save_goal('rssa_numberofcontributors', value)
     end
 
     def _save_goal(key, value)

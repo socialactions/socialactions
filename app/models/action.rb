@@ -22,8 +22,56 @@ class Action < ActiveRecord::Base
     self.title = entry.title # TODO: handle text vs. html here
     self.url = entry.link
     self.description = description_for(entry)
-    self.created_at = entry.updated_time || Time.now
+    if entry.published_time or self.created_at.blank?
+      self.created_at = entry.published_time || entry.updated_time || Time.now
+    end
+    self.updated_at = entry.updated_time if entry.updated_time
     figure_out_address_from(entry)
+
+    self.initiator_name = entry.author_detail.name
+    self.initiator_email = entry.author_detail.email
+    self.initiator_url = entry.author_detail.url
+
+    self.subtitle = entry.dcterms_alternative
+    self.embed_widget = entry.rssa_embedwidget
+
+    ### image link... ###
+
+    if entry.rssa_goal
+      self.goal_completed = entry.rssa_goal.rssa_completed
+      self.goal_amount = entry.rssa_goal.rssa_amount
+      self.goal_type = entry.rssa_goal.rssa_type
+      self.goal_number_of_contributors = entry.rssa_goal.rssa_numberofcontributors
+    end
+    
+    self.dcterms_valid = entry.dcterms_valid
+    if entry.dcterms_valid and entry.dcterms_valid.match(/(^|;)\s*end=([^;]+)/)
+      self.expires_at = $2
+    end
+    
+    action_type_name = entry.tags.detect{ |t| 
+      t.scheme == 'tag:socialactions.com,2008:action_types'
+    }.term
+    self.action_type = ActionType.find_by_name(action_type_name)
+
+    self.tags = entry.tags.reject{ |t| 
+      t.scheme == 'tag:socialactions.com,2008:action_types'
+    }.map{|t| t.term}
+
+    if entry.rssa_platform
+      self.platform_name = entry.rssa_platform.rssa_name
+      self.platform_url = entry.rssa_platform.rssa_url
+      self.platform_email = entry.rssa_platform.rssa_email
+    end
+
+    if entry.rssa_initiatororganization
+      self.initiator_organization_name = entry.rssa_initiatororganization.rssa_name
+      self.initiator_organization_url = entry.rssa_initiatororganization.rssa_url
+      self.initiator_organization_email = entry.rssa_initiatororganization.rssa_email
+      self.initiator_organization_ein = entry.rssa_initiatororganization.rssa_ein
+    end
+
+    pp self.attributes
   end
   
   def description=(new_description)
@@ -110,7 +158,7 @@ protected
   
   def denormalize
     self.site_id = self.feed.site_id
-    self.action_type = self.feed.action_type
+    self.action_type ||= self.feed.action_type
   end
   
   def update_short_url
