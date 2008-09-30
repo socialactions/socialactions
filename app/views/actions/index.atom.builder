@@ -1,6 +1,6 @@
 xml.instruct!
 xml.feed(:xmlns => 'http://www.w3.org/2005/Atom', 
-         'xmlns:rssa' => 'http://rssa.org/spec/1.0beta',
+         'xmlns:rssa' => 'http://socialactions.com/rssa/beta',
          'xmlns:dcterms' => 'http://purl.org/dc/terms/') do 
   xml.title "Social Actions: Results for #{@search.to_s}"
   xml.id "tag:socialactions.com,2008:search:#{request.request_uri}"
@@ -25,7 +25,6 @@ xml.feed(:xmlns => 'http://www.w3.org/2005/Atom',
       end
       xml.content sanitize(action.description), :type => 'html'
       xml.link :href => action.url # action_url(action)
-      xml.link :href => action.image_url, :rel => 'enclosure' unless action.image_url.blank?
       unless action.goal_amount.blank? and action.goal_type.blank? and action.goal_completed.blank? and action.goal_number_of_contributors.blank?
         xml.rssa :goal do
           xml.rssa :amount, action.goal_amount unless action.goal_amount.blank?
@@ -47,15 +46,15 @@ xml.feed(:xmlns => 'http://www.w3.org/2005/Atom',
         end
       end
       xml.rssa :embedWidget, action.embed_widget unless action.embed_widget.blank?
-      unless action.initiator_organization_name.blank? and
-          action.initiator_organization_url.blank? and
-          action.initiator_organization_ein.blank? and
-          action.initiator_organization_email.blank?
-        xml.rssa :initiatorOrganization do
-          xml.rssa :name, action.initiator_organization_name unless action.initiator_organization_name.blank?
-          xml.rssa :url, action.initiator_organization_url unless action.initiator_organization_url.blank?
-          xml.rssa :ein, action.initiator_organization_ein unless action.initiator_organization_ein.blank?
-          xml.rssa :email, action.initiator_organization_email unless action.initiator_organization_email.blank?
+      unless action.organization_name.blank? and
+          action.organization_url.blank? and
+          action.organization_ein.blank? and
+          action.organization_email.blank?
+        xml.rssa :organization do
+          xml.rssa :name, action.organization_name unless action.organization_name.blank?
+          xml.rssa :url, action.organization_url unless action.organization_url.blank?
+          xml.rssa :ein, action.organization_ein unless action.organization_ein.blank?
+          xml.rssa :email, action.organization_email unless action.organization_email.blank?
         end
       end
 

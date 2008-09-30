@@ -4,8 +4,8 @@ module FeedParser
     alias_method :startup_orig, :startup
     def startup(baseuri=nil, baselang=nil, encoding='utf-8')
       rv = startup_orig(baseuri, baselang, encoding)
-      @namespaces['http://rssa.org/spec/1.0beta'] = 'rssa'
-      @matchnamespaces['http://rssa.org/spec/1.0beta'] = 'rssa'
+      @namespaces['http://socialactions.com/rssa/beta'] = 'rssa'
+      @matchnamespaces['http://socialactions.com/rssa/beta'] = 'rssa'
       rv
     end
 
@@ -62,14 +62,14 @@ module FeedParser
       context['rssa_goal'][key] = value
     end
 
-    def _start_rssa_initiatororganization(attrsD)
-      @ininitiatororg = true
-      push('rssa:initiatorOrganization', true)
+    def _start_rssa_organization(attrsD)
+      @inorganization = true
+      push('rssa:organization', true)
     end
     
-    def _end_rssa_initiatororganization
-      pop('rssa:initiatorOrganization')
-      @ininitiatororg = false
+    def _end_rssa_organization
+      pop('rssa:organization')
+      @inorganization = false
     end
 
     def _start_rssa_platform(attrsD)
@@ -88,8 +88,8 @@ module FeedParser
 
     def _end_rssa_name
       value = pop('rssa:name')
-      if @ininitiatororg
-        _save_initiator_org('rssa_name', value)
+      if @inorganization
+        _save_organization('rssa_name', value)
       elsif @inplatform
         _save_platform('rssa_name', value)
       end
@@ -101,8 +101,8 @@ module FeedParser
 
     def _end_rssa_email
       value = pop('rssa:email')
-      if @ininitiatororg
-        _save_initiator_org('rssa_email', value)
+      if @inorganization
+        _save_organization('rssa_email', value)
       elsif @inplatform
         _save_platform('rssa_email', value)
       end
@@ -114,8 +114,8 @@ module FeedParser
 
     def _end_rssa_url
       value = pop('rssa:url')
-      if @ininitiatororg
-        _save_initiator_org('rssa_url', value)
+      if @inorganization
+        _save_organization('rssa_url', value)
       elsif @inplatform
         _save_platform('rssa_url', value)
       end
@@ -127,17 +127,17 @@ module FeedParser
 
     def _end_rssa_ein
       value = pop('rssa:ein')
-      if @ininitiatororg
-        _save_initiator_org('rssa_ein', value)
+      if @inorganization
+        _save_organization('rssa_ein', value)
       elsif @inplatform
         _save_platform('rssa_ein', value)
       end
     end
 
-    def _save_initiator_org(key, value)
+    def _save_organization(key, value)
       context = getContext()
-      context['rssa_initiatororganization'] ||= FeedParserDict.new
-      context['rssa_initiatororganization'][key] = value
+      context['rssa_organization'] ||= FeedParserDict.new
+      context['rssa_organization'][key] = value
     end
 
     def _save_platform(key, value)

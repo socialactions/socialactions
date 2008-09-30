@@ -35,8 +35,6 @@ class Action < ActiveRecord::Base
     self.subtitle = entry.dcterms_alternative
     self.embed_widget = entry.rssa_embedwidget
 
-    ### image link... ###
-
     if entry.rssa_goal
       self.goal_completed = entry.rssa_goal.rssa_completed
       self.goal_amount = entry.rssa_goal.rssa_amount
@@ -65,13 +63,13 @@ class Action < ActiveRecord::Base
     end
 
     if entry.rssa_initiatororganization
-      self.initiator_organization_name = entry.rssa_initiatororganization.rssa_name
-      self.initiator_organization_url = entry.rssa_initiatororganization.rssa_url
-      self.initiator_organization_email = entry.rssa_initiatororganization.rssa_email
-      self.initiator_organization_ein = entry.rssa_initiatororganization.rssa_ein
+      self.organization_name = entry.rssa_organization.rssa_name
+      self.organization_url = entry.rssa_organization.rssa_url
+      self.organization_email = entry.rssa_organization.rssa_email
+      self.organization_ein = entry.rssa_organization.rssa_ein
     end
 
-    pp self.attributes
+    #pp self.attributes
   end
   
   def description=(new_description)

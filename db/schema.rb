@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 22) do
+ActiveRecord::Schema.define(:version => 23) do
 
   create_table "action_types", :force => true do |t|
     t.string   "name"
@@ -27,8 +27,8 @@ ActiveRecord::Schema.define(:version => 22) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.integer  "feed_id"
-    t.decimal  "latitude",                     :precision => 15, :scale => 10
-    t.decimal  "longitude",                    :precision => 15, :scale => 10
+    t.decimal  "latitude",                    :precision => 15, :scale => 10
+    t.decimal  "longitude",                   :precision => 15, :scale => 10
     t.string   "location"
     t.integer  "site_id"
     t.integer  "action_type_id"
@@ -48,10 +48,10 @@ ActiveRecord::Schema.define(:version => 22) do
     t.string   "platform_url"
     t.string   "platform_email"
     t.text     "embed_widget"
-    t.string   "initiator_organization_name"
-    t.string   "initiator_organization_url"
-    t.string   "initiator_organization_email"
-    t.string   "initiator_organization_ein"
+    t.string   "organization_name"
+    t.string   "organization_url"
+    t.string   "organization_email"
+    t.string   "organization_ein"
     t.text     "tags"
   end
 
