@@ -11,7 +11,7 @@ xml.feed(:xmlns => 'http://www.w3.org/2005/Atom',
 
   @actions.each do |action|
     xml.entry do
-      xml.id "tag:socialactions.com,#{action.created_at.strftime('%Y-%m-%d')}:Action:#{action.id}"
+      xml.id "tag:socialactions.com,2008:Action:#{action.id}"
       xml.published action.created_at.xmlschema if action.created_at
       xml.updated action.updated_at.xmlschema if action.updated_at
 
