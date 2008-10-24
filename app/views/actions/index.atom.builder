@@ -34,7 +34,7 @@ xml.feed(:xmlns => 'http://www.w3.org/2005/Atom',
         end
       end
       xml.dcterms :valid, action.dcterms_valid unless action.dcterms_valid.blank?
-      xml.category :term => action.action_type.name, :scheme => 'tag:socialactions.com,2008:action_types'
+      xml.category :term => action.action_type.name, :scheme => 'http://socialactions.com/action_types'
       action.tags.each do |tag|
         xml.category :term => tag
       end

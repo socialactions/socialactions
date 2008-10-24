@@ -48,12 +48,12 @@ class Action < ActiveRecord::Base
     end
     
     action_type_name = entry.tags.detect{ |t| 
-      t.scheme == 'tag:socialactions.com,2008:action_types'
+      t.scheme == 'http://socialactions.com/action_types'
     }.term
     self.action_type = ActionType.find_by_name(action_type_name)
 
     self.tags = entry.tags.reject{ |t| 
-      t.scheme == 'tag:socialactions.com,2008:action_types'
+      t.scheme == 'http://socialactions.com/action_types'
     }.map{|t| t.term}
 
     if entry.rssa_platform
