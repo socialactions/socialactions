@@ -4,146 +4,146 @@ module FeedParser
     alias_method :startup_orig, :startup
     def startup(baseuri=nil, baselang=nil, encoding='utf-8')
       rv = startup_orig(baseuri, baselang, encoding)
-      @namespaces['http://socialactions.com/rssa/beta'] = 'rssa'
-      @matchnamespaces['http://socialactions.com/rssa/beta'] = 'rssa'
+      @namespaces['http://socialactions.com/oa/beta'] = 'oa'
+      @matchnamespaces['http://socialactions.com/oa/beta'] = 'oa'
       rv
     end
 
-    def _start_rssa_goal(attrsD)
+    def _start_oa_goal(attrsD)
       @ingoal = true
-      push('rssa:goal', true)
+      push('oa:goal', true)
     end
     
-    def _end_rssa_goal
-      pop('rssa:goal')
+    def _end_oa_goal
+      pop('oa:goal')
       @ingoal = false
     end
 
-    def _start_rssa_amount(attrsD)
-      push('rssa:amount', true)
+    def _start_oa_amount(attrsD)
+      push('oa:amount', true)
     end
 
-    def _end_rssa_amount
-      value = pop('rssa:amount')
-      _save_goal('rssa_amount', value)
+    def _end_oa_amount
+      value = pop('oa:amount')
+      _save_goal('oa_amount', value)
     end
 
-    def _start_rssa_type(attrsD)
-      push('rssa:type', true)
+    def _start_oa_type(attrsD)
+      push('oa:type', true)
     end
 
-    def _end_rssa_type
-      value = pop('rssa:type')
-      _save_goal('rssa_type', value)
+    def _end_oa_type
+      value = pop('oa:type')
+      _save_goal('oa_type', value)
     end
 
-    def _start_rssa_completed(attrsD)
-      push('rssa:completed', true)
+    def _start_oa_completed(attrsD)
+      push('oa:completed', true)
     end
 
-    def _end_rssa_completed
-      value = pop('rssa:completed')
-      _save_goal('rssa_completed', value)
+    def _end_oa_completed
+      value = pop('oa:completed')
+      _save_goal('oa_completed', value)
     end
 
 
-    def _start_rssa_numberofcontributors(attrsD)
-      push('rssa:numberOfContributors', true)
+    def _start_oa_numberofcontributors(attrsD)
+      push('oa:numberOfContributors', true)
     end
 
-    def _end_rssa_numberofcontributors
-      value = pop('rssa:numberOfContributors')
-      _save_goal('rssa_numberofcontributors', value)
+    def _end_oa_numberofcontributors
+      value = pop('oa:numberOfContributors')
+      _save_goal('oa_numberofcontributors', value)
     end
 
     def _save_goal(key, value)
       context = getContext()
-      context['rssa_goal'] ||= FeedParserDict.new
-      context['rssa_goal'][key] = value
+      context['oa_goal'] ||= FeedParserDict.new
+      context['oa_goal'][key] = value
     end
 
-    def _start_rssa_organization(attrsD)
+    def _start_oa_organization(attrsD)
       @inorganization = true
-      push('rssa:organization', true)
+      push('oa:organization', true)
     end
     
-    def _end_rssa_organization
-      pop('rssa:organization')
+    def _end_oa_organization
+      pop('oa:organization')
       @inorganization = false
     end
 
-    def _start_rssa_platform(attrsD)
+    def _start_oa_platform(attrsD)
       @inplatform = true
-      push('rssa:platform', true)
+      push('oa:platform', true)
     end
     
-    def _end_rssa_platform
-      pop('rssa:platform')
+    def _end_oa_platform
+      pop('oa:platform')
       @inplatform = false
     end
 
-    def _start_rssa_name(attrsD)
-      push('rssa:name', true)
+    def _start_oa_name(attrsD)
+      push('oa:name', true)
     end
 
-    def _end_rssa_name
-      value = pop('rssa:name')
+    def _end_oa_name
+      value = pop('oa:name')
       if @inorganization
-        _save_organization('rssa_name', value)
+        _save_organization('oa_name', value)
       elsif @inplatform
-        _save_platform('rssa_name', value)
+        _save_platform('oa_name', value)
       end
     end
 
-    def _start_rssa_email(attrsD)
-      push('rssa:email', true)
+    def _start_oa_email(attrsD)
+      push('oa:email', true)
     end
 
-    def _end_rssa_email
-      value = pop('rssa:email')
+    def _end_oa_email
+      value = pop('oa:email')
       if @inorganization
-        _save_organization('rssa_email', value)
+        _save_organization('oa_email', value)
       elsif @inplatform
-        _save_platform('rssa_email', value)
+        _save_platform('oa_email', value)
       end
     end
 
-    def _start_rssa_url(attrsD)
-      push('rssa:url', true)
+    def _start_oa_url(attrsD)
+      push('oa:url', true)
     end
 
-    def _end_rssa_url
-      value = pop('rssa:url')
+    def _end_oa_url
+      value = pop('oa:url')
       if @inorganization
-        _save_organization('rssa_url', value)
+        _save_organization('oa_url', value)
       elsif @inplatform
-        _save_platform('rssa_url', value)
+        _save_platform('oa_url', value)
       end
     end
 
-    def _start_rssa_ein(attrsD)
-      push('rssa:ein', true)
+    def _start_oa_ein(attrsD)
+      push('oa:ein', true)
     end
 
-    def _end_rssa_ein
-      value = pop('rssa:ein')
+    def _end_oa_ein
+      value = pop('oa:ein')
       if @inorganization
-        _save_organization('rssa_ein', value)
+        _save_organization('oa_ein', value)
       elsif @inplatform
-        _save_platform('rssa_ein', value)
+        _save_platform('oa_ein', value)
       end
     end
 
     def _save_organization(key, value)
       context = getContext()
-      context['rssa_organization'] ||= FeedParserDict.new
-      context['rssa_organization'][key] = value
+      context['oa_organization'] ||= FeedParserDict.new
+      context['oa_organization'][key] = value
     end
 
     def _save_platform(key, value)
       context = getContext()
-      context['rssa_platform'] ||= FeedParserDict.new
-      context['rssa_platform'][key] = value
+      context['oa_platform'] ||= FeedParserDict.new
+      context['oa_platform'][key] = value
     end
   end
 end

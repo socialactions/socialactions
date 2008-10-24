@@ -33,13 +33,13 @@ class Action < ActiveRecord::Base
     self.initiator_url = entry.author_detail.url
 
     self.subtitle = entry.dcterms_alternative
-    self.embed_widget = entry.rssa_embedwidget
+    self.embed_widget = entry.oa_embedwidget
 
-    if entry.rssa_goal
-      self.goal_completed = entry.rssa_goal.rssa_completed
-      self.goal_amount = entry.rssa_goal.rssa_amount
-      self.goal_type = entry.rssa_goal.rssa_type
-      self.goal_number_of_contributors = entry.rssa_goal.rssa_numberofcontributors
+    if entry.oa_goal
+      self.goal_completed = entry.oa_goal.oa_completed
+      self.goal_amount = entry.oa_goal.oa_amount
+      self.goal_type = entry.oa_goal.oa_type
+      self.goal_number_of_contributors = entry.oa_goal.oa_numberofcontributors
     end
     
     self.dcterms_valid = entry.dcterms_valid
@@ -56,17 +56,17 @@ class Action < ActiveRecord::Base
       t.scheme == 'http://socialactions.com/action_types'
     }.map{|t| t.term}
 
-    if entry.rssa_platform
-      self.platform_name = entry.rssa_platform.rssa_name
-      self.platform_url = entry.rssa_platform.rssa_url
-      self.platform_email = entry.rssa_platform.rssa_email
+    if entry.oa_platform
+      self.platform_name = entry.oa_platform.oa_name
+      self.platform_url = entry.oa_platform.oa_url
+      self.platform_email = entry.oa_platform.oa_email
     end
 
-    if entry.rssa_initiatororganization
-      self.organization_name = entry.rssa_organization.rssa_name
-      self.organization_url = entry.rssa_organization.rssa_url
-      self.organization_email = entry.rssa_organization.rssa_email
-      self.organization_ein = entry.rssa_organization.rssa_ein
+    if entry.oa_organization
+      self.organization_name = entry.oa_organization.oa_name
+      self.organization_url = entry.oa_organization.oa_url
+      self.organization_email = entry.oa_organization.oa_email
+      self.organization_ein = entry.oa_organization.oa_ein
     end
 
     #pp self.attributes
