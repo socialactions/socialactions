@@ -23,11 +23,7 @@
         %td
           = submit_tag 'Search'
           &nbsp;
-          = submit_tag 'Google Map', :onclick => "$('#new_search').attr('action', '#{map_index_path}')"
-          &nbsp;
-          = submit_tag 'Tag Cloud', :onclick => "$('#new_search').attr('action', '#{tags_path}')"
-          &nbsp;
-          = submit_tag 'Random', :onclick => "$('#new_search').attr('action', '#{random_path}')"
+          = submit_tag 'Google Map', :onclick => "$('#new_search').attr('action', '#{map_index_path}')", :disabled => true
       %tr
         %td Type of Action:
         %td= select_tag :action_types, options_for_select(options_for_action_type_select, @search.action_types)
