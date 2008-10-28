@@ -11,7 +11,7 @@ class Search < ActiveRecord::BaseWithoutTable
   validates_inclusion_of :created, :in => %w{ 30 14 7 2 1 }
   
   Ultrasphinx::Search.excerpting_options = HashWithIndifferentAccess.new({
-    :before_match => '<strong style="color:red">',
+    :before_match => '<strong>',
     :after_match => '</strong>',
     :chunk_separator => "...",
     :limit => 200,
