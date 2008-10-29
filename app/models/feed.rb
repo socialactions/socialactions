@@ -29,10 +29,10 @@ class Feed < ActiveRecord::Base
     def parse_all(options = {})
       conditions = options[:all] ? nil : ['needs_updating = 1']
       find(:all, :conditions => conditions).each do |feed| 
-        puts "Parsing #{feed.name}"
+        puts "Parsing #{feed.name}" if options[:debug]
         begin
           feed.parse
-        rescue
+        rescue OpenURI::HTTPError, Errno::ECONNREFUSED
           puts "ERROR on feed #{feed.name}: #{$!}"
         end
       end

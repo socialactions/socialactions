@@ -20,7 +20,7 @@ class DonorsChooseParser
       action.goal_completed = proposal['totalPrice'].to_f - proposal['costToComplete'].to_f #NOTE: should be alreadyGiven, but it doesn't look like they're actually providing this field...
       action.goal_type = 'USD'
       action.initiator_name = proposal['teacherName']
-      action.initiator_organization_name = proposal['schoolName']
+      action.organization_name = proposal['schoolName']
       action.image_url = proposal['imageURL']
       action.subtitle = proposal['fulfillmentTrailer']
 

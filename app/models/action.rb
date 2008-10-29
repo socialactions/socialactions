@@ -18,7 +18,6 @@ class Action < ActiveRecord::Base
 
   
   def update_from_feed_entry(entry)
-    puts "  -- Action: #{entry.title}"
     self.title = entry.title # TODO: handle text vs. html here
     self.url = entry.link
     self.description = description_for(entry)
@@ -28,9 +27,11 @@ class Action < ActiveRecord::Base
     self.updated_at = entry.updated_time if entry.updated_time
     figure_out_address_from(entry)
 
-    self.initiator_name = entry.author_detail.name
-    self.initiator_email = entry.author_detail.email
-    self.initiator_url = entry.author_detail.url
+    unless entry.author_detail.blank?
+      self.initiator_name = entry.author_detail.name
+      self.initiator_email = entry.author_detail.email
+      self.initiator_url = entry.author_detail.url
+    end
 
     self.subtitle = entry.dcterms_alternative
     self.embed_widget = entry.oa_embedwidget
@@ -47,15 +48,19 @@ class Action < ActiveRecord::Base
       self.expires_at = $2
     end
     
-    action_type_name = entry.tags.detect{ |t| 
-      t.scheme == 'http://socialactions.com/action_types'
-    }.term
-    self.action_type = ActionType.find_by_name(action_type_name)
-
-    self.tags = entry.tags.reject{ |t| 
-      t.scheme == 'http://socialactions.com/action_types'
-    }.map{|t| t.term}
-
+    unless entry.tags.blank?
+      action_type_category = entry.tags.detect{ |t| 
+        t.scheme == 'http://socialactions.com/action_types'
+      }
+      if action_type_category
+        self.action_type = ActionType.find_by_name(action_type_category.term)
+      end
+      
+      self.tags = entry.tags.reject{ |t| 
+        t.scheme == 'http://socialactions.com/action_types'
+      }.map{|t| t.term}
+    end
+      
     if entry.oa_platform
       self.platform_name = entry.oa_platform.oa_name
       self.platform_url = entry.oa_platform.oa_url
