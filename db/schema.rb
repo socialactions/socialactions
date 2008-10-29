@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20) do
+ActiveRecord::Schema.define(:version => 23) do
 
   create_table "action_types", :force => true do |t|
     t.string   "name"
@@ -27,12 +27,32 @@ ActiveRecord::Schema.define(:version => 20) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.integer  "feed_id"
-    t.decimal  "latitude",       :precision => 15, :scale => 10
-    t.decimal  "longitude",      :precision => 15, :scale => 10
+    t.decimal  "latitude",                    :precision => 15, :scale => 10
+    t.decimal  "longitude",                   :precision => 15, :scale => 10
     t.string   "location"
     t.integer  "site_id"
     t.integer  "action_type_id"
     t.string   "short_url"
+    t.string   "image_url"
+    t.text     "subtitle"
+    t.float    "goal_completed"
+    t.float    "goal_amount"
+    t.string   "goal_type"
+    t.integer  "goal_number_of_contributors"
+    t.string   "initiator_name"
+    t.string   "initiator_url"
+    t.string   "initiator_email"
+    t.datetime "expires_at"
+    t.string   "dcterms_valid"
+    t.string   "platform_name"
+    t.string   "platform_url"
+    t.string   "platform_email"
+    t.text     "embed_widget"
+    t.string   "organization_name"
+    t.string   "organization_url"
+    t.string   "organization_email"
+    t.string   "organization_ein"
+    t.text     "tags"
   end
 
   add_index "actions", ["url"], :name => "index_actions_on_url"
@@ -48,6 +68,7 @@ ActiveRecord::Schema.define(:version => 20) do
     t.string   "location_finder"
     t.integer  "action_type_id"
     t.boolean  "needs_updating"
+    t.boolean  "is_donorschoose_json", :default => false
   end
 
   create_table "sites", :force => true do |t|

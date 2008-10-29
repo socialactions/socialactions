@@ -169,15 +169,6 @@ helpalot:
   site: helpalot
   action_type_id: 5
 
-donorschoose:
-  name: DonorsChoose
-  url: http://www.donorschoose.org/common/rss_feed.html?zone=0&schoolType=0&partiallyFunded=true&teacherType=0&y=22&x=20
-  tag_finder: 
-  location_finder: "<br />([\w\s,]+)<br />Level:"
-  last_accessed: <%= 1.day.ago %>
-  site: donorschoose
-  action_type_id: 1
-
 pincgiving:
   name: PincGiving
   url: http://www.pincgiving.com/feed/campaign
@@ -313,3 +304,12 @@ amazee:
   site: amazee
   action_type_id: 2
 
+donorschoose:
+  name: DonorsChoose.org
+  url: http://api.donorschoose.org/common/json_feed.html?subject1=-1&action=browse&APIKey=vsexve8e3i
+  tag_finder:
+  location_finder:
+  last_accessed: <%= 1.day.ago %>
+  site: donorschoose
+  action_type_id: 1
+  is_donorschoose_json: true

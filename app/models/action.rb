@@ -22,8 +22,54 @@ class Action < ActiveRecord::Base
     self.title = entry.title # TODO: handle text vs. html here
     self.url = entry.link
     self.description = description_for(entry)
-    self.created_at = entry.updated_time || Time.now
+    if entry.published_time or self.created_at.blank?
+      self.created_at = entry.published_time || entry.updated_time || Time.now
+    end
+    self.updated_at = entry.updated_time if entry.updated_time
     figure_out_address_from(entry)
+
+    self.initiator_name = entry.author_detail.name
+    self.initiator_email = entry.author_detail.email
+    self.initiator_url = entry.author_detail.url
+
+    self.subtitle = entry.dcterms_alternative
+    self.embed_widget = entry.oa_embedwidget
+
+    if entry.oa_goal
+      self.goal_completed = entry.oa_goal.oa_completed
+      self.goal_amount = entry.oa_goal.oa_amount
+      self.goal_type = entry.oa_goal.oa_type
+      self.goal_number_of_contributors = entry.oa_goal.oa_numberofcontributors
+    end
+    
+    self.dcterms_valid = entry.dcterms_valid
+    if entry.dcterms_valid and entry.dcterms_valid.match(/(^|;)\s*end=([^;]+)/)
+      self.expires_at = $2
+    end
+    
+    action_type_name = entry.tags.detect{ |t| 
+      t.scheme == 'http://socialactions.com/action_types'
+    }.term
+    self.action_type = ActionType.find_by_name(action_type_name)
+
+    self.tags = entry.tags.reject{ |t| 
+      t.scheme == 'http://socialactions.com/action_types'
+    }.map{|t| t.term}
+
+    if entry.oa_platform
+      self.platform_name = entry.oa_platform.oa_name
+      self.platform_url = entry.oa_platform.oa_url
+      self.platform_email = entry.oa_platform.oa_email
+    end
+
+    if entry.oa_organization
+      self.organization_name = entry.oa_organization.oa_name
+      self.organization_url = entry.oa_organization.oa_url
+      self.organization_email = entry.oa_organization.oa_email
+      self.organization_ein = entry.oa_organization.oa_ein
+    end
+
+    #pp self.attributes
   end
   
   def description=(new_description)
@@ -110,7 +156,7 @@ protected
   
   def denormalize
     self.site_id = self.feed.site_id
-    self.action_type = self.feed.action_type
+    self.action_type ||= self.feed.action_type
   end
   
   def update_short_url
