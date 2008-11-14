@@ -313,3 +313,39 @@ donorschoose:
   site: donorschoose
   action_type_id: 1
   is_donorschoose_json: true
+
+dreambank:
+  name: DreamBank
+  url: http://dreambank.org/rss/recent_dreams.php
+  tag_finder:
+  location_finder:
+  last_accessed: <%= 1.day.ago %>
+  site: dreambank
+  action_type_id: 1
+
+betterplace:
+  name: BetterPlace
+  url: http://www.betterplace.org/projects/recently_updated.atom?lang=en
+  tag_finder:
+  location_finder:
+  last_accessed: <%= 1.day.ago %>
+  site: betterplace
+  action_type_id: 1
+
+celsias_actions:
+  name: Celsias Actions
+  url: http://www.celsias.com/feeds/actions/
+  tag_finder:
+  location_finder:
+  last_accessed: <%= 1.day.ago %>
+  site: celsias
+  action_type_id: 3
+
+celsias_jobs:
+  name: Celsias Green Jobs
+  url: http://www.celsias.com/feeds/jobs/
+  tag_finder:
+  location_finder:
+  last_accessed: <%= 1.day.ago %>
+  site: celsias
+  action_type_id: 11

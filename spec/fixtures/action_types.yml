@@ -28,3 +28,6 @@ individual_action:
 unknown:
     name: Unknown
     id: 10
+employment:
+    name: Employment
+    id: 11

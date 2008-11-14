@@ -32,7 +32,7 @@ class Feed < ActiveRecord::Base
         puts "Parsing #{feed.name}" if options[:debug]
         begin
           feed.parse
-        rescue OpenURI::HTTPError, Errno::ECONNREFUSED
+        rescue OpenURI::HTTPError, Errno::ECONNREFUSED, Errno::ECONNRESET, Timeout::Error
           puts "ERROR on feed #{feed.name}: #{$!}"
         end
       end

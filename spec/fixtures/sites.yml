@@ -113,3 +113,15 @@ prax:
 amazee:
   name: Amazee
   url: http://amazee.com
+
+dreambank:
+  name: DreamBank
+  url: http://dreambank.org
+
+betterplace:
+  name: BetterPlace
+  url: http://betterplace.org
+
+celsias:
+  name: Celsias
+  url: http://celsias.com
