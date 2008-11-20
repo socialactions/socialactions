@@ -1,0 +1,25 @@
+Work in progress, but here's a rough idea of what you need to do to get running.
+Your mileage may vary.
+
+ gem install chronic
+ gem install haml
+ gem install hpricot-0.6
+ gem install rfeedparser
+ gem install rspec
+ gem install launchy
+ 
+ rake db:create
+ rake db:schema:load
+ rake spec:db:fixtures:load FIXTURES=feeds,sites,action_types
+
+ And you need Sphinx
+ get download and compile/install instructions at:
+ 
+ http://www.sphinxsearch.com
+ 
+ Once the above is taken care of, run:
+ 
+ rake ultrasphinx:configure
+ rake ultrasphinx:index
+ rake ultrasphinx:daemon:start
+  
