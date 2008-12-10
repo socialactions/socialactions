@@ -144,7 +144,7 @@ six_degrees:
 
 first_giving:
   name: Firstgiving
-  url: http://feeds.firstgiving.com/rss/fundraisers/quickview.rss
+  url: http://feeds.firstgiving.com/fundraisers/quickview.rss
   tag_finder: 
   location_finder: 
   last_accessed: <%= 1.day.ago %>
@@ -297,7 +297,7 @@ prax:
 
 amazee:
   name: Amazee
-  url: http://www.amazee.com/news.rss
+  url: http://www.amazee.com/navigator/rss/-1/EN-EU/created
   tag_finder: 
   location_finder:
   last_accessed: <%= 1.day.ago %>
@@ -349,3 +349,76 @@ celsias_jobs:
   last_accessed: <%= 1.day.ago %>
   site: celsias
   action_type_id: 11
+
+christmasfuture_new_projects:
+  name: ChristmasFuture New Projects
+  url: http://www.christmasfuture.org/blog/category/new-projects/feed
+  tag_finder: 
+  location_finder:
+  last_accessed: <%= 1.day.ago %>
+  site: christmas_future
+  action_type_id: 1
+
+do_something_actionguide:
+  name: Do Something Action Guides
+  url: http://www.dosomething.org/actionguide/feed
+  tag_finder: 
+  location_finder:
+  last_accessed: <%= 1.day.ago %>
+  site: do_something
+  action_type_id: 2
+
+do_something_idea:
+  name: Do Something Idea Feed
+  url: http://www.dosomething.org/idea/feed
+  tag_finder: 
+  location_finder:
+  last_accessed: <%= 1.day.ago %>
+  site: do_something
+  action_type_id: 2
+
+changents:
+  name: Changents
+  url: http://www.changents.com/social_actions_rss/feed
+  tag_finder: 
+  location_finder:
+  last_accessed: <%= 1.day.ago %>
+  site: changents
+  action_type_id: 2
+
+ngo_post:
+  name: NGO Post
+  url: http://ngopost.org/rss.php?category=10
+  tag_finder: 
+  location_finder:
+  last_accessed: <%= 1.day.ago %>
+  site: ngo_post
+  action_type_id: 2
+
+canada_helps:
+  name: CanadaHelps
+  url: http://www.canadahelps.org/services/Feeds/Feeds.svc/RecentGivingPages?format=atom
+  tag_finder: 
+  location_finder:
+  last_accessed: <%= 1.day.ago %>
+  site: canada_helps
+  action_type_id: 1
+
+wildlife_direct:
+  name: WildlifeDirect
+  url: http://wildlifedirect.org/wpmu-feed/
+  tag_finder: 
+  location_finder:
+  last_accessed: <%= 1.day.ago %>
+  site: wildlife_direct
+  action_type_id: 1
+
+knightpulse:
+  name: KnightPulse
+  url: http://www.knightpulse.org/opportunities/feed?order=created&sort=desc
+  tag_finder: 
+  location_finder:
+  last_accessed: <%= 1.day.ago %>
+  site: knightpulse
+  action_type_id: 6
+

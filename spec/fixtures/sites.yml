@@ -125,3 +125,27 @@ betterplace:
 celsias:
   name: Celsias
   url: http://celsias.com
+
+do_something:
+  name: Do Something
+  url: http://dosomething.org
+
+changents:
+  name: Changents
+  url:  http://changents.com
+
+ngo_post:
+  name: NGO Post
+  url: http://ngopost.org
+
+canada_helps:
+  name: CanadaHelps
+  url: http://canadahelps.org
+
+wildlife_direct:
+  name: WildlifeDirect
+  url: http://wildlifedirect.org
+
+knightpulse:
+  name: KnightPulse
+  url: http://knightpulse.org
