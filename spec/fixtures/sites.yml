@@ -11,8 +11,8 @@ change_org:
   url: http://www.change.org
 
 razoo:
-  name: Razoo
-  url: http://beta.razoo.com
+  name: Razoo Community
+  url: http://community.razoo.com
 
 democracy_in_action:
   name: DemocracyinAction
@@ -149,3 +149,7 @@ wildlife_direct:
 knightpulse:
   name: KnightPulse
   url: http://knightpulse.org
+
+policy_pitch:
+  name: PolicyPitch
+  url: http://policypitch.com
