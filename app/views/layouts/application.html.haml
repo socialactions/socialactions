@@ -5,25 +5,28 @@
     %meta{"http-equiv" => "Content-Type", :content => "text/html; charset=utf-8"}/
     %title  Social Actions | Find Social Actions. Create Social Change.
     %link{ :rel => 'alternate', :type => 'application/atom+xml', :title => "Social Actions: Results for #{@search.to_s}", :href => feed_url }
-    = stylesheet_link_tag 'main', 'facebox'
-    = stylesheet_link_tag 'http://socialactions.com/sites/all/themes/social-actions/social-actions-fixed/style.css'
-    = javascript_include_tag 'jquery', 'facebox', 'application'
+    = stylesheet_link_tag 'main'
+    = stylesheet_link_tag 'http://socialactions.com/sites/all/themes/zen/socialactions/socialactions.css'
+    = stylesheet_link_tag 'http://socialactions.com/sites/all/themes/zen/socialactions/layout.css'
+    = stylesheet_link_tag 'http://socialactions.com/modules/system/defaults.css'
+    = javascript_include_tag 'jquery', 'application'
     = yield :map_headers
-    %style{:type => 'text/css'}
-      body {
-      background-image: url(http://socialactions.com/images/social-actions-2ndlevel-bg.gif);			
-      background-repeat:repeat-x;
-      }
 
-  %body.sidebar-left{ map_loader }
+  %body.no-sidebars
     #page
-      = render :partial => 'layouts/header'
+      #page-inner
+        = render :partial => 'layouts/header'
+
+        #main
+          #main-inner.clear-block.with-navbar
+            #content
+              #content-inner
+                = yield
     
-      #container.clear-block
-        #sidebar-left.column.sidebar
-          %p= link_to('Are you reading the Social Actions blog?', 'http://blog.socialactions.com/')
-        #main.column
-          #squeeze
-            = yield
-    
-      = render :partial => 'layouts/footer'
+        #footer
+          #footer-inner
+            #footer-message
+              #block-block-21.block.block-block.region-odd.odd.region-count-1.count-1
+                .block-inner
+                  .content
+                    = render :partial => 'layouts/footer'

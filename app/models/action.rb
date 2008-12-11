@@ -19,13 +19,64 @@ class Action < ActiveRecord::Base
 
   
   def update_from_feed_entry(entry)
-    puts "  -- Action: #{entry.title}"
     self.title = entry.title # TODO: handle text vs. html here
     self.url = entry.link
     self.description = description_for(entry)
-    self.created_at = entry.updated_time || Time.now
+    if entry.published_time or self.created_at.blank?
+      self.created_at = entry.published_time || entry.updated_time || Time.now
+    end
+    self.updated_at = entry.updated_time if entry.updated_time
     figure_out_address_from(entry)
-    self.ein = entry.cb_ein # "legacy" support for 6deg pre-RSSA EIN
+    self.organization_ein = entry.cb_ein # "legacy" support for 6deg pre-OA EIN
+
+    unless entry.author_detail.blank?
+      self.initiator_name = entry.author_detail.name
+      self.initiator_email = entry.author_detail.email
+      self.initiator_url = entry.author_detail.url
+    end
+
+    self.subtitle = entry.dcterms_alternative
+    self.embed_widget = entry.oa_embedwidget
+
+    if entry.oa_goal
+      self.goal_completed = entry.oa_goal.oa_completed
+      self.goal_amount = entry.oa_goal.oa_amount
+      self.goal_type = entry.oa_goal.oa_type
+      self.goal_number_of_contributors = entry.oa_goal.oa_numberofcontributors
+    end
+    
+    self.dcterms_valid = entry.dcterms_valid
+    if entry.dcterms_valid and entry.dcterms_valid.match(/(^|;)\s*end=([^;]+)/)
+      self.expires_at = $2
+    end
+    
+    unless entry.tags.blank?
+      action_type_category = entry.tags.detect{ |t| 
+        t.scheme == 'http://socialactions.com/action_types'
+      }
+      if action_type_category
+        self.action_type = ActionType.find_by_name(action_type_category.term)
+      end
+      
+      self.tags = entry.tags.reject{ |t| 
+        t.scheme == 'http://socialactions.com/action_types'
+      }.map{|t| t.term}
+    end
+      
+    if entry.oa_platform
+      self.platform_name = entry.oa_platform.oa_name
+      self.platform_url = entry.oa_platform.oa_url
+      self.platform_email = entry.oa_platform.oa_email
+    end
+
+    if entry.oa_organization
+      self.organization_name = entry.oa_organization.oa_name
+      self.organization_url = entry.oa_organization.oa_url
+      self.organization_email = entry.oa_organization.oa_email
+      self.organization_ein = entry.oa_organization.oa_ein
+    end
+
+    #pp self.attributes
   end
   
   def description=(new_description)
@@ -112,7 +163,7 @@ protected
   
   def denormalize
     self.site_id = self.feed.site_id
-    self.action_type = self.feed.action_type
+    self.action_type ||= self.feed.action_type
   end
   
   def update_short_url

@@ -40,7 +40,7 @@ change_org_changes:
 
 razoo_acts:
   name: Razoo Acts
-  url: http://beta.razoo.com/browse/acts?sort=new.d&filter=ne&format=xml
+  url: http://community.razoo.com/browse/acts?sort=mp&filter=ne&format=xml
   tag_finder: 
   location_finder: 
   last_accessed: %= 1.day.ago %>
@@ -50,13 +50,30 @@ razoo_acts:
   
 razoo_goals:
   name: Razoo Goals
-  url: http://beta.razoo.com/browse/goals?sort=new.d&format=xml
+  url: http://community.razoo.com/browse/goals?sort=mp&format=xml
   tag_finder: 
   location_finder: 
   last_accessed: <%= 1.day.ago %>
   site: razoo
-  action_type_id: 1
-  donations: false
+  action_type_id: 3
+
+razoo_groups:
+  name: Razoo Groups
+  url: http://community.razoo.com/browse/groups?sort=mm&format=xml
+  tag_finder: 
+  location_finder: 
+  last_accessed: <%= 1.day.ago %>
+  site: razoo
+  action_type_id: 5
+
+razoo_causes:
+  name: Razoo Causes
+  url: http://community.razoo.com/browse/causes?sort=mm&format=xml
+  tag_finder: 
+  location_finder: 
+  last_accessed: <%= 1.day.ago %>
+  site: razoo
+  action_type_id: 5
 
 democracy_in_action:
   name: DemocracyinAction
@@ -150,8 +167,7 @@ kiva:
   
 six_degrees:
   name: SixDegrees
-#  url: http://www.networkforgood.org/data/BadgePromotionFeed.aspx?source=SIXDEG&cmpgn=SCB&type=RecentBadge
-  url: http://qa4.networkforgood.org/data/BadgePromotionFeed.aspx?source=SIXDEG&cmpgn=SCB&type=RecentBadge
+  url: http://www.networkforgood.org/data/BadgePromotionFeed.aspx?source=SIXDEG&cmpgn=SCB&type=RecentBadge
   tag_finder: 
   location_finder: 
   last_accessed: <%= 1.day.ago %>
@@ -161,7 +177,7 @@ six_degrees:
 
 first_giving:
   name: Firstgiving
-  url: http://feeds.firstgiving.com/rss/fundraisers/quickview.rss
+  url: http://feeds.firstgiving.com/fundraisers/quickview.rss
   tag_finder: 
   location_finder: 
   last_accessed: <%= 1.day.ago %>
@@ -187,16 +203,6 @@ helpalot:
   last_accessed: <%= 1.day.ago %>
   site: helpalot
   action_type_id: 5
-  donations: false
-
-donorschoose:
-  name: DonorsChoose
-  url: http://www.donorschoose.org/common/rss_feed.html?zone=0&schoolType=0&partiallyFunded=true&teacherType=0&y=22&x=20
-  tag_finder: 
-  location_finder: "<br />([\w\s,]+)<br />Level:"
-  last_accessed: <%= 1.day.ago %>
-  site: donorschoose
-  action_type_id: 1
   donations: false
 
 pincgiving:
@@ -341,7 +347,7 @@ prax:
 
 amazee:
   name: Amazee
-  url: http://www.amazee.com/news.rss
+  url: http://www.amazee.com/navigator/rss/-1/EN-EU/created
   tag_finder: 
   location_finder:
   last_accessed: <%= 1.day.ago %>
@@ -349,3 +355,129 @@ amazee:
   action_type_id: 2
   donations: false
 
+donorschoose:
+  name: DonorsChoose.org
+  url: http://api.donorschoose.org/common/json_feed.html?subject1=-1&action=browse&APIKey=vsexve8e3i
+  tag_finder:
+  location_finder:
+  last_accessed: <%= 1.day.ago %>
+  site: donorschoose
+  action_type_id: 1
+  is_donorschoose_json: true
+
+dreambank:
+  name: DreamBank
+  url: http://dreambank.org/rss/recent_dreams.php
+  tag_finder:
+  location_finder:
+  last_accessed: <%= 1.day.ago %>
+  site: dreambank
+  action_type_id: 1
+
+betterplace:
+  name: BetterPlace
+  url: http://www.betterplace.org/projects/recently_updated.atom?lang=en
+  tag_finder:
+  location_finder:
+  last_accessed: <%= 1.day.ago %>
+  site: betterplace
+  action_type_id: 1
+
+celsias_actions:
+  name: Celsias Actions
+  url: http://www.celsias.com/feeds/actions/
+  tag_finder:
+  location_finder:
+  last_accessed: <%= 1.day.ago %>
+  site: celsias
+  action_type_id: 3
+
+celsias_jobs:
+  name: Celsias Green Jobs
+  url: http://www.celsias.com/feeds/jobs/
+  tag_finder:
+  location_finder:
+  last_accessed: <%= 1.day.ago %>
+  site: celsias
+  action_type_id: 11
+
+christmasfuture_new_projects:
+  name: ChristmasFuture New Projects
+  url: http://www.christmasfuture.org/blog/category/new-projects/feed
+  tag_finder: 
+  location_finder:
+  last_accessed: <%= 1.day.ago %>
+  site: christmas_future
+  action_type_id: 1
+
+do_something_actionguide:
+  name: Do Something Action Guides
+  url: http://www.dosomething.org/actionguide/feed
+  tag_finder: 
+  location_finder:
+  last_accessed: <%= 1.day.ago %>
+  site: do_something
+  action_type_id: 2
+
+do_something_idea:
+  name: Do Something Idea Feed
+  url: http://www.dosomething.org/idea/feed
+  tag_finder: 
+  location_finder:
+  last_accessed: <%= 1.day.ago %>
+  site: do_something
+  action_type_id: 2
+
+changents:
+  name: Changents
+  url: http://www.changents.com/social_actions_rss/feed
+  tag_finder: 
+  location_finder:
+  last_accessed: <%= 1.day.ago %>
+  site: changents
+  action_type_id: 2
+
+ngo_post:
+  name: NGO Post
+  url: http://ngopost.org/rss.php?category=10
+  tag_finder: 
+  location_finder:
+  last_accessed: <%= 1.day.ago %>
+  site: ngo_post
+  action_type_id: 2
+
+canada_helps:
+  name: CanadaHelps
+  url: http://www.canadahelps.org/services/Feeds/Feeds.svc/RecentGivingPages?format=atom
+  tag_finder: 
+  location_finder:
+  last_accessed: <%= 1.day.ago %>
+  site: canada_helps
+  action_type_id: 1
+
+wildlife_direct:
+  name: WildlifeDirect
+  url: http://wildlifedirect.org/wpmu-feed/
+  tag_finder: 
+  location_finder:
+  last_accessed: <%= 1.day.ago %>
+  site: wildlife_direct
+  action_type_id: 1
+
+knightpulse:
+  name: KnightPulse
+  url: http://www.knightpulse.org/opportunities/feed?order=created&sort=desc
+  tag_finder: 
+  location_finder:
+  last_accessed: <%= 1.day.ago %>
+  site: knightpulse
+  action_type_id: 6
+
+policy_pitch:
+  name: PolicyPitch
+  url: http://www.policypitch.com/feeds.php
+  tag_finder: 
+  location_finder:
+  last_accessed: <%= 1.day.ago %>
+  site: policy_pitch
+  action_type_id: 2

@@ -11,8 +11,8 @@ change_org:
   url: http://www.change.org
 
 razoo:
-  name: Razoo
-  url: http://beta.razoo.com
+  name: Razoo Community
+  url: http://community.razoo.com
 
 democracy_in_action:
   name: DemocracyinAction
@@ -63,7 +63,7 @@ helpalot:
   url: http://www.helpalot.com
   
 donorschoose:
-  name: DonorsChoose
+  name: DonorsChoose.org
   url: http://www.donorschoose.org
   
 pincgiving:
@@ -113,3 +113,43 @@ prax:
 amazee:
   name: Amazee
   url: http://amazee.com
+
+dreambank:
+  name: DreamBank
+  url: http://dreambank.org
+
+betterplace:
+  name: BetterPlace
+  url: http://betterplace.org
+
+celsias:
+  name: Celsias
+  url: http://celsias.com
+
+do_something:
+  name: Do Something
+  url: http://dosomething.org
+
+changents:
+  name: Changents
+  url:  http://changents.com
+
+ngo_post:
+  name: NGO Post
+  url: http://ngopost.org
+
+canada_helps:
+  name: CanadaHelps
+  url: http://canadahelps.org
+
+wildlife_direct:
+  name: WildlifeDirect
+  url: http://wildlifedirect.org
+
+knightpulse:
+  name: KnightPulse
+  url: http://knightpulse.org
+
+policy_pitch:
+  name: PolicyPitch
+  url: http://policypitch.com

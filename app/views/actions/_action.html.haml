@@ -1,34 +1,16 @@
 %div[action]
-  = link_to action.title, action_path(action), :class => 'action-title', :rel => 'facebox'
+  = link_to action.title, action.url, :class => 'action-title'
   
-  .action-source
-    .action-byline= "Created on #{link_to action.site.name, action.site.url} by TODO"
-    .action-created= action.created_at.to_s(:default)
-    .action-type= "#{action.action_type.name} "
-  %span{:class => 'action-goal'}
-    %strong
-      Goal: 
-    Coming Soon...
-    %br/
-  %span{:class => 'action-location'}
-    %strong
-      Location:
-    - unless action.location.nil? or action.location.empty?
-      = action.location
-    - else
-      Location unknown
-    %br/
-  %span{:class => 'action-tags'}
-    %strong
-      Tags:
-    
-    = tag_list_for action
-    %br/
   .action-description
     = sanitize(action.description)
+
   - if action.feed.donations? and controller.controller_name == 'actions'
     .donations
       = link_to image_tag('btn_donate_now.gif'), new_donation_path(:social_action => action.id)
 
-  - if controller.controller_name == 'actions'
-    = link_to action.url, action.url, :class => 'action-url'
+  .action-details
+    %span.action-type= action.action_type.name
+    created
+    %span.action-created= action.created_at.to_s(:default)
+    on
+    = link_to action.site.name, action.site.url
