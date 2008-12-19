@@ -22,7 +22,7 @@ class Feed < ActiveRecord::Base
   end
 
   def feed
-    @feed ||= FeedParser.parse(open(url, 'User-Agent' => 'SocialActions'))
+    @feed ||= FeedParser.parse(url, :agent => 'SocialActions')
   end
 
   class << self
