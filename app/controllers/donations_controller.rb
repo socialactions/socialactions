@@ -25,7 +25,7 @@ class DonationsController < ApplicationController
     # TODO: encapsulate this in controller or model method...
     soap = SOAP::RPC::Driver.new(DONATENOW_AUTH['API_URL'], 'http://www.networkforgood.org/partnerdonationservice', 'http://www.networkforgood.org/partnerdonationservice/MakeCCDonation')
 
-    soap.wiredump_file_base = "#{RAILS_ROOT}/log"
+    #soap.wiredump_file_base = "#{RAILS_ROOT}/log"
     soap.options['protocol.http.ssl_config.verify_mode'] = nil
     soap.use_default_namespace = true
 
@@ -58,64 +58,55 @@ class DonationsController < ApplicationController
                     "CSC")
 
     begin
-      res = soap.MakeCCDonation(DONATENOW_AUTH['PartnerID'],
-                                DONATENOW_AUTH['PartnerPW'],
-                                DONATENOW_AUTH['PartnerSource'],
-                                DONATENOW_AUTH['PartnerCampaign'],
-                                @action.organization_ein,
-                                nil,
-                                nil,
-                                @donation.disclosure,
-                                @donation.amount,
-                                nil,
-                                request.remote_ip,
-                                @donor.first_name,
-                                @donor.last_name,
-                                @donor.email,
-                                @donor.address1,
-                                @donor.address2,
-                                @donor.city,
-                                @donor.state,
-                                @donor.zip,
-                                "#{@donor.phone_1}#{@donor.phone_2}#{@donor.phone_3}",
-                                @credit_card.card_type,
-                                @credit_card.name,
-                                @credit_card.number,
-                                @credit_card.expiry_date.month,
-                                @credit_card.expiry_date.year,
-                                @credit_card.csc)
+      dnres = soap.MakeCCDonation(DONATENOW_AUTH['PartnerID'],
+                                  DONATENOW_AUTH['PartnerPW'],
+                                  DONATENOW_AUTH['PartnerSource'],
+                                  DONATENOW_AUTH['PartnerCampaign'],
+                                  @action.organization_ein,
+                                  nil,
+                                  nil,
+                                  @donation.disclosure,
+                                  @donation.amount,
+                                  nil,
+                                  request.remote_ip,
+                                  @donor.first_name,
+                                  @donor.last_name,
+                                  @donor.email,
+                                  @donor.address1,
+                                  @donor.address2,
+                                  @donor.city,
+                                  @donor.state,
+                                  @donor.zip,
+                                  "#{@donor.phone_1}#{@donor.phone_2}#{@donor.phone_3}",
+                                  @credit_card.card_type,
+                                  @credit_card.name,
+                                  @credit_card.number,
+                                  @credit_card.expiry_date.month,
+                                  @credit_card.expiry_date.year,
+                                  @credit_card.csc)
     rescue
-      puts "ERROR: #{$!.inspect}" #, #{$!.detail}, #{$!.faultcode}"
-      puts "res: #{res}"
-      puts soap.inspect
-      raise
-    end
+      RAILS_DEFAULT_LOGGER.error "ERROR: #{$!.inspect}"
+      RAILS_DEFAULT_LOGGER.error "#{$!.detail}, #{$!.faultcode}"
+      #puts "res: #{res}"
+      #puts soap.inspect
 
-    puts res.inspect
-
-    render :text => ''
-    return ##############################################
-
-
-    #puts "#{res.code} #{res.message}"
-
-    unless res.is_a? Net::HTTPSuccess
       @donation.errors.add_to_base "There was a problem communicating with the donation processing service."
-      #puts res.body
       return render(:action => 'new')
+      #raise
     end
-
-    dnres = Hash.from_xml(res.body)['DonationReturnData']
 
     #require 'pp'
     #pp dnres
 
     unless dnres['StatusCode'] == 'Success'
-      if dnres['Message']
+      if dnres['Message'].is_a?(String)
+        #puts "mess: " + dnres['Message'].inspect
         @donation.errors.add_to_base dnres['Message']
       else
+        #puts "ed: " + dnres['ErrorDetails'].inspect
+        #puts "ed/ei: " + dnres['ErrorDetails']['ErrorInfo'].inspect
         errs = dnres['ErrorDetails']['ErrorInfo']
-        errs = [errs] if errs.is_a?(Hash)
+        errs = [errs] unless errs.respond_to?(:each)
         
         errs.each do |err|
           @donation.errors.add_to_base err['ErrData']
