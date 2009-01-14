@@ -4,13 +4,20 @@
   .action-description
     = sanitize(action.description)
 
-  - if action.feed.donations? and controller.controller_name == 'actions'
-    .donations
-      = link_to image_tag('btn_donate_now.gif'), new_donation_path(:social_action => action.id)
+  - if action.feed
+    - if action.feed and action.feed.donations? and controller.controller_name == 'actions'
+      .donations
+        = link_to image_tag('btn_donate_now.gif'), new_donation_path(:social_action => action.id)
 
-  .action-details
-    %span.action-type= action.action_type.name
-    created
-    %span.action-created= action.created_at.to_s(:default)
-    on
-    = link_to action.site.name, action.site.url
+    .action-details
+      %span.action-type= action.action_type.name
+      created
+      %span.action-created= action.created_at.to_s(:default)
+      on
+      = link_to action.site.name, action.site.url
+  - else
+    - if RAILS_ENV == 'development'
+      %span{ :style => 'color: red' }
+        ACTION HAS NO FEED!
+    - else
+      raise "ACTION #{action.id} HAS NO FEED"
