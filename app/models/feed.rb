@@ -1,4 +1,3 @@
-require 'open-uri'
 require 'rfeedparser'
 require 'feedparser_rssa_patch'
 
@@ -22,7 +21,15 @@ class Feed < ActiveRecord::Base
   end
 
   def feed
-    @feed ||= FeedParser.parse(url, :agent => 'SocialActions')
+    return @feed if @feed
+
+    uri = URI.parse(url)
+    http = Net::HTTP.new(uri.host, uri.port)
+    http.use_ssl = (uri.scheme == 'https')
+    http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+    res = http.get(uri.path, 'User-Agent' => 'SocialActions')
+
+    @feed = FeedParser.parse(res.body)
   end
 
   class << self
