@@ -31,11 +31,9 @@ class Feed < ActiveRecord::Base
     http = Net::HTTP.new(uri.host, uri.port)
     http.use_ssl = (uri.scheme == 'https')
     http.verify_mode = OpenSSL::SSL::VERIFY_NONE
-    res = http.get(uri.path, 'User-Agent' => 'SocialActions')
+    res = http.get(uri.request_uri, 'User-Agent' => 'SocialActions')
 
     if res.is_a?(Net::HTTPRedirection)
-      #warn "#{furl} -> #{res['location'].inspect}"
-      #res.each_header{|k,v| puts "#{k}: #{v}"}
       raise "redirect loop" if depth > 5
 
       if res.is_a?(Net::HTTPMovedPermanently)
