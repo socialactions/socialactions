@@ -23,17 +23,34 @@ class Feed < ActiveRecord::Base
   def feed
     return @feed if @feed
 
-    uri = URI.parse(url)
+    @feed = FeedParser.parse(fetch(url).body)
+  end
+
+  def fetch(furl, depth=0)
+    uri = URI.parse(furl)
     http = Net::HTTP.new(uri.host, uri.port)
     http.use_ssl = (uri.scheme == 'https')
     http.verify_mode = OpenSSL::SSL::VERIFY_NONE
     res = http.get(uri.path, 'User-Agent' => 'SocialActions')
 
+    if res.is_a?(Net::HTTPRedirection)
+      #warn "#{furl} -> #{res['location'].inspect}"
+      #res.each_header{|k,v| puts "#{k}: #{v}"}
+      raise "redirect loop" if depth > 5
+
+      if res.is_a?(Net::HTTPMovedPermanently)
+        warn "301 Permanent Redirect for #{name} to #{res.header['location']} - updating db" 
+        self.update_attribute(:url, res.header['location'])
+      end
+
+      return fetch(res.header['location'], depth+1)
+    end
+
     unless res.is_a? Net::HTTPSuccess
       raise "#{res.code} #{res.message}"
     end
-    
-    @feed = FeedParser.parse(res.body)
+
+    res
   end
 
   class << self
