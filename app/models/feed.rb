@@ -29,6 +29,10 @@ class Feed < ActiveRecord::Base
     http.verify_mode = OpenSSL::SSL::VERIFY_NONE
     res = http.get(uri.path, 'User-Agent' => 'SocialActions')
 
+    unless res.is_a? Net::HTTPSuccess
+      raise "#{res.code} #{res.message}"
+    end
+    
     @feed = FeedParser.parse(res.body)
   end
 
@@ -39,7 +43,7 @@ class Feed < ActiveRecord::Base
         puts "Parsing #{feed.name}" if options[:debug]
         begin
           feed.parse
-        rescue OpenURI::HTTPError, Errno::ECONNREFUSED, Errno::ECONNRESET, Timeout::Error
+        rescue
           puts "ERROR on feed #{feed.name}: #{$!}"
         end
       end
