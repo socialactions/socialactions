@@ -1,9 +1,9 @@
 class DonationsController < ApplicationController
-  #require 'soap/rpc/driver'
+  if RAILS_ENV == 'production'
+    ssl_required :new, :create
+  end
   
-  # ssl_required              :new, :create
-  # filter_parameter_logging  :cardNumber
-  
+  filter_parameter_logging  :number
   before_filter             :load_action
   
   def new
