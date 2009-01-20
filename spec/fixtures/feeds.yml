@@ -6,6 +6,7 @@ global_giving:
   last_accessed: <%= 1.day.ago %>
   site: global_giving
   action_type_id: 1
+  donations: false
 
 pledge_bank:
   name: PledgeBank
@@ -15,6 +16,7 @@ pledge_bank:
   last_accessed: <%= 1.day.ago %>
   site: pledge_bank
   action_type_id: 3
+  donations: false
 
 change_org_giving:
   name: Change.org Giving Networks
@@ -24,6 +26,7 @@ change_org_giving:
   last_accessed: <%= 1.day.ago %>
   site: change_org
   action_type_id: 1
+  donations: false
   
 change_org_changes:
   name: Change.org Changes 
@@ -33,6 +36,7 @@ change_org_changes:
   last_accessed: <%= 1.day.ago %>
   site: change_org
   action_type_id: 5
+  donations: false
 
 razoo_acts:
   name: Razoo Acts
@@ -42,6 +46,7 @@ razoo_acts:
   last_accessed: %= 1.day.ago %>
   site: razoo
   action_type_id: 3
+  donations: false
   
 razoo_goals:
   name: Razoo Goals
@@ -78,6 +83,7 @@ democracy_in_action:
   last_accessed: <%= 1.day.ago %>
   site: democracy_in_action
   action_type_id: 1
+  donations: false
 
 care_2_petitions:
   name: Care2 Petitions
@@ -87,6 +93,7 @@ care_2_petitions:
   last_accessed: <%= 1.day.ago %>
   site: care_2_petitions
   action_type_id: 8
+  donations: false
 
 the_point:
   name: ThePoint
@@ -96,6 +103,7 @@ the_point:
   last_accessed: <%= 1.day.ago %>
   site: the_point
   action_type_id: 3
+  donations: false
 
 give_meaning_proposals:
   name: GiveMeaning Proposals 
@@ -105,6 +113,7 @@ give_meaning_proposals:
   last_accessed: <%= 1.day.ago %>
   site: give_meaning
   action_type_id: 3
+  donations: false
 
 give_meaning_projects:
   name: GiveMeaning Projects
@@ -114,6 +123,7 @@ give_meaning_projects:
   last_accessed: <%= 1.day.ago %>
   site: give_meaning
   action_type_id: 3
+  donations: false
   
 changing_the_present:
   name: ChangingthePresent New Drives
@@ -123,6 +133,7 @@ changing_the_present:
   last_accessed: <%= 1.day.ago %>
   site: changing_the_present
   action_type_id: 1
+  donations: false
 
 fundable:
   name: Fundable
@@ -132,6 +143,7 @@ fundable:
   last_accessed: <%= 1.day.ago %>
   site: fundable
   action_type_id: 1
+  donations: false
   
 bring_light:
   name: BringLight
@@ -141,6 +153,7 @@ bring_light:
   last_accessed: <%= 1.day.ago %>
   site: bring_light
   action_type_id: 1
+  donations: false
 
 kiva:
   name: Kiva
@@ -150,6 +163,7 @@ kiva:
   last_accessed: <%= 1.day.ago %>
   site: kiva
   action_type_id: 7
+  donations: false
   
 six_degrees:
   name: SixDegrees
@@ -159,6 +173,7 @@ six_degrees:
   last_accessed: <%= 1.day.ago %>
   site: six_degrees
   action_type_id: 1
+  donations: true
 
 first_giving:
   name: Firstgiving
@@ -168,6 +183,7 @@ first_giving:
   last_accessed: <%= 1.day.ago %>
   site: first_giving
   action_type_id: 1
+  donations: false
 
 zazengo:
   name: Latest Zazengo Projects
@@ -177,6 +193,7 @@ zazengo:
   last_accessed: <%= 1.day.ago %>
   site: zazengo
   action_type_id: 5
+  donations: false
 
 helpalot:
   name: Helpalot
@@ -186,6 +203,7 @@ helpalot:
   last_accessed: <%= 1.day.ago %>
   site: helpalot
   action_type_id: 5
+  donations: false
 
 pincgiving:
   name: PincGiving
@@ -195,6 +213,7 @@ pincgiving:
   last_accessed: <%= 1.day.ago %>
   site: pincgiving
   action_type_id: 1
+  donations: false
   
 microgiving:
   name: MicroGiving
@@ -204,6 +223,7 @@ microgiving:
   last_accessed: <%= 1.day.ago %>
   site: microgiving
   action_type_id: 1
+  donations: false
 
 idealist_org_events:
   name: Idealist.org Events
@@ -213,6 +233,7 @@ idealist_org_events:
   last_accessed: <%= 1.day.ago %>
   site: idealist_org
   action_type_id: 4
+  donations: false
 
 idealist_org_volunteer:
   name: Idealist.org Volunteer Opportunities
@@ -222,6 +243,7 @@ idealist_org_volunteer:
   last_accessed: <%= 1.day.ago %>
   site: idealist_org
   action_type_id: 6
+  donations: false
 
 idealist_org_campaigns:
   name: Idealist.org Campaigns
@@ -231,6 +253,7 @@ idealist_org_campaigns:
   last_accessed: <%= 1.day.ago %>
   site: idealist_org
   action_type_id: 2
+  donations: false
 
 volunteer_match:
   name: VolunteerMatch
@@ -240,6 +263,7 @@ volunteer_match:
   last_accessed: <%= 1.day.ago %>
   site: volunteer_match
   action_type_id: 6
+  donations: false
 
 nabuur:
   name: NABUUR
@@ -249,6 +273,7 @@ nabuur:
   last_accessed: <%= 1.day.ago %>
   site: nabuur
   action_type_id: 6
+  donations: false
 
 charity_focus:
   name: CharityFocus
@@ -258,6 +283,7 @@ charity_focus:
   last_accessed: <%= 1.day.ago %>
   site: charity_focus
   action_type_id: 9
+  donations: false
 
 delicious_takeaction:
   name: Delicious TakeAction Tag
@@ -267,6 +293,7 @@ delicious_takeaction:
   last_accessed: <%= 1.day.ago %>
   site: delicious
   action_type_id: 10
+  donations: false
 
 takingitglobal_petitions:
   name: TakingITGlobal Petitions
@@ -276,6 +303,7 @@ takingitglobal_petitions:
   last_accessed: <%= 1.day.ago %>
   site: taking_it_global
   action_type_id: 8
+  donations: false
 
 takingitglobal_commitments:
   name: TakingITGlobal Commitments
@@ -285,6 +313,7 @@ takingitglobal_commitments:
   last_accessed: <%= 1.day.ago %>
   site: taking_it_global
   action_type_id: 3
+  donations: false
 
 christmasfuture_volunteer:
   name: ChristmasFuture Volunteer
@@ -294,6 +323,7 @@ christmasfuture_volunteer:
   last_accessed: <%= 1.day.ago %>
   site: christmas_future
   action_type_id: 6
+  donations: false
 
 global_giving_uk:
   name: GlobalGiving UK
@@ -303,6 +333,7 @@ global_giving_uk:
   last_accessed: <%= 1.day.ago %>
   site: global_giving_uk
   action_type_id: 1
+  donations: false
 
 prax:
   name: Prax
@@ -312,6 +343,7 @@ prax:
   last_accessed: <%= 1.day.ago %>
   site: prax
   action_type_id: 8
+  donations: false
 
 amazee:
   name: Amazee
@@ -321,6 +353,7 @@ amazee:
   last_accessed: <%= 1.day.ago %>
   site: amazee
   action_type_id: 2
+  donations: false
 
 donorschoose:
   name: DonorsChoose.org

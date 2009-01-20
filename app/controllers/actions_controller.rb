@@ -1,16 +1,5 @@
 class ActionsController < ApplicationController
   
-  helper_method :search_params
-  
-  def search_params
-    params[:order] = 'created_at' if params[:q].blank?
-    params[:limit] = '10' if params[:limit].blank?
-    params[:sites] = params[:sites].split(',') if (params[:sites].is_a? String)
-    params[:action_types] = params[:action_types].split(',') if (params[:action_types].is_a? String)
-    params[:exclude_action_types] = params[:exclude_action_types].split(',') if (params[:exclude_action_types].is_a? String)
-    params.slice(:q, :action_types, :exclude_action_types, :created, :sites, :kind, :ip_address, :limit, :order, :match).delete_if{|k,v| v.nil? || v.empty?}
-  end
-  
   def index
     begin
       @search = Search.new(search_params)

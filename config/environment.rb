@@ -1,3 +1,7 @@
+require 'rubygems'
+gem 'soap4r'
+require 'soap/rpc/driver'
+
 # Be sure to restart your server when you modify this file
 
 # Uncomment below to force Rails into production mode when
