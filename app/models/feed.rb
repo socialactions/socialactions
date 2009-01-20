@@ -21,9 +21,7 @@ class Feed < ActiveRecord::Base
   end
 
   def feed
-    return @feed if @feed
-
-    @feed = FeedParser.parse(fetch(url).body)
+    @feed ||= FeedParser.parse(fetch(url).body)
   end
 
   def fetch(furl, depth=0)
