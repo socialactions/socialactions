@@ -1,4 +1,5 @@
-log/*
+./log/*
 config/database.yml
 public/stylesheets/main.css
 config/ultrasphinx/development.conf
+config/initializers/donatenow.rb

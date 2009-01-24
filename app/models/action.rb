@@ -9,6 +9,7 @@ class Action < ActiveRecord::Base
   belongs_to :feed
   belongs_to :site
   belongs_to :action_type
+  has_many :donations
   
   acts_as_taggable
   acts_as_mappable :lat_column_name => :latitude, :lng_column_name => :longitude
@@ -26,6 +27,7 @@ class Action < ActiveRecord::Base
     end
     self.updated_at = entry.updated_time if entry.updated_time
     figure_out_address_from(entry)
+    self.organization_ein = entry.cb_ein # "legacy" support for 6deg pre-OA EIN
 
     unless entry.author_detail.blank?
       self.initiator_name = entry.author_detail.name
