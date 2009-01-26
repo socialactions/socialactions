@@ -1,10 +1,31 @@
+require 'fastercsv'
+
 class Shorturl::LogsController < ApplicationController
  
   def show
     @logs = Shorturl::Log.find(:all)
-    respond_to do |format|
-      format.csv
+
+    #########################################################
+    # From this to END is temporary code, once we upgrade 
+    # to Rails 2.1, delete and un-comment the respond_to block
+    response.headers["Content-Type"] = 'text/csv'
+    response.headers['Content-Disposition'] = "attachment; filename=index.csv" 
+        
+    result = FasterCSV.generate do |csv|
+      csv << @logs[0].field_names
+
+      @logs.each do |log|
+        csv << log.field_values
+      end
     end
+
+    render :text => result
+    # END the above is temorary code
+    #########################################################
+
+    #respond_to do |format|
+    #  format.csv
+    #end
   end
  
   def hits
