@@ -1,6 +1,8 @@
 require 'base62'
 
 class Shorturl::Redirect < ActiveRecord::Base
+  # See config/environments for self.domain
+  # self.domain = "http://localhost/"
   
   attr_accessor :slug
   
@@ -36,14 +38,24 @@ class Shorturl::Redirect < ActiveRecord::Base
   end
   
   def self.find_or_create_by_cookie_and_url(params)
-    if self.exists?(params)
+    if self.exists?(:cookie => params[:cookie], :url => params[:url])
       return find(:first, :conditions => { :cookie => params[:cookie], :url => params[:url] })
     end
-    self.new(params)
+    self.new(:cookie => params[:cookie], :url => params[:url])
   end
   
   def self.find_by_cookie_and_url(params)
     return find(:first, :conditions => { :cookie => params[:cookie], :url => params[:url] })
+  end
+  
+  # See config/environments for self.domain
+  def self.domain=(value)
+      @domain = value
+      self.dup.freeze
+  end
+  
+  def self.domain
+    @domain
   end
   
 end

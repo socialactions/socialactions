@@ -1,8 +1,8 @@
 ActionController::Routing::Routes.draw do |map|
   
   map.namespace :shorturl do |shorturl|
-    shorturl.resources :redirects
-    shorturl.resources :logs
+    shorturl.resources :redirects, :collection => {:slug => :get}
+    shorturl.resources :logs, :collection => {:hits => :get, :referrers => :get}
   end
   
   map.connect '/s/:slug', :controller => 'shorturl/redirects', :action => 'url'

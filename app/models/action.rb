@@ -95,7 +95,7 @@ class Action < ActiveRecord::Base
   end
   
   def url
-    if self.short_url.nil? || Redirect.off?
+    if self.short_url.nil? 
       read_attribute(:url)
     else
       self.short_url
@@ -168,9 +168,11 @@ protected
   
   def update_short_url
     begin
-      Redirect.create(:cookie => 'social_actions', :url => self.read_attribute(:url))
-      redirect = Redirect.get(:slug, :cookie => 'social_actions', :url => self.read_attribute(:url))
-      self.short_url = redirect['url']
+      redirect = Shorturl::Redirect.find_or_create_by_cookie_and_url(:cookie => 'social_actions', :url => self.read_attribute(:url))
+      redirect.save!
+      
+      self.redirect_id = redirect.id
+      self.short_url = "http://#{redirect.domain}/#{redirect.slug}"
     rescue
       # It's ok, it's works just fine without the short url, we want to just continue
     end

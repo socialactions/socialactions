@@ -18,5 +18,8 @@ config.action_view.cache_template_extensions         = false
 config.action_mailer.raise_delivery_errors = false
 
 # Location of Spin Doctor Application
-Redirect.site = "http://localhost:3004/"
-Redirect.off = true
+Redirect.site = "http://localhost:3001/shorturl"
+Redirect.off = false
+
+# short url domain name
+Shorturl::Redirect.domain = "localhost:3001/s"

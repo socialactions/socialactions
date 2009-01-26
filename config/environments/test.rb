@@ -24,3 +24,6 @@ config.action_mailer.delivery_method = :test
 # Location of Spin Doctor Application
 Redirect.site = "http://localhost:3004/"
 Redirect.off = true
+
+# short url domain name
+Shorturl::Redirect.domain = "localhost:3001/s"

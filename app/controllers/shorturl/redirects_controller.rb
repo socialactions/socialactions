@@ -1,7 +1,5 @@
 class Shorturl::RedirectsController < ApplicationController
   
-  REDIRECT_DOMAIN = "localhost:3001/s"
-  
   def url
     @redirect = Shorturl::Redirect.find_by_slug(params[:slug])
     if @redirect.nil?
@@ -16,8 +14,8 @@ class Shorturl::RedirectsController < ApplicationController
     @redirect = Shorturl::Redirect.find_by_cookie_and_url(:cookie => params[:cookie], :url => params[:url])
     respond_to do |format|
       if !@redirect.nil?
-        format.html { render :text => "http://#{domain_name}/#{@redirect.slug}"}
-        format.xml  { render :xml => {:url => "http://#{domain_name}/#{@redirect.slug}"}}
+        format.html { render :text => "http://#{@redirect.domain}/#{@redirect.slug}"}
+        format.xml  { render :xml => {:url => "http://#{@redirect.domain}/#{@redirect.slug}"}}
       else
         format.html { render :text => 'slug doesn\'t exist', :status => 404 }
         format.xml  { render :xml => {:message => 'slug doesn\'t exist'}, :status => 404 }
@@ -32,8 +30,8 @@ class Shorturl::RedirectsController < ApplicationController
 
     respond_to do |format|
       if @redirect.save
-        format.html { render :text => "http://#{domain_name}/#{@redirect.slug}", :status => :created }
-        format.xml  { render :xml => {:url => "http://#{domain_name}/#{@redirect.slug}"}, :status => :created, :location => @redirect }
+        format.html { render :text => "http://#{@redirect.domain}/#{@redirect.slug}", :status => :created }
+        format.xml  { render :xml => {:url => "http://#{@redirect.domain}/#{@redirect.slug}"}, :status => :created, :location => @redirect }
       else
         format.html { render :text => @redirect.errors.each {|error| " #{error} "}, :status => :unprocessable_entity }
         format.xml  { render :xml => @redirect.errors, :status => :unprocessable_entity }
@@ -117,18 +115,13 @@ private
     if !params[:shorturl_redirect].nil?
       my_params[:url] = params[:shorturl_redirect][:url] if !params[:shorturl_redirect][:url].nil?
       my_params[:cookie] = params[:shorturl_redirect][:cookie] if !params[:shorturl_redirect][:cookie].nil?
+    elsif !params[:redirect].nil?
+      my_params[:url] = params[:redirect][:url] if !params[:redirect][:url].nil?
+      my_params[:cookie] = params[:redirect][:cookie] if !params[:redirect][:cookie].nil? 
     else
       my_params = params
     end
     my_params
-  end
-
-  def domain_name
-    domain_name = REDIRECT_DOMAIN 
-    #if request.env['SERVER_PORT'].to_i != 80
-    #  domain_name += ":#{request.env['SERVER_PORT']}"
-    #end
-    domain_name
   end
   
 end
