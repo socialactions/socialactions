@@ -1,0 +1,5 @@
+csv << @logs[0].field_names
+
+@logs.each do |log|
+  csv << log.field_values
+end

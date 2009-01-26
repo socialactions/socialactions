@@ -1,0 +1,19 @@
+<h1>New redirect</h1>
+
+<%= error_messages_for :redirect %>
+
+<% form_for(@redirect) do |f| %>
+  <p>
+    <%= f.label :cookie %><br />
+    <%= f.text_field :cookie %>
+  </p>
+  <p>
+    <%= f.label :url %><br />
+    <%= f.text_field :url %>
+  </p>
+  <p>
+    <%= f.submit "Create" %>
+  </p>
+<% end %>
+
+<%= link_to 'Back', shorturl_redirects_path %>

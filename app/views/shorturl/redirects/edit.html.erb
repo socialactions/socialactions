@@ -1,0 +1,12 @@
+<h1>Editing redirect</h1>
+
+<%= error_messages_for :redirect %>
+
+<% form_for(@redirect) do |f| %>
+  <p>
+    <%= f.submit "Update" %>
+  </p>
+<% end %>
+
+<%= link_to 'Show', @redirect %> |
+<%= link_to 'Back', redirects_path %>

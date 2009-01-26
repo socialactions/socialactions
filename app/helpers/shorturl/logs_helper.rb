@@ -1,0 +1,2 @@
+module Shorturl::LogsHelper
+end

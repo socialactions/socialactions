@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 26) do
+ActiveRecord::Schema.define(:version => 28) do
 
   create_table "action_types", :force => true do |t|
     t.string   "name"
@@ -101,6 +101,23 @@ ActiveRecord::Schema.define(:version => 26) do
     t.boolean  "is_donorschoose_json", :default => false
     t.boolean  "donations",            :default => false, :null => false
   end
+
+  create_table "logs", :force => true do |t|
+    t.string   "referrer"
+    t.integer  "redirect_id"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "redirects", :force => true do |t|
+    t.string   "cookie"
+    t.string   "url"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "redirects", ["id", "cookie", "url"], :name => "index_redirects_on_id_and_cookie_and_url", :unique => true
+  add_index "redirects", ["cookie", "url"], :name => "index_redirects_on_cookie_and_url", :unique => true
 
   create_table "sites", :force => true do |t|
     t.string   "name"
