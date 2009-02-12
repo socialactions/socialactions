@@ -20,7 +20,7 @@ class Shorturl::LogsController < ApplicationController
     end
 
     render :text => result
-    # END the above is temorary code
+    # END the above is temporary code
     #########################################################
 
     #respond_to do |format|

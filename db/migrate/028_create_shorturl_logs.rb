@@ -5,6 +5,7 @@ class CreateShorturlLogs < ActiveRecord::Migration
       t.references :redirect
       t.timestamps
     end
+    add_index :logs, [:redirect_id,:referrer], :unique => false
   end
 
   def self.down

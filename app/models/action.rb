@@ -3,9 +3,11 @@ class Action < ActiveRecord::Base
   include GeoKit::Geocoders
   
   is_indexed :fields => ['title' , 'description', 'site_id', 'latitude', 'longitude', 'created_at', 'updated_at',
-                        'action_type_id' ],
+                        'action_type_id', 'hit_count' ],
                         :delta => true
-
+                        
+  attr_accessor :logs
+  attr_accessor :referrer_count
   belongs_to :feed
   belongs_to :site
   belongs_to :action_type
@@ -17,6 +19,14 @@ class Action < ActiveRecord::Base
   before_create :look_for_tags, :look_for_location, :geocode_lookup
   before_save :update_short_url, :denormalize
 
+  
+  def logs
+    @logs ||= Shorturl::Log.find_all_by_redirect_id(redirect_id)
+  end
+  
+  def referrer_count
+    Shorturl::Log.unique_referrers_for_logs(logs).size
+  end
   
   def update_from_feed_entry(entry)
     self.title = entry.title # TODO: handle text vs. html here
@@ -111,7 +121,9 @@ class Action < ActiveRecord::Base
                 :description, 
                 :url,  
                 :location, 
-                :created_at],
+                :created_at,
+                :hit_count],
+      :methods =>[:referrer_count],
       :include => {:site => {:only => [:name, :url]}, 
                    :action_type => {:only => [:name, :id]}}
     }
@@ -172,9 +184,16 @@ protected
       redirect.save!
       
       self.redirect_id = redirect.id
-      self.short_url = "http://#{redirect.domain}/#{redirect.slug}"
-    rescue
-      # It's ok, it's works just fine without the short url, we want to just continue
+      self.short_url = "http://#{Shorturl::Redirect.domain}/#{redirect.slug}"
+    rescue Exception => message
+      error "short_url didn't work #{message}"
+      # It's ok, it works just fine without the short url, we want to just log it and continue
+    end
+  end
+  
+  def update_hit_count
+    unless self.redirect_id.nil?
+      self.hit_count = Shorturl::Redirect.find_by_id(self.redirect_id).logs.size
     end
   end
   

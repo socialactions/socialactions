@@ -54,6 +54,7 @@ ActiveRecord::Schema.define(:version => 29) do
     t.string   "organization_ein"
     t.text     "tags"
     t.integer  "redirect_id"
+    t.integer  "hit_count",                                                   :default => 0
   end
 
   add_index "actions", ["url"], :name => "index_actions_on_url"
@@ -109,6 +110,8 @@ ActiveRecord::Schema.define(:version => 29) do
     t.datetime "created_at"
     t.datetime "updated_at"
   end
+
+  add_index "logs", ["redirect_id", "referrer"], :name => "index_logs_on_redirect_id_and_referrer"
 
   create_table "redirects", :force => true do |t|
     t.string   "cookie"
