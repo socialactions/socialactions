@@ -53,7 +53,9 @@ class Shorturl::Log < ActiveRecord::Base
     referrers = []
     if !logs.empty?
       logs.each do |log|
-        referrers << log.referrer.gsub(/^http:\/\/[^\/]*\//).first unless log.referrer.nil?
+        if !log.referrer.nil?
+           log.referrer.gsub(/^http:\/\/[^\/]*\//) {|match| referrers << match}
+        end
       end
     end
     referrers.uniq
