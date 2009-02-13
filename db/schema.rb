@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 26) do
+ActiveRecord::Schema.define(:version => 29) do
 
   create_table "action_types", :force => true do |t|
     t.string   "name"
@@ -53,6 +53,8 @@ ActiveRecord::Schema.define(:version => 26) do
     t.string   "organization_email"
     t.string   "organization_ein"
     t.text     "tags"
+    t.integer  "redirect_id"
+    t.integer  "hit_count",                                                   :default => 0
   end
 
   add_index "actions", ["url"], :name => "index_actions_on_url"
@@ -101,6 +103,25 @@ ActiveRecord::Schema.define(:version => 26) do
     t.boolean  "is_donorschoose_json", :default => false
     t.boolean  "donations",            :default => false, :null => false
   end
+
+  create_table "logs", :force => true do |t|
+    t.string   "referrer"
+    t.integer  "redirect_id"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "logs", ["redirect_id", "referrer"], :name => "index_logs_on_redirect_id_and_referrer"
+
+  create_table "redirects", :force => true do |t|
+    t.string   "cookie"
+    t.string   "url"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "redirects", ["id", "cookie", "url"], :name => "index_redirects_on_id_and_cookie_and_url", :unique => true
+  add_index "redirects", ["cookie", "url"], :name => "index_redirects_on_cookie_and_url", :unique => true
 
   create_table "sites", :force => true do |t|
     t.string   "name"

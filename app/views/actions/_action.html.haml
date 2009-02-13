@@ -15,6 +15,12 @@
       %span.action-created= action.created_at.to_s(:default)
       on
       = link_to action.site.name, action.site.url
+      %span.action-hitcount 
+        views:
+      = action.hit_count
+      %span.action-referrercount 
+        unique referrers:
+      = action.referrer_count
   - else
     - if RAILS_ENV == 'development'
       %span{ :style => 'color: red' }

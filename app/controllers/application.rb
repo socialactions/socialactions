@@ -14,7 +14,7 @@ class ApplicationController < ActionController::Base
   helper_method :search_params_readable
   
   def search_params
-    params[:order] = 'created_at' if params[:q].blank?
+    params[:order] = 'created_at' if params[:order].blank?
     params[:limit] = '10' if params[:limit].blank?
     params[:sites] = params[:sites].split(',') if (params[:sites].is_a? String)
     params[:action_types] = params[:action_types].split(',') if (params[:action_types].is_a? String)

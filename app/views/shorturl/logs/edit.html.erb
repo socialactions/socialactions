@@ -1,0 +1,12 @@
+<h1>Editing log</h1>
+
+<%= error_messages_for :log %>
+
+<% form_for(@log) do |f| %>
+  <p>
+    <%= f.submit "Update" %>
+  </p>
+<% end %>
+
+<%= link_to 'Show', @log %> |
+<%= link_to 'Back', logs_path %>

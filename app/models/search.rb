@@ -91,6 +91,9 @@ class Search < ActiveRecord::BaseWithoutTable
     elsif order == 'created_at'
         sort[:sort_mode] = 'descending'
         sort[:sort_by] = 'created_at'
+    elsif order == 'hit_count'
+        sort[:sort_mode] = 'descending'
+        sort[:sort_by] = 'hit_count' 
     else
         raise 'unknown value for order'
     end

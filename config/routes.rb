@@ -1,4 +1,18 @@
 ActionController::Routing::Routes.draw do |map|
+  
+  map.namespace :shorturl do |shorturl|
+    shorturl.resources :redirects, :collection => {:slug => :get}
+    shorturl.resources :logs, :collection => {:hits => :get, :referrers => :get}
+  end
+  
+  map.connect '/s/:slug', :controller => 'shorturl/redirects', :action => 'url'
+  
+  map.connect '/shorturl/logs/:slug/hits', :controller => 'shorturl/logs', :action => 'hits'
+  map.connect '/shorturl/logs/:slug/hits.:format', :controller => 'shorturl/logs', :action => 'hits'
+  
+  map.connect '/shorturl/logs/:slug/referrers', :controller => 'shorturl/logs', :action => 'referrers'
+  map.connect '/shorturl/logs/:slug/referrers.:format', :controller => 'shorturl/logs', :action => 'referrers'
+
   map.resources :actions, :tags, :map, :donations
 
   # The priority is based upon order of creation: first created -> highest priority.
