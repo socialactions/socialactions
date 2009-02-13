@@ -173,7 +173,7 @@ six_degrees:
   last_accessed: <%= 1.day.ago %>
   site: six_degrees
   action_type_id: 1
-  donations: true
+  donations: false
 
 first_giving:
   name: Firstgiving
