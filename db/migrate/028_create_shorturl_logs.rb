@@ -9,6 +9,7 @@ class CreateShorturlLogs < ActiveRecord::Migration
   end
 
   def self.down
+    remove_index :logs, [:redirect_id,:referrer]
     drop_table :logs
   end
 end
