@@ -133,6 +133,12 @@ class Action < ActiveRecord::Base
     {:except => [:short_url]}
   end
   
+  def update_hit_count
+    unless self.redirect_id.nil?
+      self.hit_count = Shorturl::Redirect.find_by_id(self.redirect_id).logs.size
+    end
+  end
+  
 protected
   def fix_quoted_html(text)
     text.gsub(/\&lt;/, '<').gsub(/\&gt;/, '>')
@@ -186,14 +192,8 @@ protected
       self.redirect_id = redirect.id
       self.short_url = "http://#{Shorturl::Redirect.domain}/#{redirect.slug}"
     rescue Exception => message
-      error "short_url didn't work #{message}"
+      warn "short_url didn't work #{message}"
       # It's ok, it works just fine without the short url, we want to just log it and continue
-    end
-  end
-  
-  def update_hit_count
-    unless self.redirect_id.nil?
-      self.hit_count = Shorturl::Redirect.find_by_id(self.redirect_id).logs.size
     end
   end
   
