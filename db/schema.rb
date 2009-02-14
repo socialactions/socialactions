@@ -57,6 +57,7 @@ ActiveRecord::Schema.define(:version => 30) do
     t.integer  "hit_count",                                                   :default => 0
   end
 
+  add_index "actions", ["id"], :name => "index_actions_on_id", :unique => true
   add_index "actions", ["url"], :name => "index_actions_on_url"
   add_index "actions", ["redirect_id"], :name => "index_actions_on_redirect_id"
 
