@@ -3,7 +3,6 @@ class CreateShorturlRedirects < ActiveRecord::Migration
     create_table :redirects do |t|
       t.string :cookie
       t.string :url
-      t.integer :hit_count
       t.timestamps
     end
     add_index :redirects, [:id,:cookie,:url], :unique => true
