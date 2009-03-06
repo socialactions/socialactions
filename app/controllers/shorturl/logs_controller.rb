@@ -3,7 +3,7 @@ require 'fastercsv'
 class Shorturl::LogsController < ApplicationController
  
   def show
-    @logs = Shorturl::Log.find(:all)
+    @logs = ["nothing"] # Shorturl::Log.find(:all)
 
     #########################################################
     # From this to END is temporary code, once we upgrade 
