@@ -64,7 +64,7 @@ class Search < ActiveRecord::BaseWithoutTable
       filters['site_id'] = sites
     end
 
-    self.created = 7 if created.blank?
+    self.created = 'all' if created.blank?
     if created != 'all'
       self.created = created.to_i
       start_time = created == 0 ? Time.today.to_i : created.days.ago.to_i
