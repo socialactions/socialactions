@@ -481,3 +481,102 @@ policy_pitch:
   last_accessed: <%= 1.day.ago %>
   site: policy_pitch
   action_type_id: 2
+
+climate_path_projects:
+  name: ClimatePath Projects
+  url: http://www.climatepath.org/projects/feed
+  tag_finder: 
+  location_finder:
+  last_accessed: <%= 1.day.ago %>
+  site: climate_path
+  action_type_id: 1
+
+freedom_speaks_letters:
+  name: FreedomSpeaks Letters
+  url: http://www.freedomspeaks.com/rss/letters-by-date
+  tag_finder: 
+  location_finder:
+  last_accessed: <%= 1.day.ago %>
+  site: freedom_speaks
+  action_type_id: 8
+
+apathy_is_boring_alerts:
+  name: ApathyIsBoring Alerts
+  url: http://feeds.feedburner.com/ApathyIsBoring-Alerts
+  tag_finder: 
+  location_finder:
+  last_accessed: <%= 1.day.ago %>
+  site: apathy_is_boring
+  action_type_id: 2
+
+earth_justice_take_action:
+  name: EarthJustice TakeAction
+  url: http://feeds.feedburner.com/EarthjusticeTakeAction
+  tag_finder: 
+  location_finder:
+  last_accessed: <%= 1.day.ago %>
+  site: earth_justice
+  action_type_id: 8
+
+wokai_featured_actions:
+  name: Wokai FeaturedActions
+  url: http://wokai.typepad.com/wokai_featured_actions/rss.xml
+  tag_finder: 
+  location_finder:
+  last_accessed: <%= 1.day.ago %>
+  site: wokai
+  action_type_id: 7
+
+twitter_take_action:
+  name: Twitter TakeAction
+  url: http://search.twitter.com/search?q=&ands=&phrase=&ors=&nots=RT&tag=takeaction&lang=all&from=&to=&ref=&near=&within=15&units=mi&since=&until=&rpp=50
+  tag_finder: 
+  location_finder:
+  last_accessed: <%= 1.day.ago %>
+  site: twitter
+  action_type_id: 10
+
+modest_needs_prequalified_applications:
+  name: ModestNeeds PrequalifiedApplications
+  url: http://www.modestneeds.org/rss/Prequalified_Applications.asp
+  tag_finder: 
+  location_finder:
+  last_accessed: <%= 1.day.ago %>
+  site: modest_needs
+  action_type_id: 1
+
+lend_for_helath_posts:
+  name: LendForHealth Posts
+  url: http://lend4health.blogspot.com/feeds/posts/default?alt=rss
+  tag_finder: 
+  location_finder:
+  last_accessed: <%= 1.day.ago %>
+  site: lend_for_health
+  action_type_id: 7
+
+live_earth_action:
+  name: LiveEarth Action
+  url: http://liveearth.org/category/action/feed/
+  tag_finder: 
+  location_finder:
+  last_accessed: <%= 1.day.ago %>
+  site: live_earth
+  action_type_id: 2
+
+idea_blob_idea_categories:
+  name: IdeaBlob IdeaCategories
+  url: http://www.ideablob.com/idea_categories/51/recent
+  tag_finder: 
+  location_finder:
+  last_accessed: <%= 1.day.ago %>
+  site: idea_blob
+  action_type_id: 12
+
+idea_blob_ideas:
+  name: IdeaBlob Ideas
+  url: http://www.ideablob.com/ideas/34/recent/rss
+  tag_finder: 
+  location_finder:
+  last_accessed: <%= 1.day.ago %>
+  site: idea_blob
+  action_type_id: 12

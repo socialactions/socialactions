@@ -31,3 +31,7 @@ unknown:
 employment:
     name: Employment
     id: 11
+
+vote_for_an_idea:
+    name: Vote For An Idea
+    id: 12

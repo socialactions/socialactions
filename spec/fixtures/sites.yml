@@ -153,3 +153,44 @@ knightpulse:
 policy_pitch:
   name: PolicyPitch
   url: http://policypitch.com
+
+climate_path:
+  name: ClimatePath
+  url: http://www.climatepath.org
+
+freedom_speaks:
+  name: FreedomSpeaks
+  url: http://www.freedomspeaks.com
+
+apathy_is_boring:
+  name: ApathyIsBoring
+  url:  http://www.apathyisboring.com
+
+earth_justice:
+  name: EarthJustice
+  url: http://www.earthjustice.org
+
+wokai:
+  name: Wokai
+  url: http://www.wokai.org
+
+twitter:
+  name: Twitter
+  url: http://twitter.com
+
+modest_needs:
+  name: ModestNeeds
+  url: http://www.modestneeds.org
+
+lend_for_health:
+  name: LendForHealth
+  url: http://www.lend4health.org
+
+live_earth:
+  name: LiveEarth
+  url: http://www.liveearth.org
+
+idea_blob:
+  name: IdeaBlob
+  url: http://www.ideablob.com
+
