@@ -56,7 +56,7 @@ class Feed < ActiveRecord::Base
         puts "Parsing #{feed.name}" if options[:debug]
         begin
           feed.parse
-        rescue
+        rescue Exception, RuntimeError, Timeout::Error
           puts "ERROR on feed #{feed.name}: #{$!}"
         end
       end
