@@ -15,7 +15,8 @@ class ApplicationController < ActionController::Base
   
   def search_params
     params[:order] = 'created_at' if params[:order].blank?
-    params[:limit] = '10' if params[:limit].blank?
+    params[:limit] = '10' if params[:limit].blank? || params[:limit].to_i <= 0
+    params[:limit] = '50' if params[:limit].to_i > 50 
     params[:sites] = params[:sites].split(',') if (params[:sites].is_a? String)
     params[:action_types] = params[:action_types].split(',') if (params[:action_types].is_a? String)
     params[:exclude_action_types] = params[:exclude_action_types].split(',') if (params[:exclude_action_types].is_a? String)
