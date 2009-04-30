@@ -1,37 +1,37 @@
-group_fundraiser: 
-    name: Group Fundraiser
+donate: 
+    name: Donate
     id: 1
-campaign: 
-    name: Campaign
+support_a_campaign: 
+    name: Support a campaign
     id: 2
-pledged_action: 
-    name: Pledged Action
+make_a_pledge: 
+    name: Make a pledge
     id: 3
-event: 
-    name: Event
+attend_an_event: 
+    name: Attend an event
     id: 4
-affinity_group: 
-    name: Affinity Group
+join_a_group: 
+    name: Join a group
     id: 5
 volunteer: 
     name: Volunteer
     id: 6
-micro_credit_loan: 
-    name: Micro-credit Loan
+lend_money: 
+    name: Lend money
     id: 7
-petition: 
-    name: Petition
+sign_a_petition: 
+    name: Sign a petition
     id: 8
-individual_action:
-    name: Individual Action
+do_it_yourself:
+    name: Do it yourself
     id: 9
 unknown:
     name: Unknown
     id: 10
-employment:
-    name: Employment
+apply_for_a_job:
+    name: Apply for a job
     id: 11
 
-vote_for_an_idea:
-    name: Vote For An Idea
+vote:
+    name: Vote
     id: 12
