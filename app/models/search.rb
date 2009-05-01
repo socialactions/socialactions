@@ -18,6 +18,12 @@ class Search < ActiveRecord::BaseWithoutTable
     :around => 3,
     :content_methods => [['title'],['description']]
   })
+  
+  VALID_SORT_FIELDS = ['title' , 'description', 'site_id', 'latitude', 'longitude', 'created_at', 'updated_at',
+                        'hit_count', 'location', 'subtitle', 'goal_completed', 'goal_amount', 
+                        'goal_type', 'goal_number_of_contributors', 'initiator_name', 'initiator_url', 'initiator_email', 'expires_at',
+                        'dcterms_valid', 'platform_name', 'platform_url', 'platform_email', 'embed_widget', 
+                        'organization_name', 'organization_email', 'tags', 'ein']
 
   def results(page)
     validate_input
@@ -29,6 +35,7 @@ class Search < ActiveRecord::BaseWithoutTable
       # TODO figure out random for sort_by
       Ultrasphinx::Search.new(
                                 {:query => build_query,
+                                 :weights => {:title => 12, :description => 12},
                                  :per_page => limit,
                                  :page => page || 1,
                                  :filters => build_filters
@@ -88,12 +95,9 @@ class Search < ActiveRecord::BaseWithoutTable
     if order == 'relevance' or order.blank?
         sort[:sort_mode] = 'relevance'
         sort[:sort_by] = nil
-    elsif order == 'created_at'
+    elsif VALID_SORT_FIELDS.include?(order)
         sort[:sort_mode] = 'descending'
-        sort[:sort_by] = 'created_at'
-    elsif order == 'hit_count'
-        sort[:sort_mode] = 'descending'
-        sort[:sort_by] = 'hit_count' 
+        sort[:sort_by] = order
     else
         raise 'unknown value for order'
     end
