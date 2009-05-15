@@ -529,7 +529,7 @@ wokai_featured_actions:
 
 twitter_take_action:
   name: Twitter TakeAction
-  url: http://search.twitter.com/search?q=&ands=&phrase=&ors=&nots=RT&tag=takeaction&lang=all&from=&to=&ref=&near=&within=15&units=mi&since=&until=&rpp=50
+  url: http://search.twitter.com/search.atom?q=&ands=&phrase=&ors=&nots=RT&tag=takeaction&lang=all&from=&to=&ref=&near=&within=15&units=mi&since=&until=&rpp=50
   tag_finder: 
   location_finder:
   last_accessed: <%= 1.day.ago %>
@@ -546,7 +546,7 @@ modest_needs_prequalified_applications:
   action_type_id: 1
 
 lend_for_helath_posts:
-  name: LendForHealth Posts
+  name: Lend4Health Posts
   url: http://lend4health.blogspot.com/feeds/posts/default?alt=rss
   tag_finder: 
   location_finder:
