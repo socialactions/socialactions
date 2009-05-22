@@ -584,7 +584,8 @@ idea_blob_ideas:
 greater_good_south_africa_receivers:
   name Greater Good South Africa Receivers
   url: http://www.myggsa.co.za/receivers/rss
-  tag_finder:                                                                                                                                                                    location_finder:
+  tag_finder:
+  location_finder:
   last_accessed: <%= 1.day.ago %>
   site: greater_good_south_africa
   action_type_id: 1
