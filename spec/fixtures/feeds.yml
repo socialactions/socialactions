@@ -580,3 +580,56 @@ idea_blob_ideas:
   last_accessed: <%= 1.day.ago %>
   site: idea_blob
   action_type_id: 12
+
+greater_good_south_africa_receivers:
+  name Greater Good South Africa Receivers
+  url: http://www.myggsa.co.za/receivers/rss
+  tag_finder:                                                                                                                                                                    location_finder:
+  last_accessed: <%= 1.day.ago %>
+  site: greater_good_south_africa
+  action_type_id: 1
+
+sasix_projects:
+  name: SASIX Projects
+  url: http://www.sasix.co.za/projects/rss
+  tag_finder:
+  location_finder:
+  last_accessed: <%= 1.day.ago %>
+  site: sasix
+  action_type_id: 1
+
+give_india_feed:
+  name: GiveIndia Feed
+  url: http://www.giveindia.org/images/giveindiafeed.xml
+  tag_finder:
+  location_finder:
+  last_accessed: <%= 1.day.ago %> 
+  site: give_india
+  action_type_id: 1
+
+stop_climate_crisis_coalition_actions:
+  name: Stop Climate Crisis Coalition Actions
+  url: http://www.stopclimatechaos.org/tags/actions/feed
+  tag_finder:
+  location_finder:
+  last_accessed: <%= 1.day.ago %>
+  site: stop_climate_crisis_coalition
+  action_type_id: 2
+
+opt_in_now_new_loan:
+  name: OptINnow New Loan
+  url: http://www.optinnow.org/connect/new_loan_feed
+  location_finder:
+  last_accessed: <%= 1.day.ago %>
+  site: opt_in_now
+  action_type_id: 1
+
+youth_noise_projects:
+  name: YouthNoise Projects
+  url: http://www.youthnoise.com/projnew/rss/recent/0
+  location_finder:
+  last_accessed: <%= 1.day.ago %>
+  site: youth_noise
+  action_type_id: 5
+
+

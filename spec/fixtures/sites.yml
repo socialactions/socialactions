@@ -194,3 +194,26 @@ idea_blob:
   name: IdeaBlob
   url: http://www.ideablob.com
 
+greater_good_south_africa:
+  name: Greater Good South Africa
+  url: http://www.myggsa.co.za
+
+sasix:
+  name: SASIX
+  url: http://www.sasix.co.za
+
+give_india:
+  name: GiveIndia
+  url: http://www.giveindia.org
+
+stop_climate_crisis_coalition:
+  name: Stop Climate Crisis Coalition
+  url: http://www.stopclimatechaos.org
+
+opt_in_now:
+  name: OptINnow
+  url: http://www.optinnow.org
+
+youth_noise:
+  name: YouthNoise
+  url: http://www.youthnoise.com
