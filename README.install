@@ -7,7 +7,11 @@ Your mileage may vary.
  gem install rfeedparser
  gem install rspec
  gem install launchy
- 
+ gem install soap4r
+ gem install fastercsv 
+ gem install simple-rss
+ gem install libxml-ruby -v 0.8.3
+
  rake db:create
  rake db:schema:load
  rake spec:db:fixtures:load FIXTURES=feeds,sites,action_types
