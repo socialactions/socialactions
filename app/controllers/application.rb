@@ -3,7 +3,8 @@
 
 class ApplicationController < ActionController::Base
   include SslRequirement
-
+  include AuthenticatedSystem
+  
   helper :all # include all helpers, all the time
 
   # See ActionController::RequestForgeryProtection for details

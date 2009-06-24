@@ -1,4 +1,8 @@
 ActionController::Routing::Routes.draw do |map|
+  map.resources :users
+
+  map.resource :login
+
   
   map.namespace :shorturl do |shorturl|
     shorturl.resources :redirects, :collection => {:slug => :get}
