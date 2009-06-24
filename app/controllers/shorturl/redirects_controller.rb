@@ -1,5 +1,7 @@
 class Shorturl::RedirectsController < ApplicationController
   
+  before_filter :login_required, :except => [:url, :slug]
+  
   def url
     @redirect = Shorturl::Redirect.find_by_slug(params[:slug])
     if @redirect.nil?
