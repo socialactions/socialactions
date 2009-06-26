@@ -1,0 +1,54 @@
+<p>
+  <%= f.label :name %><br />
+  <%= f.text_field :name %>
+</p>
+
+<p>
+  <%= f.label :url %><br />
+  <%= f.text_field :url, :size => 75 %>
+</p>
+
+<div id="existing_site">
+  <p>
+    <%= f.label :site_id %><br />
+    <%= select_tag 'action_source[site_id]', options_for_select(options_for_site_select('-- select site --'), @action_source.site_id) %>
+    (<%= link_to_function 'OR create new site', '$("#existing_site").toggle(); $("#new_site").toggle(); $("#site_name").val(""); $("#site_url").val("");' %>)
+  </p>
+</div>
+<div id="new_site"  style="display:none;">
+  <p>
+    <%= f.label :site_id %><br />
+    (<%= link_to_function 'OR use existing site', '$("#existing_site").toggle(); $("#new_site").toggle(); $("#site_name").val(""); $("#site_url").val("");' %>)<br/>
+    <b>site name:</b> <%= text_field_tag 'site_name' %> <b>site url:</b> <%= text_field_tag 'site_url','', :size => 50 %>
+  </p>
+</div>
+
+<div id="existing_action_type">
+  <p>
+    <%= f.label :action_type_id %><br />
+    <%= select_tag 'action_source[action_type_id]', options_for_select(options_for_action_type_select('-- select action type --'), @action_source.action_type_id) %>
+    (<%= link_to_function 'OR create new action type', '$("#existing_action_type").toggle(); $("#new_action_type").toggle(); $("#action_type_name").val("");' %>)
+  </p>
+</div>
+<div id="new_action_type"  style="display:none;">
+  <p>
+    <%= f.label :action_type_id %><br />
+    (<%= link_to_function 'OR use existing action type', '$("#existing_action_type").toggle(); $("#new_action_type").toggle(); $("#action_type_name").val("");' %>)<br/>
+    <b>action type name:</b> <%= text_field_tag 'action_type_name' %>
+  </p>
+</div>
+
+<p>
+  <%= f.label :needs_updating %><br />
+  <%= f.check_box :needs_updating %>
+</p>
+
+<p>
+  <%= f.label :plugin_name %><br />
+  <%= select_tag 'action_source[plugin_name]', options_for_select(options_for_plugin_name_select('-- select plugin --'), @action_source.plugin_name) %>
+</p>
+
+<p>
+  <%= f.label :additional_data %><br />
+  <%= f.text_area :additional_data %>
+</p>

@@ -1,0 +1,14 @@
+<h1>Editing Action Source: <%= @action_source.name %></h1>
+
+<%= error_messages_for :action_source %>
+
+<% form_for(@action_source) do |f| %>
+  <%= render :partial => "form", :locals => { :f => f }%>
+ 
+  <p>
+    <%= f.submit "Update" %>
+  </p>
+<% end %>
+
+<%= link_to 'Show', @action_source %> |
+<%= link_to 'Index', action_sources_path %>

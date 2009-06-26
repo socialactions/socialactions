@@ -9,7 +9,20 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 31) do
+ActiveRecord::Schema.define(:version => 32) do
+
+  create_table "action_sources", :force => true do |t|
+    t.string   "name"
+    t.string   "url"
+    t.datetime "last_accessed"
+    t.integer  "site_id"
+    t.integer  "action_type_id"
+    t.boolean  "needs_updating"
+    t.string   "plugin_name"
+    t.text     "additional_data"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
 
   create_table "action_types", :force => true do |t|
     t.string   "name"
@@ -26,7 +39,7 @@ ActiveRecord::Schema.define(:version => 31) do
     t.text     "title"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.integer  "feed_id"
+    t.integer  "action_source_id"
     t.decimal  "latitude",                    :precision => 15, :scale => 10
     t.decimal  "longitude",                   :precision => 15, :scale => 10
     t.string   "location"

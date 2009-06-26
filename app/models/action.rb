@@ -11,7 +11,7 @@ class Action < ActiveRecord::Base
                         
   attr_accessor :logs
   attr_accessor :referrer_count
-  belongs_to :feed
+  belongs_to :action_source
   belongs_to :site
   belongs_to :action_type
   has_many :donations
@@ -31,80 +31,10 @@ class Action < ActiveRecord::Base
     Shorturl::Log.unique_referrers_for_logs(logs).size
   end
   
-  def update_from_feed_entry(entry)
-    self.title = entry.title # TODO: handle text vs. html here
-    self.url = entry.link
-    self.description = description_for(entry)
-    if entry.published_time or self.created_at.blank?
-      self.created_at = entry.published_time || entry.updated_time || Time.now
-    end
-    self.updated_at = entry.updated_time if entry.updated_time
-    figure_out_address_from(entry)
-    self.organization_ein = entry.cb_ein # "legacy" support for 6deg pre-OA EIN
-
-    unless entry.author_detail.blank?
-      self.initiator_name = entry.author_detail.name
-      self.initiator_email = entry.author_detail.email
-      self.initiator_url = entry.author_detail.url
-    end
-
-    self.subtitle = entry.dcterms_alternative
-    self.embed_widget = entry.oa_embedwidget
-
-    if entry.oa_goal
-      self.goal_completed = entry.oa_goal.oa_completed
-      self.goal_amount = entry.oa_goal.oa_amount
-      self.goal_type = entry.oa_goal.oa_type
-      self.goal_number_of_contributors = entry.oa_goal.oa_numberofcontributors
-    end
-    
-    self.dcterms_valid = entry.dcterms_valid
-    if entry.dcterms_valid and entry.dcterms_valid.match(/(^|;)\s*end=([^;]+)/)
-      self.expires_at = $2
-    end
-    
-    unless entry.tags.blank?
-      action_type_category = entry.tags.detect{ |t| 
-        t.scheme == 'http://socialactions.com/action_types'
-      }
-      if action_type_category
-        self.action_type = ActionType.find_by_name(action_type_category.term)
-      end
-      
-      self.tags = entry.tags.reject{ |t| 
-        t.scheme == 'http://socialactions.com/action_types'
-      }.map{|t| t.term}
-    end
-      
-    if entry.oa_platform
-      self.platform_name = entry.oa_platform.oa_name
-      self.platform_url = entry.oa_platform.oa_url
-      self.platform_email = entry.oa_platform.oa_email
-    end
-
-    if entry.oa_organization
-      self.organization_name = entry.oa_organization.oa_name
-      self.organization_url = entry.oa_organization.oa_url
-      self.organization_email = entry.oa_organization.oa_email
-      self.organization_ein = entry.oa_organization.oa_ein
-    end
-
-    #pp self.attributes
-  end
+ 
   
   def description=(new_description)
     write_attribute(:description, fix_quoted_html(new_description))
-  end
-  
-  def description_for(entry)
-    # TODO: handle text vs. html here
-    if entry.content && !entry.content[0].value.blank?
-      entry.content[0].value
-    elsif !entry.summary.blank?
-      entry.summary
-    else
-      ""
-    end
   end
   
   def url
@@ -148,25 +78,22 @@ protected
   end
   
   def look_for_location
-    if feed.location_finder and self.description
-      match = self.description.match(feed.location_finder.to_s)
-      self.location = match[1] if match and match[1]
-      puts "     Found Location: #{self.location}"
+    if action_source.respond_to? 'location_finder'   
+      if action_source.location_finder and self.description
+        match = self.description.match(action_source.location_finder.to_s)
+        self.location = match[1] if match and match[1]
+        puts "     Found Location: #{self.location}"
+      end
     end
   end
   
   def look_for_tags
-    if feed.tag_finder and description
-      match = description.match(feed.tag_finder.to_s)
-      self.tag_list = match[1] if match and match[1]
-      puts "     Found Tags: #{self.tag_list}"
-    end
-  end
-
-  def figure_out_address_from(entry)
-    if entry.geo_lat and entry.geo_long
-      self.latitude = entry.geo_lat
-      self.longitude = entry.geo_long
+    if action_source.respond_to? 'tag_finder'
+      if action_source.tag_finder and self.description
+        match = description.match(action_source.tag_finder.to_s)
+        self.tag_list = match[1] if match and match[1]
+        puts "     Found Tags: #{self.tag_list}"
+      end
     end
   end
   
@@ -183,8 +110,8 @@ protected
   
   
   def denormalize
-    self.site_id = self.feed.site_id
-    self.action_type ||= self.feed.action_type
+    self.site_id = self.action_source.site_id
+    self.action_type ||= self.action_source.action_type
   end
   
   def update_short_url

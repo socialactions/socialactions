@@ -1,0 +1,21 @@
+<h1>Action Sources</h1>
+
+<%= link_to 'New Action Source . . .', new_action_source_path %>
+<table cellpadding="3">
+  <tr>
+  	<td align="left"><strong>Site</strong></th>
+    <td colspan="2" align="left"><strong>Action Name</strong></th>
+  </tr>
+
+<% for action_source in @action_sources %>
+  <tr>
+  	<td><%= action_source.site.name %></td>
+    <td><%= link_to action_source.name, edit_action_source_path(action_source) %></td>
+    <td><%= link_to 'Destroy', action_source, :confirm => 'Are you sure?', :method => :delete %></td>
+  </tr>
+<% end %>
+</table>
+
+<br />
+
+<%= link_to 'New Action Source . . .', new_action_source_path %>

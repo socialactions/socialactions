@@ -1,0 +1,615 @@
+#one:
+#  name: MyString
+#  url: MyString
+#  last_accessed: 2009-06-24 10:32:57
+#  site_id: 1
+#  action_type_id: 1
+#  needs_updating: false
+#  plugin_name: feed
+#  additional_data: 
+  
+global_giving:
+  name: GlobalGiving
+  url: http://feeds.feedburner.com/GlobalGivingProjects
+  last_accessed: <%= 1.day.ago %>
+  site: global_giving
+  action_type_id: 1
+  plugin_name: feed
+  additional_data: 
+  
+pledge_bank:
+  name: PledgeBank
+  url: http://everywhere.en-gb.pledgebank.com/rss/list
+  last_accessed: <%= 1.day.ago %>
+  site: pledge_bank
+  action_type_id: 3
+  plugin_name: feed
+  additional_data: 
+
+change_org_giving:
+  name: Change.org Giving Networks
+  url: http://www.change.org/giving_networks/rss
+  last_accessed: <%= 1.day.ago %>
+  site: change_org
+  action_type_id: 1
+  plugin_name: feed
+  additional_data: "{tag_finder : \"<br />Tags[:] ([\w\s,]+)<br />\"}"
+    
+change_org_changes:
+  name: Change.org Changes 
+  url: http://www.change.org/changes/rss
+  last_accessed: <%= 1.day.ago %>
+  site: change_org
+  action_type_id: 5
+  plugin_name: feed
+  additional_data: "{tag_finder : \"<br />Tags[:] ([\w\s,]+)<br />\"}" 
+
+razoo_acts:
+  name: Razoo Acts
+  url: http://community.razoo.com/browse/acts?sort=mp&filter=ne&format=xml
+  last_accessed: %= 1.day.ago %>
+  site: razoo
+  action_type_id: 3
+  plugin_name: feed
+  additional_data: 
+  
+razoo_goals:
+  name: Razoo Goals
+  url: http://community.razoo.com/browse/goals?sort=mp&format=xml
+  last_accessed: <%= 1.day.ago %>
+  site: razoo
+  action_type_id: 3
+  plugin_name: feed
+  additional_data: 
+  
+razoo_groups:
+  name: Razoo Groups
+  url: http://community.razoo.com/browse/groups?sort=mm&format=xml
+  last_accessed: <%= 1.day.ago %>
+  site: razoo
+  action_type_id: 5
+  plugin_name: feed
+  additional_data: 
+  
+razoo_causes:
+  name: Razoo Causes
+  url: http://community.razoo.com/browse/causes?sort=mm&format=xml
+  last_accessed: <%= 1.day.ago %>
+  site: razoo
+  action_type_id: 5
+  plugin_name: feed
+  additional_data: 
+  
+democracy_in_action:
+  name: DemocracyinAction
+  url: http://salsa.democracyinaction.org/dia/network/pfp.jsp
+  last_accessed: <%= 1.day.ago %>
+  site: democracy_in_action
+  action_type_id: 1
+  plugin_name: feed
+  additional_data: 
+
+care_2_petitions:
+  name: Care2 Petitions
+  url: http://www.thepetitionsite.com/browse-petitions/rss
+  last_accessed: <%= 1.day.ago %>
+  site: care_2_petitions
+  action_type_id: 8
+  plugin_name: feed
+  additional_data: 
+
+the_point:
+  name: ThePoint
+  url: http://www.thepoint.com/rss 
+  last_accessed: <%= 1.day.ago %>
+  site: the_point
+  action_type_id: 3
+  plugin_name: feed
+  additional_data: 
+
+give_meaning_proposals:
+  name: GiveMeaning Proposals 
+  url: http://www.givemeaning.com/SaveAnything/SearchAssetsRSS.aspx?Community=%2fWorld&Cause=0&type=proposals&sortby=DateAdded&dir=Desc&pagesize=50
+  last_accessed: <%= 1.day.ago %>
+  site: give_meaning
+  action_type_id: 3
+  plugin_name: feed
+  additional_data: "{tag_finder : \"\\n\\n Tags[:] ([\w\s,]+)\"}"
+
+give_meaning_projects:
+  name: GiveMeaning Projects
+  url: http://www.givemeaning.com/SaveAnything/SearchAssetsRSS.aspx?Community=%2fWorld&Cause=0&type=projects&sortby=DateAdded&dir=Desc&pagesize=50
+  last_accessed: <%= 1.day.ago %>
+  site: give_meaning
+  action_type_id: 3
+  plugin_name: feed
+  additional_data: "{tag_finder : \"\\n\\n Tags[:] ([\w\s,]+)\"}"
+  
+changing_the_present:
+  name: ChangingthePresent New Drives
+  url: http://www.changingthepresent.org/drives/rss
+  last_accessed: <%= 1.day.ago %>
+  site: changing_the_present
+  action_type_id: 1
+  plugin_name: feed
+  additional_data: 
+  
+fundable:
+  name: Fundable
+  url: http://www.fundable.org/search_rss?SearchableText=&portal_type%3Alist=GroupAction&review_state=public&review_state=private&sort_on=created&sort_order=descending
+  last_accessed: <%= 1.day.ago %>
+  site: fundable
+  action_type_id: 1
+  plugin_name: feed
+  additional_data: 
+  
+bring_light:
+  name: BringLight
+  url: http://www.bringlight.com/feeds/all
+  last_accessed: <%= 1.day.ago %>
+  site: bring_light
+  action_type_id: 1
+  plugin_name: feed
+  additional_data: 
+
+kiva:
+  name: Kiva
+  url: http://www.kiva.org/app.php?page=rss&action=businesses&status=fundRaising
+  last_accessed: <%= 1.day.ago %>
+  site: kiva
+  action_type_id: 7
+  plugin_name: feed
+  additional_data: 
+  
+six_degrees:
+  name: SixDegrees
+  url: http://www.networkforgood.org/data/BadgePromotionFeed.aspx?source=SIXDEG&cmpgn=SCB&type=RecentBadge
+  last_accessed: <%= 1.day.ago %>
+  site: six_degrees
+  action_type_id: 1
+  plugin_name: feed
+  additional_data: 
+
+first_giving:
+  name: Firstgiving
+  url: http://feeds.firstgiving.com/fundraisers/quickview.rss
+  last_accessed: <%= 1.day.ago %>
+  site: first_giving
+  action_type_id: 1
+  plugin_name: feed
+  additional_data: 
+
+zazengo:
+  name: Latest Zazengo Projects
+  url: http://www.zazengo.com/projects.rss
+  last_accessed: <%= 1.day.ago %>
+  site: zazengo
+  action_type_id: 5
+  plugin_name: feed
+  additional_data: "{tag_finder : \"<span class=&quot;issues&quot;>([\w\s,]+)</span>\", location_finder : \"<span class=&quot;street-address&quot;>([\w\s,]+)</span>\"}"
+
+helpalot:
+  name: Helpalot
+  url: http://www.helpalot.org/en/feed/projects/
+  last_accessed: <%= 1.day.ago %>
+  site: helpalot
+  action_type_id: 5
+  plugin_name: feed
+  additional_data: "{location_finder : \"<br /><br />\\n([\w\s,]+)\\n<br />\"}"
+
+pincgiving:
+  name: PincGiving
+  url: http://www.pincgiving.com/feed/campaign
+  last_accessed: <%= 1.day.ago %>
+  site: pincgiving
+  action_type_id: 1
+  plugin_name: feed
+  additional_data: 
+  
+microgiving:
+  name: MicroGiving
+  url: http://www.microgiving.com/feed-requested.php
+  last_accessed: <%= 1.day.ago %>
+  site: microgiving
+  action_type_id: 1
+  plugin_name: feed
+  additional_data: 
+
+idealist_org_events:
+  name: Idealist.org Events
+  url: http://www.idealist.org/if/idealist/en/SiteIndex/Search/viewAsRSS?assetTags=EVENT_TYPE&assetTypes=Event&fetchLimit=30&languageDesignations=en&onlyFetchAssetProperties=1&siteClassifierName=idealist&sortOrderings=beginDate&validStatusTypes=APPROVED&validSta
+  last_accessed: <%= 1.day.ago %>
+  site: idealist_org
+  action_type_id: 4
+  plugin_name: feed
+  additional_data: "{location_finder : \"^\d\d\d\d-\d\d-\d\d, ([^\\n]*)$\"}"
+
+idealist_org_volunteer:
+  name: Idealist.org Volunteer Opportunities
+  url: http://www.idealist.org/if/idealist/en/SiteIndex/Search/viewAsRSS?assetTags=VOLUNTEER_OPPORTUNITY_TYPE&assetTypes=VolunteerOpportunity&fetchLimit=10&languageDesignations=en&sortOrderings=creationDate&validStatusTypes=APPROVED&validStatusTypes=UNAPPROVED&v
+  last_accessed: <%= 1.day.ago %>
+  site: idealist_org
+  action_type_id: 6
+  plugin_name: feed
+  additional_data:
+
+idealist_org_campaigns:
+  name: Idealist.org Campaigns
+  url: http://www.idealist.org/if/idealist/en/SiteIndex/Search/viewAsRSS?assetTags=CAMPAIGN_TYPE&assetTypes=Campaign&fetchLimit=10&languageDesignations=en&sortOrderings=creationDate&validStatusTypes=APPROVED&validStatusTypes=UNAPPROVED&validStatusTypes=DEFERRED
+  last_accessed: <%= 1.day.ago %>
+  site: idealist_org
+  action_type_id: 2
+  plugin_name: feed
+  additional_data:
+
+volunteer_match:
+  name: VolunteerMatch
+  url: http://www.volunteermatch.org/search/index.jsp?rss=true&k=all&v=true
+  last_accessed: <%= 1.day.ago %>
+  site: volunteer_match
+  action_type_id: 6
+  plugin_name: feed
+  additional_data:
+
+nabuur:
+  name: NABUUR
+  url: http://www.nabuur.com/feed/tasks/rss
+  last_accessed: <%= 1.day.ago %>
+  site: nabuur
+  action_type_id: 6
+  plugin_name: feed
+  additional_data:
+
+charity_focus:
+  name: CharityFocus
+  url: http://charityfocus.org/rss/actions.php
+  last_accessed: <%= 1.day.ago %>
+  site: charity_focus
+  action_type_id: 9
+  plugin_name: feed
+  additional_data:
+
+delicious_takeaction:
+  name: Delicious TakeAction Tag
+  url: http://feeds.delicious.com/v2/atom/tag/takeaction
+  last_accessed: <%= 1.day.ago %>
+  site: delicious
+  action_type_id: 10
+  plugin_name: feed
+  additional_data:
+
+takingitglobal_petitions:
+  name: TakingITGlobal Petitions
+  url: http://feed.takingitglobal.org/feed.atom?type=petitions
+  last_accessed: <%= 1.day.ago %>
+  site: taking_it_global
+  action_type_id: 8
+  plugin_name: feed
+  additional_data:
+
+takingitglobal_commitments:
+  name: TakingITGlobal Commitments
+  url: http://feed.takingitglobal.org/feed.atom?type=commitments
+  last_accessed: <%= 1.day.ago %>
+  site: taking_it_global
+  action_type_id: 3
+  plugin_name: feed
+  additional_data:
+
+christmasfuture_volunteer:
+  name: ChristmasFuture Volunteer
+  url: http://www.christmasfuture.org/blog/category/volunteer-opportunities/feed
+  last_accessed: <%= 1.day.ago %>
+  site: christmas_future
+  action_type_id: 6
+  plugin_name: feed
+  additional_data:
+
+global_giving_uk:
+  name: GlobalGiving UK
+  url: http://feeds.feedburner.com/GlobalGivingUKProjects
+  last_accessed: <%= 1.day.ago %>
+  site: global_giving_uk
+  action_type_id: 1
+  plugin_name: feed
+  additional_data:
+
+prax:
+  name: Prax
+  url: http://prax.ca/action_rss.xml
+  last_accessed: <%= 1.day.ago %>
+  site: prax
+  action_type_id: 8
+  plugin_name: feed
+  additional_data:
+
+amazee:
+  name: Amazee
+  url: http://www.amazee.com/navigator/rss/-1/EN-EU/created
+  last_accessed: <%= 1.day.ago %>
+  site: amazee
+  action_type_id: 2
+  plugin_name: feed
+  additional_data:
+
+donorschoose:
+  name: DonorsChoose.org
+  url: http://api.donorschoose.org/common/json_feed.html?subject1=-1&action=browse&APIKey=vsexve8e3i
+  last_accessed: <%= 1.day.ago %>
+  site: donorschoose
+  action_type_id: 1
+  plugin_name: donors_choose_json
+  additional_data: "{donations : true}"
+  
+dreambank:
+  name: DreamBank
+  url: http://dreambank.org/rss/recent_dreams.php
+  last_accessed: <%= 1.day.ago %>
+  site: dreambank
+  action_type_id: 1
+  plugin_name: feed
+  additional_data:
+  
+betterplace:
+  name: BetterPlace
+  url: http://www.betterplace.org/projects/recently_updated.atom?lang=en
+  last_accessed: <%= 1.day.ago %>
+  site: betterplace
+  action_type_id: 1
+  plugin_name: feed
+  additional_data:
+  
+celsias_actions:
+  name: Celsias Actions
+  url: http://www.celsias.com/feeds/actions/
+  last_accessed: <%= 1.day.ago %>
+  site: celsias
+  action_type_id: 3
+  plugin_name: feed
+  additional_data:
+  
+celsias_jobs:
+  name: Celsias Green Jobs
+  url: http://www.celsias.com/feeds/jobs/
+  last_accessed: <%= 1.day.ago %>
+  site: celsias
+  action_type_id: 11
+  plugin_name: feed
+  additional_data:
+  
+christmasfuture_new_projects:
+  name: ChristmasFuture New Projects
+  url: http://www.christmasfuture.org/blog/category/new-projects/feed
+  last_accessed: <%= 1.day.ago %>
+  site: christmas_future
+  action_type_id: 1
+  plugin_name: feed
+  additional_data:
+  
+do_something_actionguide:
+  name: Do Something Action Guides
+  url: http://www.dosomething.org/actionguide/feed
+  last_accessed: <%= 1.day.ago %>
+  site: do_something
+  action_type_id: 2
+  plugin_name: feed
+  additional_data:
+  
+do_something_idea:
+  name: Do Something Idea Feed
+  url: http://www.dosomething.org/idea/feed
+  last_accessed: <%= 1.day.ago %>
+  site: do_something
+  action_type_id: 2
+  plugin_name: feed
+  additional_data:
+  
+changents:
+  name: Changents
+  url: http://www.changents.com/social_actions_rss/feed
+  last_accessed: <%= 1.day.ago %>
+  site: changents
+  action_type_id: 2
+  plugin_name: feed
+  additional_data:
+  
+ngo_post:
+  name: NGO Post
+  url: http://ngopost.org/rss.php?category=10
+  last_accessed: <%= 1.day.ago %>
+  site: ngo_post
+  action_type_id: 2
+  plugin_name: feed
+  additional_data:
+  
+canada_helps:
+  name: CanadaHelps
+  url: http://www.canadahelps.org/services/Feeds/Feeds.svc/RecentGivingPages?format=atom
+  last_accessed: <%= 1.day.ago %>
+  site: canada_helps
+  action_type_id: 1
+  plugin_name: feed
+  additional_data:
+  
+wildlife_direct:
+  name: WildlifeDirect
+  url: http://wildlifedirect.org/wpmu-feed/
+  last_accessed: <%= 1.day.ago %>
+  site: wildlife_direct
+  action_type_id: 1
+  plugin_name: feed
+  additional_data:
+  
+knightpulse:
+  name: KnightPulse
+  url: http://www.knightpulse.org/opportunities/feed?order=created&sort=desc
+  last_accessed: <%= 1.day.ago %>
+  site: knightpulse
+  action_type_id: 6
+  plugin_name: feed
+  additional_data:
+  
+policy_pitch:
+  name: PolicyPitch
+  url: http://www.policypitch.com/feeds.php
+  last_accessed: <%= 1.day.ago %>
+  site: policy_pitch
+  action_type_id: 2
+  plugin_name: feed
+  additional_data:
+  
+climate_path_projects:
+  name: ClimatePath Projects
+  url: http://www.climatepath.org/projects/feed
+  last_accessed: <%= 1.day.ago %>
+  site: climate_path
+  action_type_id: 1
+  plugin_name: feed
+  additional_data:
+  
+freedom_speaks_letters:
+  name: FreedomSpeaks Letters
+  url: http://www.freedomspeaks.com/rss/letters-by-date
+  last_accessed: <%= 1.day.ago %>
+  site: freedom_speaks
+  action_type_id: 8
+  plugin_name: feed
+  additional_data:
+  
+apathy_is_boring_alerts:
+  name: ApathyIsBoring Alerts
+  url: http://feeds.feedburner.com/ApathyIsBoring-Alerts
+  last_accessed: <%= 1.day.ago %>
+  site: apathy_is_boring
+  action_type_id: 2
+  plugin_name: feed
+  additional_data:
+  
+earth_justice_take_action:
+  name: EarthJustice TakeAction
+  url: http://feeds.feedburner.com/EarthjusticeTakeAction
+  last_accessed: <%= 1.day.ago %>
+  site: earth_justice
+  action_type_id: 8
+  plugin_name: feed
+  additional_data:
+  
+wokai_featured_actions:
+  name: Wokai FeaturedActions
+  url: http://wokai.typepad.com/wokai_featured_actions/rss.xml
+  last_accessed: <%= 1.day.ago %>
+  site: wokai
+  action_type_id: 7
+  plugin_name: feed
+  additional_data:
+  
+twitter_take_action:
+  name: Twitter TakeAction
+  url: http://search.twitter.com/search.atom?q=&ands=&phrase=&ors=&nots=RT&tag=takeaction&lang=all&from=&to=&ref=&near=&within=15&units=mi&since=&until=&rpp=50
+  last_accessed: <%= 1.day.ago %>
+  site: twitter
+  action_type_id: 10
+  plugin_name: feed
+  additional_data:
+  
+modest_needs_prequalified_applications:
+  name: ModestNeeds PrequalifiedApplications
+  url: http://www.modestneeds.org/rss/Prequalified_Applications.asp
+  last_accessed: <%= 1.day.ago %>
+  site: modest_needs
+  action_type_id: 1
+  plugin_name: feed
+  additional_data:
+  
+lend_for_helath_posts:
+  name: Lend4Health Posts
+  url: http://lend4health.blogspot.com/feeds/posts/default?alt=rss
+  last_accessed: <%= 1.day.ago %>
+  site: lend_for_health
+  action_type_id: 7
+  plugin_name: feed
+  additional_data:
+  
+live_earth_action:
+  name: LiveEarth Action
+  url: http://liveearth.org/category/action/feed/
+  last_accessed: <%= 1.day.ago %>
+  site: live_earth
+  action_type_id: 2
+  plugin_name: feed
+  additional_data:
+  
+idea_blob_idea_categories:
+  name: IdeaBlob IdeaCategories
+  url: http://www.ideablob.com/idea_categories/51/recent
+  last_accessed: <%= 1.day.ago %>
+  site: idea_blob
+  action_type_id: 12
+  plugin_name: feed
+  additional_data:
+  
+idea_blob_ideas:
+  name: IdeaBlob Ideas
+  url: http://www.ideablob.com/ideas/34/recent/rss
+  last_accessed: <%= 1.day.ago %>
+  site: idea_blob
+  action_type_id: 12
+  plugin_name: feed
+  additional_data:
+  
+greater_good_south_africa_receivers:
+  name: Greater Good South Africa Receivers
+  url: http://www.myggsa.co.za/receivers/rss
+  last_accessed: <%= 1.day.ago %>
+  site: greater_good_south_africa
+  action_type_id: 1
+  plugin_name: feed
+  additional_data:
+  
+sasix_projects:
+  name: SASIX Projects
+  url: http://www.sasix.co.za/projects/rss
+  last_accessed: <%= 1.day.ago %>
+  site: sasix
+  action_type_id: 1
+  plugin_name: feed
+  additional_data:
+  
+give_india_feed:
+  name: GiveIndia Feed
+  url: http://www.giveindia.org/images/giveindiafeed.xml
+  last_accessed: <%= 1.day.ago %> 
+  site: give_india
+  action_type_id: 1
+  plugin_name: feed
+  additional_data:
+  
+stop_climate_crisis_coalition_actions:
+  name: Stop Climate Crisis Coalition Actions
+  url: http://www.stopclimatechaos.org/tags/actions/feed
+  last_accessed: <%= 1.day.ago %>
+  site: stop_climate_crisis_coalition
+  action_type_id: 2
+  plugin_name: feed
+  additional_data:
+  
+opt_in_now_new_loan:
+  name: OptINnow New Loan
+  url: http://www.optinnow.org/connect/new_loan_feed
+  last_accessed: <%= 1.day.ago %>
+  site: opt_in_now
+  action_type_id: 1
+  plugin_name: feed
+  additional_data:
+  
+youth_noise_projects:
+  name: YouthNoise Projects
+  url: http://www.youthnoise.com/projnew/rss/recent/0
+  last_accessed: <%= 1.day.ago %>
+  site: youth_noise
+  action_type_id: 5
+  plugin_name: feed
+  additional_data:
+
+
+  

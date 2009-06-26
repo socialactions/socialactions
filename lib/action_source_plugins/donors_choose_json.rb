@@ -1,17 +1,12 @@
-class DonorsChooseParser
-  attr :feed
-
-  def initialize(feed)
-    @feed = feed
-  end
+module DonorsChooseJson
 
   def json
-    @json ||= ActiveSupport::JSON.decode(open(feed.url, 'User-Agent' => 'SocialActions').read)
+    @json ||= ActiveSupport::JSON.decode(open(url, 'User-Agent' => 'SocialActions').read)
   end
   
   def parse
     json['proposals'].each do |proposal|
-      action = feed.actions.find_or_create_by_url(proposal['proposalURL'])
+      action = actions.find_or_create_by_url(proposal['proposalURL'])
       action.expires_at = proposal['expirationDate']
       action.dcterms_valid = "end=" + proposal['expirationDate'].xmlschema
       action.description = proposal['shortDescription']
@@ -27,6 +22,10 @@ class DonorsChooseParser
       action.save!
     end
     
+  end
+  
+  def donations?
+    json_additional_data['donations']
   end
 
 end

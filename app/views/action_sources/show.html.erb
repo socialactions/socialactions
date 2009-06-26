@@ -1,0 +1,38 @@
+<p>
+  <b>Name:</b>
+  <%=h @action_source.name %>
+</p>
+
+<p>
+  <b>Url:</b>
+  <%=h @action_source.url %>
+</p>
+
+<p>
+  <b>Site:</b>
+  <%=h @action_source.site.name %>
+</p>
+
+<p>
+  <b>Action type:</b>
+  <%=h @action_source.action_type.name %>
+</p>
+
+<p>
+  <b>Needs updating:</b>
+  <%=h @action_source.needs_updating %>
+</p>
+
+<p>
+  <b>Plugin name:</b>
+  <%=h @action_source.plugin_name %>
+</p>
+
+<p>
+  <b>Additional data:</b>
+  <%=h @action_source.additional_data %>
+</p>
+
+
+<%= link_to 'Edit', edit_action_source_path(@action_source) %> |
+<%= link_to 'Index', action_sources_path %>
