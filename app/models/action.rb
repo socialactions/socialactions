@@ -77,7 +77,9 @@ class Action < ActiveRecord::Base
                 :organization_ein,
                 :tags,
                 :created_at,
-                :hit_count],
+                :hit_count,
+                :result_count,
+                :page_count],
       :methods =>[:referrer_count],
       :include => {:site => {:only => [:name, :url]}, 
                    :action_type => {:only => [:name, :id]}}

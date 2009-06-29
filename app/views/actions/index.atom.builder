@@ -6,6 +6,8 @@ xml.feed(:xmlns => 'http://www.w3.org/2005/Atom',
   xml.id "tag:socialactions.com,2008:search:#{request.request_uri}"
   xml.link :rel => 'self', :href => feed_url
   xml.author{ xml.name  'Social Actions' }
+  xml.oa :result_count, @actions.total_entries
+  xml.oa :page_count, @actions.total_entries / @search.limit
 
   xml.updated @actions.first.updated_at.xmlschema unless @actions.empty?
 

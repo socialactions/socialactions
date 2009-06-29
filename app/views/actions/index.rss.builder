@@ -4,7 +4,9 @@ xml.rss :version => "2.0", 'xmlns:atom' => 'http://www.w3.org/2005/Atom', 'xmlns
     xml.title "Social Actions: Results for #{@search.to_s}"
     xml.description "Results for #{@search.to_s} on http://mashup.socialactions.com"
     xml.link feed_url
-    
+    xml.oa :result_count, @actions.total_entries
+    xml.oa :page_count, @actions.total_entries / @search.limit
+  
     @actions.each do |action|
       xml.item do
         xml.title       action.title

@@ -4,9 +4,16 @@ class ActionsController < ApplicationController
     begin
       @search = Search.new(search_params)
       @actions = @search.results(params[:page])
+      
+      json_array = []
+      if params[:just_stats].nil?
+        json_array = @actions.results
+      else
+        json_array = [{ :result_count => @actions.total_entries, :page_count => "#{@actions.total_entries / @search.limit}" }]
+      end
       respond_to do |format|
         format.html { @actions.excerpt }
-        format.json  { render :json => @actions.results.to_json(Action.json_options) }
+        format.json  { render :json => json_array.to_json(Action.json_options) }
         format.rss
         format.atom
       end
@@ -34,6 +41,6 @@ class ActionsController < ApplicationController
       format.xml
     end    
   end
-
+  
 end
 
