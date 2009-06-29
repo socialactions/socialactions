@@ -19,4 +19,10 @@ class ActionType < ActiveRecord::Base
     end
     arrary_of_ids
   end
+  
+  def self.json_options
+    { :only => [:name, 
+                :id]
+    }
+  end
 end

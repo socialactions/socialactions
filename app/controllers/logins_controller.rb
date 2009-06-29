@@ -5,6 +5,10 @@ class LoginsController < ApplicationController
   def new
   end
 
+  def show
+    new()
+  end
+
   def create
     self.current_user = User.authenticate(params[:login], params[:password])
     if logged_in?

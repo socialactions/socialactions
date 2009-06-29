@@ -1,0 +1,15 @@
+<h1>New Action Type</h1>
+
+<%= error_messages_for :action_type %>
+
+<% form_for(@action_type) do |f| %>
+  <p>
+    <%= f.label :name %><br />
+    <%= f.text_field :name %>
+  </p>
+  <p>
+    <%= f.submit "Create" %>
+  </p>
+<% end %>
+
+<%= link_to 'Index', action_types_path %>

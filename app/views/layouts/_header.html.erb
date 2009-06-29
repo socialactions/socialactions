@@ -10,4 +10,12 @@
         </div> <!-- /#logo-title -->
       
       
-    </div></div> <!-- /#header-inner, /#header -->
+    </div>
+	  <% if logged_in? -%>
+	  <div id="admin-nav">
+	    <%= link_to 'Action Sources', :controller => 'action_sources', :action => 'index' %> |
+		<%= link_to 'Action Types', :controller => 'action_types', :action => 'index' %> |
+		<%= link_to 'Logout', login_path, :method => 'delete' %>
+	  </div>
+	  <% end -%>
+	</div> <!-- /#header-inner, /#header -->
