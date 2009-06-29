@@ -9,8 +9,7 @@
 
 <% for action_type in @action_types %>
   <tr>
-    <td><%= action_type.name %></td>
-    <td><%= link_to 'Edit', edit_action_type_path(action_type) %></td>
+    <td><%= link_to action_type.name, edit_action_type_path(action_type) %></td>
     <td><%= link_to 'Destroy', action_type, :confirm => 'Are you sure?', :method => :delete %></td>
   </tr>
 <% end %>

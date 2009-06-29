@@ -1,0 +1,20 @@
+<h1>New Site</h1>
+
+<%= error_messages_for :site %>
+
+<% form_for(@site) do |f| %>
+  <p>
+    <%= f.label :name %><br />
+    <%= f.text_field :name %>
+  </p>
+
+  <p>
+    <%= f.label :url %><br />
+    <%= f.text_field :url, :size => 75 %>
+  </p>
+  <p>
+    <%= f.submit "Create" %>
+  </p>
+<% end %>
+
+<%= link_to 'Index', sites_path %>

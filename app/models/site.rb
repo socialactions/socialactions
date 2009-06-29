@@ -12,4 +12,11 @@ class Site < ActiveRecord::Base
     end
     arrary_of_name_id_arrays
   end
+  
+  def self.json_options
+    { :only => [:name,
+                :id]
+    }
+  end
+  
 end
