@@ -14,7 +14,7 @@ class ActionSource < ActiveRecord::Base
   def after_initialize
     if !self.plugin_name.nil? && !self.plugin_name.blank?
       self.require "#{RAILS_ROOT}/lib/action_source_plugins/#{self.plugin_name}"
-      self.extend Module.const_get self.plugin_name.camelcase
+      self.extend Module.const_get(self.plugin_name.camelcase)
     end
   end
   
