@@ -77,8 +77,9 @@ module Feed
   end # populate_action
 
   def donations?
-    json_additional_data['donations']                                                                                                                             end
-  
+    json_additional_data['donations']
+  end
+ 
 protected
   def figure_out_address_from(entry,action)
     if entry.geo_lat and entry.geo_long
