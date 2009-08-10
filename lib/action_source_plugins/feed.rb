@@ -77,7 +77,7 @@ module Feed
   end # populate_action
 
   def donations?
-    json_additional_data['donations']
+    json_additional_data['donations'] || false
   end
  
 protected

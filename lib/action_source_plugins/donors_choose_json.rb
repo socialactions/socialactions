@@ -25,7 +25,7 @@ module DonorsChooseJson
   end
   
   def donations?
-    json_additional_data['donations']
+    json_additional_data['donations'] || false
   end
 
 end
