@@ -2,14 +2,14 @@
 
 DATE=`eval date +%Y%m%d`
 
-MYSQL_DB=socialactions_development
+MYSQL_DB=socialactions_production
 MYSQL_USER=root
 
 # don't use extentions, they are added automagically
 MYSQL_DUMP_FILE=/var/data/socialactions/socialactions
 
 # Once the whole db is dumped, we can also dump individual tables into individual files . .
-MYSQL_TABLES_FOR_DUMP=(actions logs)
+MYSQL_TABLES_FOR_DUMP=() # (actions logs)
 
 mysqldump -u $MYSQL_USER $MYSQL_DB > ${MYSQL_DUMP_FILE}.sql
 gzip -f ${MYSQL_DUMP_FILE}.sql
