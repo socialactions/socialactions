@@ -135,6 +135,8 @@ protected
   
   def denormalize
     self.site_id = self.action_source.site_id
+    self.platform_name = self.action_source.name
+    self.platform_url = self.action_source.url
     self.action_type ||= self.action_source.action_type
   end
   
