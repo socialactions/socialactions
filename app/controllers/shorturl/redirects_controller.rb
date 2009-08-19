@@ -9,10 +9,12 @@ class Shorturl::RedirectsController < ApplicationController
     else
       Shorturl::Log.new(:redirect_id => @redirect.id, :referrer => request.env["HTTP_REFERER"]).save
       actions = Action.find(:all, :conditions => {:redirect_id => @redirect.id})
-      actions.each do |action|
-        #Action.increment_counter(:hit_count, action.id)
-        action.hit_count += 1
-        action.save
+      if !actions.empty?
+        actions.each do |action|
+          #Action.increment_counter(:hit_count, action.id)
+          action.hit_count += 1
+          action.save
+        end
       end
       redirect_to @redirect.url
     end
