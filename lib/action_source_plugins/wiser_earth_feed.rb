@@ -1,4 +1,4 @@
-require 'xml'
+require 'libxml'
 require 'digest/md5'
 require 'open-uri'
 
@@ -19,17 +19,17 @@ module WiserEarthFeed
   end
   
   def doc_for_xml(xml)
-    parser, parser.string = XML::Parser.new, xml
+    parser, parser.string = LibXML::XML::Parser.new, xml
     doc, statuses = parser.parse, []
     doc
   end
   
-  def parse_items(doc,node)
-    doc.find("//rsp/results/#{node}").each do |entry|
+  def parse_items(doc,node_name)
+    doc.find("//rsp/results/#{node_name}").each do |entry|
       node = entry
       if api_data_type != 'groups'
         entry_doc = doc_for_xml feed_entry(entry.attributes.to_h['id'])  
-        node = entry_doc.find("//rsp//#{node}").first
+        node = entry_doc.find("//rsp//#{node_name}").first
       end
       populate_action(node)
     end
