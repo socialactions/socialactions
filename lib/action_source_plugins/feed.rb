@@ -59,6 +59,13 @@ module Feed
         t.scheme == 'http://socialactions.com/action_types'
       }.map{|t| t.term}
     end
+    
+    if entry.oa_location
+      action.location_city = entry.oa_location.oa_city
+      action.location_country = entry.oa_location.oa_country
+      action.location_state = entry.oa_location.oa_state
+      action.location_postalcode = entry.oa_location.oa_postalcode
+    end
       
     if entry.oa_platform
       action.platform_name = entry.oa_platform.oa_name

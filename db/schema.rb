@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 32) do
+ActiveRecord::Schema.define(:version => 33) do
 
   create_table "action_sources", :force => true do |t|
     t.string   "name"
@@ -68,6 +68,10 @@ ActiveRecord::Schema.define(:version => 32) do
     t.text     "tags"
     t.integer  "redirect_id"
     t.integer  "hit_count",                                                   :default => 0
+    t.string   "location_city"
+    t.string   "location_country"
+    t.string   "location_state"
+    t.string   "location_postalcode"
   end
 
   add_index "actions", ["id"], :name => "index_actions_on_id", :unique => true

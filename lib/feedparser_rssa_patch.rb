@@ -82,6 +82,16 @@ module FeedParser
       @inplatform = false
     end
 
+    def _start_oa_location(attrsD)
+      @inlocation = true
+      push('oa:location', true)
+    end
+    
+    def _end_oa_location
+      pop('oa:location')
+      @inlocation = false
+    end
+
     def _start_oa_name(attrsD)
       push('oa:name', true)
     end
@@ -133,6 +143,50 @@ module FeedParser
         _save_platform('oa_ein', value)
       end
     end
+    
+    def _start_oa_city(attrsD)
+      push('oa:city',true)
+    end
+    
+    def _end_oa_city
+      value = pop('oa:city')
+      if @inlocation
+        _save_location('oa_city',value)
+      end
+    end
+    
+    def _start_oa_country(attrsD)
+      push('oa:country',true)
+    end
+    
+    def _end_oa_country
+      value = pop('oa:country')
+      if @inlocation
+        _save_location('oa_country',value)
+      end
+    end
+    
+    def _start_oa_state(attrsD)
+      push('oa:state',true)
+    end
+    
+    def _end_oa_state
+      value = pop('oa:state')
+      if @inlocation
+        _save_location('oa_state',value)
+      end
+    end
+    
+    def _start_oa_postalcode(attrsD)
+      push('oa:postalcode',true)
+    end
+    
+    def _end_oa_postalcode
+      value = pop('oa:postalcode')
+      if @inlocation
+        _save_location('oa_postalcode',value)
+      end
+    end
 
     def _save_organization(key, value)
       context = getContext()
@@ -144,6 +198,12 @@ module FeedParser
       context = getContext()
       context['oa_platform'] ||= FeedParserDict.new
       context['oa_platform'][key] = value
+    end
+    
+    def _save_location(key, value)
+      context = getContext()
+      context['oa_location'] ||= FeedParserDict.new
+      context['oa_location'][key] = value
     end
   end
 end

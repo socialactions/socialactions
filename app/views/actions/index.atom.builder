@@ -40,6 +40,14 @@ xml.feed(:xmlns => 'http://www.w3.org/2005/Atom',
       action.tags.each do |tag|
         xml.category :term => tag
       end
+      unless action.location_city.blank? and action.location_country.blank? and action.location_state.blank? and action.location_postalcode.blank?
+        xml.oa :location do
+          xml.oa :city, action.location_city unless action.location_city.blank?
+          xml.oa :country, action.location_country unless action.location_country.blank?
+          xml.oa :state, action.location_state unless action.location_state.blank?
+          xml.oa :postalcode, action.location_postalcode unless action.location_postalcode.blank?
+        end
+      end
       unless action.platform_name.blank? and action.platform_url.blank? and action.platform_email.blank?
         xml.oa :platform do
           xml.oa :name, action.platform_name unless action.platform_name.blank?
