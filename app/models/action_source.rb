@@ -19,7 +19,11 @@ class ActionSource < ActiveRecord::Base
   end
   
   def json_additional_data
-    @json_additional_data = self.additional_data.nil? ? {} : ActiveSupport::JSON.decode(self.additional_data)
+    @json_additional_data ||= (ActiveSupport::JSON.decode(self.additional_data || "") || {})
+  end
+  
+  def donations?
+    json_additional_data['donations'] || false
   end
   
   def fetch(furl, depth=0)
