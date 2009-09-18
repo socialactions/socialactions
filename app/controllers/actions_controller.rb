@@ -35,11 +35,12 @@ class ActionsController < ApplicationController
   end
   
   def show
-    @action = Action.find(params[:id])
-    respond_to do |format|
-      format.html { render :layout => false}
-      format.xml
-    end    
+    redirect_to :action => 'index'
+    #@action = Action.find(params[:id])
+    #respond_to do |format|
+    #  format.html { render :layout => false}
+    #  format.xml
+    #end    
   end
   
 end
