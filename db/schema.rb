@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 33) do
+ActiveRecord::Schema.define(:version => 34) do
 
   create_table "action_sources", :force => true do |t|
     t.string   "name"
@@ -72,6 +72,7 @@ ActiveRecord::Schema.define(:version => 33) do
     t.string   "location_country"
     t.string   "location_state"
     t.string   "location_postalcode"
+    t.boolean  "blacklisted"
   end
 
   add_index "actions", ["id"], :name => "index_actions_on_id", :unique => true
@@ -147,6 +148,7 @@ ActiveRecord::Schema.define(:version => 33) do
     t.string   "url"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.string   "abuse_email"
   end
 
   create_table "taggings", :force => true do |t|

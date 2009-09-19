@@ -48,14 +48,8 @@ class Shorturl::Redirect < ActiveRecord::Base
     return find(:first, :conditions => { :cookie => params[:cookie], :url => params[:url] })
   end
   
-  # See config/environments for self.domain
-  def self.domain=(value)
-      @domain = value
-      self.dup.freeze
-  end
-  
   def self.domain
-    @domain
+    REDIRECT_DOMAIN
   end
   
 end

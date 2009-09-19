@@ -21,9 +21,5 @@ config.action_controller.allow_forgery_protection    = false
 # ActionMailer::Base.deliveries array.
 config.action_mailer.delivery_method = :test
 
-# Location of Spin Doctor Application
-Redirect.site = "http://localhost:3004/"
-Redirect.off = true
-
 # short url domain name
-Shorturl::Redirect.domain = "localhost:3001/s"
+REDIRECT_DOMAIN = "localhost:3001/s"

@@ -6,7 +6,7 @@ class Action < ActiveRecord::Base
                         'action_type_id', 'hit_count', 'location', 'subtitle', 'goal_completed', 'goal_amount', 
                         'goal_type', 'goal_number_of_contributors', 'initiator_name', 'initiator_url', 'initiator_email', 'expires_at',
                         'dcterms_valid', 'platform_name', 'platform_url', 'platform_email', 'embed_widget', 
-                        'organization_name', 'organization_email', 'tags', {:field => 'organization_ein', :as => 'ein', :sortable => true}],
+                        'organization_name', 'organization_email', 'tags', 'blacklisted', {:field => 'organization_ein', :as => 'ein', :sortable => true}],
              :delta => true
                         
   attr_accessor :logs
@@ -38,7 +38,9 @@ class Action < ActiveRecord::Base
   end
   
   def url
-    if self.short_url.nil? 
+    if self.blacklisted
+      ""
+    elsif self.short_url.nil? 
       read_attribute(:url)
     else
       self.short_url

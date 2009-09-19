@@ -1,29 +1,37 @@
-%div[action]
-  = link_to action.title, action.url, :class => 'action-title'
+- if logged_in? || !action.blacklisted
+  %div[action]
+    = link_to action.title, action.url, :class => 'action-title'
   
-  .action-description
-    = sanitize(action.description)
+    .action-description
+      = sanitize(action.description)
 
-  - if action.action_source
-    - if action.action_source.respond_to? 'donations?' and action.action_source.donations? and controller.controller_name == 'actions'
-      .donations
-        = link_to image_tag('btn_donate_now.gif'), new_donation_path(:social_action => action.id)
-
-    .action-details
-      %span.action-type= action.action_type.name
-      created
-      %span.action-created= action.created_at.to_s(:default)
-      on
-      = link_to action.site.name, action.site.url
-      %span.action-hitcount 
-        views:
-      = action.hit_count
-      %span.action-referrercount 
-        unique referrers:
-      = action.referrer_count
-  - else
-    - if RAILS_ENV == 'development'
-      %span{ :style => 'color: red' }
-        ACTION HAS NO ACTION SOURCE!
+    - if action.action_source
+      - if action.action_source.respond_to? 'donations?' and action.action_source.donations? and controller.controller_name == 'actions'
+        .donations
+          = link_to image_tag('btn_donate_now.gif'), new_donation_path(:social_action => action.id)
+      - if logged_in?
+        - if action.blacklisted
+          %b
+            BLACKLISTED!
+            = link_to "UN-Blacklist this action", {:controller => 'actions', :action => 'unblacklist', :id => action.id}, :style => 'color: red'
+        - else
+          %b
+            = link_to "Blacklist this action", {:controller => 'actions', :action => 'blacklist', :id => action.id}, :style => 'color: red'
+      .action-details
+        %span.action-type= action.action_type.name
+        created
+        %span.action-created= action.created_at.to_s(:default)
+        on
+        = link_to action.site.name, action.site.url
+        %span.action-hitcount 
+          views:
+        = action.hit_count
+        %span.action-referrercount 
+          unique referrers:
+        = action.referrer_count
     - else
-      raise "ACTION #{action.id} HAS NO ACTION SOURCE"
+      - if RAILS_ENV == 'development'
+        %span{ :style => 'color: red' }
+          ACTION HAS NO ACTION SOURCE!
+      - else
+        raise "ACTION #{action.id} HAS NO ACTION SOURCE"

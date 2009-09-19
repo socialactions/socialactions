@@ -13,6 +13,7 @@
     </div>
 	  <% if logged_in? -%>
 	  <div id="admin-nav">
+	  	<%= link_to 'Actions', :controller => 'actions', :action => 'index' %> |
 	    <%= link_to 'Action Sources', :controller => 'action_sources', :action => 'index' %> |
 		<%= link_to 'Action Types', :controller => 'action_types', :action => 'index' %> |
 		<%= link_to 'Sites', :controller => 'sites', :action => 'index' %> |

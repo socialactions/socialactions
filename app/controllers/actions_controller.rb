@@ -1,5 +1,7 @@
 class ActionsController < ApplicationController
   
+  before_filter :login_required, :except => :index
+  
   def index
     begin
       @search = Search.new(search_params)
@@ -32,6 +34,20 @@ class ActionsController < ApplicationController
     else
       redirect_to(@actions.first.url)
     end
+  end
+  
+  def blacklist
+    action = Action.find_by_id(params[:id])
+    action.blacklisted = true
+    action.save!
+    redirect_to :action => 'index'
+  end
+  
+  def unblacklist
+    action = Action.find_by_id(params[:id])
+    action.blacklisted = false
+    action.save!
+    redirect_to :action => 'index'
   end
   
   def show
