@@ -4,19 +4,10 @@
   
     .action-description
       = sanitize(action.description)
-
     - if action.action_source
       - if action.action_source.respond_to? 'donations?' and action.action_source.donations? and controller.controller_name == 'actions'
         .donations
           = link_to image_tag('btn_donate_now.gif'), new_donation_path(:social_action => action.id)
-      - if logged_in?
-        - if action.blacklisted
-          %b
-            BLACKLISTED!
-            = link_to "UN-Blacklist this action", {:controller => 'actions', :action => 'unblacklist', :id => action.id}, :style => 'color: red'
-        - else
-          %b
-            = link_to "Blacklist this action", {:controller => 'actions', :action => 'blacklist', :id => action.id}, :style => 'color: red'
       .action-details
         %span.action-type= action.action_type.name
         created
@@ -29,6 +20,11 @@
         %span.action-referrercount 
           unique referrers:
         = action.referrer_count
+        - if logged_in?
+          - if action.blacklisted
+            = link_to "UN-Blacklist", {:controller => 'actions', :action => 'unblacklist', :id => action.id}, :style => 'color: red'
+          - else
+            = link_to "Blacklist", {:controller => 'actions', :action => 'blacklist', :id => action.id}, :style => 'color: red'
     - else
       - if RAILS_ENV == 'development'
         %span{ :style => 'color: red' }
