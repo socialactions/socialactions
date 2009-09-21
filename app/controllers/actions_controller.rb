@@ -40,23 +40,23 @@ class ActionsController < ApplicationController
     action = Action.find_by_id(params[:id])
     action.blacklisted = true
     action.save!
-    redirect_to :action => 'index'
+    redirect_to :action => 'show', :id => params[:id]
   end
   
   def unblacklist
     action = Action.find_by_id(params[:id])
     action.blacklisted = false
     action.save!
-    redirect_to :action => 'index'
+    redirect_to :action => 'show', :id => params[:id]
   end
   
   def show
-    redirect_to :action => 'index'
-    #@action = Action.find(params[:id])
-    #respond_to do |format|
-    #  format.html { render :layout => false}
+    #redirect_to :action => 'index'
+    @action = Action.find(params[:id])
+    respond_to do |format|
+      format.html
     #  format.xml
-    #end    
+    end    
   end
   
 end

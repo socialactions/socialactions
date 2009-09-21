@@ -6,5 +6,9 @@
   <b>Url:</b>
   <%=h @site.url %>
 </p>
+<p>
+  <b>Abuse Email:</b>
+  <%=h @site.abuse_email %>
+</p>
 <%= link_to 'Edit', edit_site_path(@site) %> |
 <%= link_to 'Index', sites_path %>

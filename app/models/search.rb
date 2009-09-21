@@ -5,6 +5,7 @@ class Search < ActiveRecord::BaseWithoutTable
   column :order, :string
   column :match, :string
   column :show_blacklist, :boolean
+  column :show_only_blacklist, :boolean
   attr_accessor :sites, :kind, :ip_address
   attr_accessor :created
   attr_accessor :action_types, :exclude_action_types
@@ -69,6 +70,9 @@ class Search < ActiveRecord::BaseWithoutTable
     filters = {}
     if show_blacklist.nil? || show_blacklist == false
       filters['blacklisted'] = 0
+    end
+    if !show_only_blacklist.nil? && show_only_blacklist == true
+      filters['blacklisted'] = 1
     end
     if sites.length > 0
       filters['site_id'] = sites

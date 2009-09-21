@@ -25,6 +25,9 @@
             = link_to "UN-Blacklist", {:controller => 'actions', :action => 'unblacklist', :id => action.id}, :style => 'color: red'
           - else
             = link_to "Blacklist", {:controller => 'actions', :action => 'blacklist', :id => action.id}, :style => 'color: red'
+        - else
+          %br/
+          = mail_to "feedback@socialactions.com", "Report this Action", :subject => "This action may be inappropriate", :cc => action.site.abuse_email, :body => "#{url_for :action => 'show', :id => action.id, :only_path => false}"
     - else
       - if RAILS_ENV == 'development'
         %span{ :style => 'color: red' }
