@@ -1,4 +1,6 @@
 ActionController::Routing::Routes.draw do |map|
+  map.resources :api_keys
+
   map.resources :sites
 
   map.resources :action_types
@@ -35,6 +37,8 @@ ActionController::Routing::Routes.draw do |map|
   #   map.purchase 'products/:id/purchase', :controller => 'catalog', :action => 'purchase'
   # This route can be invoked with purchase_url(:id => product.id)
   map.random '/random', :controller => 'actions', :action => 'random'
+  map.access_denied '/access_denied', :controller => 'api_keys', :action => 'access_denied'
+  map.access_denied '/access_denied.:format', :controller => 'api_keys', :action => 'access_denied'
   # Sample resource route (maps HTTP verbs to controller actions automatically):
   #   map.resources :products
 

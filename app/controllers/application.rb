@@ -4,6 +4,7 @@
 class ApplicationController < ActionController::Base
   include SslRequirement
   include AuthenticatedSystem
+  include ApiKeySystem
   
   helper :all # include all helpers, all the time
 
@@ -32,5 +33,26 @@ class ApplicationController < ActionController::Base
     params = search_params
     params[:sites] = params[:sites].join(',') if (params[:sites] and params[:sites].is_a? Hash)
     params
+  end
+  
+protected 
+  def render_jsonp(json, options={}) 
+    callback, variable = sanitize_var(params[:callback]), sanitize_var(params[:variable]) 
+    response = begin 
+      if callback && variable 
+        "var #{variable} = #{json};\n#{callback}(#{variable});" 
+      elsif variable 
+        "var #{variable} = #{json};" 
+      elsif callback 
+        "#{callback}(#{json});" 
+      else 
+        json 
+      end 
+    end 
+    render({:content_type => :js, :text => response}.merge(options)) 
+  end
+  
+  def sanitize_var(var)
+    var.gsub(/ /,'').gub(/\./,'')
   end
 end

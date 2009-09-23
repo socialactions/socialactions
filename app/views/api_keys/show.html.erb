@@ -1,0 +1,18 @@
+<p>
+  <b>Name:</b>
+  <%=h @api_key.name %>
+</p>
+
+<p>
+  <b>Host domain:</b>
+  <%=h @api_key.host_domain %>
+</p>
+
+<p>
+  <b>Key:</b>
+  <%=h @api_key.key %>
+</p>
+
+
+<%= link_to 'Edit', edit_api_key_path(@api_key) %> |
+<%= link_to 'Index', api_keys_path %>

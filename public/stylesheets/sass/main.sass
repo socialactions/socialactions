@@ -93,7 +93,22 @@ p
 .action-description
   :clear both
   :margin-top 5px
-  
+ 
+.report-this-action
+  :float right
+  :display inline
+  :margin 2px 0 0 2em
+  a
+    :display block
+    :height 16px
+    :width 36px
+    :text-indent -2000em /* Hides the text in the h1 tag */
+    :text-decoration none /* Hides the underline of the hyperlink */
+    :z-index 1000 /* IE Fix*/
+    :background url('/images/report.png') 0 0 no-repeat
+  a:hover
+    :background url('/images/report.png') 0 -16px no-repeat  
+    
 .donations
   :border 1px dashed #3366cc
   :padding 5px

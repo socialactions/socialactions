@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 34) do
+ActiveRecord::Schema.define(:version => 35) do
 
   create_table "action_sources", :force => true do |t|
     t.string   "name"
@@ -78,6 +78,16 @@ ActiveRecord::Schema.define(:version => 34) do
   add_index "actions", ["id"], :name => "index_actions_on_id", :unique => true
   add_index "actions", ["url"], :name => "index_actions_on_url"
   add_index "actions", ["redirect_id"], :name => "index_actions_on_redirect_id"
+
+  create_table "api_keys", :force => true do |t|
+    t.string   "name"
+    t.string   "host_domain"
+    t.string   "key"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "api_keys", ["key"], :name => "index_api_keys_on_key", :unique => true
 
   create_table "donations", :force => true do |t|
     t.integer  "action_id"

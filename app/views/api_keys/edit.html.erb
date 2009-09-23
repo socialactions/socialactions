@@ -1,0 +1,21 @@
+<h1>Editing API Key</h1>
+
+<%= error_messages_for :api_key %>
+
+<b>Changing this information will produce a new key!</b>
+<% form_for(@api_key) do |f| %>
+  <p>
+		<%= f.label :name %><br />
+    <%= f.text_field :name %>
+  </p>
+  <p>
+		<%= f.label :host_domain %><br />
+    <%= f.text_field :host_domain %>
+  </p>
+  <p>
+    <%= f.submit "Update" %>
+  </p>
+<% end %>
+
+<%= link_to 'Show', @api_key %> |
+<%= link_to 'Index', api_keys_path %>

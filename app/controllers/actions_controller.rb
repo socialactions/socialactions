@@ -1,12 +1,13 @@
 class ActionsController < ApplicationController
   
   before_filter :login_required, :except => :index
+  before_filter :api_key_required, :only => :index
   
   def index
     begin
       @search = Search.new(search_params)
       @actions = @search.results(params[:page])
-      
+      #request.env.each {|key,value| warn "env[#{key}] = '#{value}'"}
       json_array = []
       if params[:just_stats].nil?
         json_array = @actions.results
@@ -15,7 +16,8 @@ class ActionsController < ApplicationController
       end
       respond_to do |format|
         format.html { @actions.excerpt }
-        format.json  { render :json => json_array.to_json(Action.json_options) }
+        format.json { render :json => json_array.to_json(Action.json_options) }
+        format.js   { render_jsonp json_array.to_json(Action.json_options) }
         format.rss
         format.atom
       end
