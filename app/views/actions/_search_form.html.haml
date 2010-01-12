@@ -30,11 +30,14 @@
         %td
           Created:
           = select_tag :created, options_for_select(options_for_created_select, @search.created)
-  
+    = check_box_tag 'select_all_sites', '1', true, :id => 'select_all_sites' 
+    %b
+      Select/Unselect all
+    %br{:clear => 'all'}/
     - Site.find(:all, :order => :name).each_slice(5) do |sites|
       .platform_select
         - sites.each do |site|
-          = check_box_tag 'sites[]', site.id, @search.has_site?(site)
+          = check_box_tag 'sites[]', site.id, @search.has_site?(site), :class => 'check', :id => 'sites'
           = site.name
           %br/
           
