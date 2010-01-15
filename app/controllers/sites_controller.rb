@@ -84,7 +84,21 @@ class SitesController < ApplicationController
   # DELETE /sites/1.xml
   def destroy
     @site = Site.find(params[:id])
-    @site.destroy
+    @site.disabled = true
+    @site.save
+
+    respond_to do |format|
+      format.html { redirect_to(sites_url) }
+      format.xml  { head :ok }
+    end
+  end
+  
+  # ENABLE /sites/enable/1
+  # ENABLE /sites/enable/1.xml
+  def enable
+    @site = Site.find(params[:id])
+    @site.disabled = false
+    @site.save
 
     respond_to do |format|
       format.html { redirect_to(sites_url) }

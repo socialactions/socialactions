@@ -9,7 +9,11 @@
 <% for site in @sites %>
   <tr>
     <td><%= link_to site.name, edit_site_path(site) %></td>
-    <td><%= link_to 'Destroy', site, :confirm => 'Are you sure?', :method => :delete %></td>
+	<% if site.disabled %>
+	  <td><%= link_to 'Enable', { :action => 'enable', :id => site.id }, :confirm => 'Are you sure?', :style => "color: red;" %></td>
+	<% else %>
+      <td><%= link_to 'Disable', site, :confirm => 'Are you sure?', :method => :delete %></td>
+	<% end %>
   </tr>
 <% end %>
 </table>

@@ -1,4 +1,4 @@
-- if logged_in? || !action.blacklisted
+- if logged_in? || !action.disabled
   %div[action]
     = link_to action.title, action.url, :class => 'action-title'
   
@@ -23,10 +23,10 @@
           unique referrers:
         = action.referrer_count
         - if logged_in?
-          - if action.blacklisted
-            = link_to "UN-Blacklist", {:controller => 'actions', :action => 'unblacklist', :id => action.id}, :style => 'color: red'
+          - if action.disabled
+            = link_to "Enable", {:controller => 'actions', :action => 'enable', :id => action.id}, :style => 'color: red'
           - else
-            = link_to "Blacklist", {:controller => 'actions', :action => 'blacklist', :id => action.id}, :style => 'color: red'
+            = link_to "Disable", {:controller => 'actions', :action => 'disable', :id => action.id}, :style => 'color: red'
     - else
       - if RAILS_ENV == 'development'
         %span{ :style => 'color: red' }

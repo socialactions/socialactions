@@ -6,7 +6,7 @@ class Action < ActiveRecord::Base
                         'action_type_id', 'hit_count', 'location', 'subtitle', 'goal_completed', 'goal_amount', 
                         'goal_type', 'goal_number_of_contributors', 'initiator_name', 'initiator_url', 'initiator_email', 'expires_at',
                         'dcterms_valid', 'platform_name', 'platform_url', 'platform_email', 'embed_widget', 
-                        'organization_name', 'organization_email', 'tags', 'blacklisted', {:field => 'organization_ein', :as => 'ein', :sortable => true}],
+                        'organization_name', 'organization_email', 'tags', 'disabled', {:field => 'organization_ein', :as => 'ein', :sortable => true}],
              :delta => true
                         
   attr_accessor :logs
@@ -19,6 +19,11 @@ class Action < ActiveRecord::Base
   acts_as_taggable
   acts_as_mappable :lat_column_name => :latitude, :lng_column_name => :longitude
   
+  validates_each :action_source do |record, attr, value|
+    record.errors.add attr, 'is disabled so you can not enable this action' if value.disabled == true
+  end
+
+
   before_create :look_for_tags, :look_for_location, :geocode_lookup
   before_save :update_short_url, :denormalize
 
@@ -31,14 +36,12 @@ class Action < ActiveRecord::Base
     Shorturl::Log.unique_referrers_for_logs(logs).size
   end
   
- 
-  
   def description=(new_description)
     write_attribute(:description, fix_quoted_html(new_description))
   end
   
   def url
-    if self.blacklisted
+    if self.disabled
       ""
     elsif self.short_url.nil? 
       read_attribute(:url)

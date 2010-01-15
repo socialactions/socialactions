@@ -38,18 +38,22 @@ class ActionsController < ApplicationController
     end
   end
   
-  def blacklist
+  def disable
     action = Action.find_by_id(params[:id])
-    action.blacklisted = true
+    action.disabled = true
     action.save!
     redirect_to :action => 'show', :id => params[:id]
   end
   
-  def unblacklist
-    action = Action.find_by_id(params[:id])
-    action.blacklisted = false
-    action.save!
-    redirect_to :action => 'show', :id => params[:id]
+  def enable
+    @action = Action.find_by_id(params[:id])
+    @action.disabled = false
+    @action.save
+    if @action.errors.size > 0
+      flash[:error] = @action.errors.full_messages.join(", ")
+      @action.disabled = true
+    end
+    render :action => 'show', :id => params[:id]
   end
   
   def show

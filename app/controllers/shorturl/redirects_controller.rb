@@ -4,14 +4,18 @@ class Shorturl::RedirectsController < ApplicationController
   
   def url
     @redirect = Shorturl::Redirect.find_by_slug(params[:slug])
-    if @redirect.nil?
-      redirect_to :action => 'new'
+    if @redirect.nil? || @redirect.url.nil? || @redirect.blank?
+      render :file => "#{RAILS_ROOT}/public/404.html", :status => 404
     else
       Shorturl::Log.new(:redirect_id => @redirect.id, :referrer => request.env["HTTP_REFERER"]).save
       actions = Action.find(:all, :conditions => {:redirect_id => @redirect.id})
       if !actions.empty?
         actions.each do |action|
           #Action.increment_counter(:hit_count, action.id)
+          if action.disabled 
+            render :file => "#{RAILS_ROOT}/public/404.html", :status => 404
+            return
+          end
           action.hit_count += 1
           action.save
         end

@@ -10,6 +10,7 @@ class ActionSource < ActiveRecord::Base
   validates_presence_of :action_type_id
   validates_format_of :url, :with => /^(http|https):\/\/[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(([0-9]{1,5})?\/.*)?$/ix,
                       :message => " is invalid, check format"
+  after_save :check_site
   
   def after_initialize
     if !self.plugin_name.nil? && !self.plugin_name.blank?
@@ -24,6 +25,15 @@ class ActionSource < ActiveRecord::Base
   
   def donations?
     json_additional_data['donations'] || false
+  end
+  
+  def disabled=(bit)
+    write_attribute(:disabled, bit)
+    self.save
+    self.actions.each do |action|
+      action.disabled = bit
+      action.save
+    end
   end
   
   def fetch(furl, depth=0)
@@ -51,9 +61,14 @@ class ActionSource < ActiveRecord::Base
     res
   end
   
+  def check_site
+    self.site.ensure_state
+  end
+  
   def self.scrape(options = {})
     conditions = options[:all] ? nil : ['needs_updating = 1']
-    find(:all, :conditions => conditions).each do |action_source| 
+    find(:all, :conditions => conditions).each do |action_source|
+      next if action_source.disabled
       puts "Parsing #{action_source.name}" if options[:debug]
       begin
         action_source.parse

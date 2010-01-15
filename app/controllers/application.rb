@@ -20,13 +20,13 @@ class ApplicationController < ActionController::Base
     params[:limit] = '10' if params[:limit].blank? || params[:limit].to_i <= 0
     params[:limit] = '50' if params[:limit].to_i > 50 
     params[:sites] = params[:sites].split(',') if (params[:sites].is_a? String)
-    params[:show_blacklist] = logged_in? ? 'true' : 'false'
-    if !logged_in? && params[:show_only_blacklist] == 'true'
-      params[:show_only_blacklist] = 'false'
+    params[:show_disabled] = logged_in? ? 'true' : 'false'
+    if !logged_in? && params[:show_only_disabled] == 'true'
+      params[:show_only_disabled] = 'false'
     end
     params[:action_types] = params[:action_types].split(',') if (params[:action_types].is_a? String)
     params[:exclude_action_types] = params[:exclude_action_types].split(',') if (params[:exclude_action_types].is_a? String)
-    params.slice(:q, :action_types, :exclude_action_types, :created, :sites, :show_blacklist, :show_only_blacklist, :kind, :ip_address, :limit, :order, :match).delete_if{|k,v| v.nil? || v.empty?}
+    params.slice(:q, :action_types, :exclude_action_types, :created, :sites, :show_disabled, :show_only_disabled, :kind, :ip_address, :limit, :order, :match).delete_if{|k,v| v.nil? || v.empty?}
   end
 
   def search_params_readable

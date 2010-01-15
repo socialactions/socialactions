@@ -11,7 +11,11 @@
   <tr>
   	<td><%= action_source.site.name %></td>
     <td><%= link_to action_source.name, edit_action_source_path(action_source) %></td>
-    <td><%= link_to 'Destroy', action_source, :confirm => 'Are you sure?', :method => :delete %></td>
+	<% if action_source.disabled %>
+	  <td><%= link_to 'Enable', { :action => 'enable', :id => action_source.id }, :confirm => 'Are you sure?', :style => "color: red;" %></td>
+	<% else %>
+      <td><%= link_to 'Disable', action_source, :confirm => 'Are you sure?', :method => :delete %></td>
+	<% end %>
   </tr>
 <% end %>
 </table>

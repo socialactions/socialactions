@@ -93,7 +93,21 @@ class ActionSourcesController < ApplicationController
   # DELETE /action_sources/1.xml
   def destroy
     @action_source = ActionSource.find(params[:id])
-    @action_source.destroy
+    @action_source.disabled = true
+    @action_source.save
+
+    respond_to do |format|
+      format.html { redirect_to(action_sources_url) }
+      format.xml  { head :ok }
+    end
+  end
+  
+  # ENABLE /action_sources/enable/1
+  # ENABLE /action_sources/enable/1.xml
+  def enable
+    @action_source = ActionSource.find(params[:id])
+    @action_source.disabled = false
+    @action_source.save
 
     respond_to do |format|
       format.html { redirect_to(action_sources_url) }
