@@ -27,10 +27,10 @@ class Site < ActiveRecord::Base
   
   def ensure_state
     if !self.disabled && !self.has_enabled_action_sources?
-      self.disabled = true
+      write_attribute(:disabled, true)
       self.save
     elsif self.disabled && self.has_enabled_action_sources?
-      self.disabled = false
+      write_attribute(:disabled, false)
       self.save
     end
   end

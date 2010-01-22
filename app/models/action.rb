@@ -20,7 +20,7 @@ class Action < ActiveRecord::Base
   acts_as_mappable :lat_column_name => :latitude, :lng_column_name => :longitude
   
   validates_each :action_source do |record, attr, value|
-    record.errors.add attr, 'is disabled so you can not enable this action' if value.disabled == true
+    record.errors.add attr, 'is disabled so you can not enable this action' if value.disabled == false && record.action_source.disabled == true
   end
 
 
