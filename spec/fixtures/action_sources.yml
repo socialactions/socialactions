@@ -611,5 +611,11 @@ youth_noise_projects:
   plugin_name: feed
   additional_data:
 
-
-  
+save_together:
+  name: Save Together
+  url: doc/sample_data/SaveTogether_InitialSavers_22Mar10.csv
+  last_accessed: <%= 1.day.ago %>
+  site: save_together
+  action_type_id: 1
+  plugin_name: csv
+  additional_data:
