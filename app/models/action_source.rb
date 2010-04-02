@@ -1,4 +1,5 @@
 class ActionSource < ActiveRecord::Base
+  
   belongs_to :site
   belongs_to :action_type
   has_many :actions

@@ -49,6 +49,16 @@ class Action < ActiveRecord::Base
       self.short_url
     end
   end
+  
+  def disabled=(bit)
+    if bit && self.disabled.nil?
+      self.disabled_on = DateTime.now
+    elsif !bit
+      self.disabled_on = nil
+    end
+    write_attribute(:disabled, bit)
+  end
+  
 
   def self.per_page
     10

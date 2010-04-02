@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 36) do
+ActiveRecord::Schema.define(:version => 38) do
 
   create_table "action_sources", :force => true do |t|
     t.string   "name"
@@ -23,6 +23,7 @@ ActiveRecord::Schema.define(:version => 36) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.boolean  "disabled",        :default => false
+    t.integer  "action_lifespan"
   end
 
   create_table "action_types", :force => true do |t|
@@ -74,6 +75,7 @@ ActiveRecord::Schema.define(:version => 36) do
     t.string   "location_state"
     t.string   "location_postalcode"
     t.boolean  "disabled"
+    t.date     "disabled_on"
   end
 
   add_index "actions", ["id"], :name => "index_actions_on_id", :unique => true
