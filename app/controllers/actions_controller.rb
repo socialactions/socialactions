@@ -12,7 +12,7 @@ class ActionsController < ApplicationController
       if params[:just_stats].nil?
         json_array = @actions.results
       else
-        json_array = [{ :result_count => @actions.total_entries, :page_count => "#{@actions.total_entries / @search.limit}" }]
+        json_array = [{ :result_count => @actions.total_entries, :page_count => " #{@actions.total_entries / @search.limit}"}] 
       end
       respond_to do |format|
         format.html { @actions.excerpt }

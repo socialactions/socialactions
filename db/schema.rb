@@ -22,7 +22,7 @@ ActiveRecord::Schema.define(:version => 38) do
     t.text     "additional_data"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.boolean  "disabled",        :default => false
+    t.boolean  "disabled"
     t.integer  "action_lifespan"
   end
 
@@ -162,7 +162,7 @@ ActiveRecord::Schema.define(:version => 38) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string   "abuse_email"
-    t.boolean  "disabled",    :default => false
+    t.boolean  "disabled"
   end
 
   create_table "taggings", :force => true do |t|

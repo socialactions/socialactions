@@ -2,7 +2,7 @@ module ExpireActions
   
   DEFAULT_LIFESPAN = 90
   
-  def self.go
+  def self.now
     action_sources = ActionSource.find(:all)
     action_sources.each do |action_source|
       self.expire_actions_by_dcterms_valid(action_source)
