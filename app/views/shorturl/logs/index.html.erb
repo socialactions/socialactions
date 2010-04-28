@@ -1,18 +1,61 @@
-<h1>Listing logs</h1>
+<h1>Statistics Dashboard</h1>
 
-<table>
-  <tr>
-  </tr>
-
-<% for log in @logs %>
-  <tr>
-    <td><%= link_to 'Show', log %></td>
-    <td><%= link_to 'Edit', edit_log_path(log) %></td>
-    <td><%= link_to 'Destroy', log, :confirm => 'Are you sure?', :method => :delete %></td>
-  </tr>
+<% unless @results.nil? %>
+	<div id="report_results">
+		<h2>Report Results</h2>
+		<table>
+			<tr>
+				<th>Action Type: </th>
+				<td><%= @action_type %></td>
+			</tr>
+			<tr>
+				<th>Created: </th>
+				<td><%= @created %></td>
+			</tr>
+			<tr>
+				<th>Sites: </th>
+				<td><%= @sites %></td>
+			</tr>
+		</table>
+		<h2>Statistics:</h2>
+		<br/><%= @results[:num_actions] %> matching actions.
+		<br/><%= @results[:num_clicks] %> total clicks.
+		<br/><%= @results[:unique_referrers] %> unique referrers.
+		<br/>
+	</div>
 <% end %>
-</table>
 
-<br />
-
-<%= link_to 'New log', new_log_path %>
+<div id="search_advanced" class="search_box">
+	<div id="firstrow">
+		<h2>Statistics Report</h2>
+	</div>
+	<% form_tag( {:controller => '/shorturl/logs', :action => 'index'}, :method => 'get') do |f| %>
+		<table border="0" cellpadding="0" cellspacing="0">
+     		<tr class="first">
+				<td>Type of Action:</td>
+				<td><%= select_tag :action_types, options_for_select(options_for_action_type_select('All actions'), params[:action_types]) %>
+       			<td>Created:
+         				<%= select_tag :created, options_for_select(options_for_created_select, params[:created]) %>
+				</td>
+			</tr>
+			<tr>
+				<td colspan="3" align="center"><%= submit_tag "Generate Report" %>
+				</td>
+			</tr>
+		</table>
+		
+		<%= check_box_tag 'select_all_sites', '1', false, :id => 'select_all_sites' %>
+		<label for="select_all_sites"><b>Select/Unselect all</b></label>
+		<br clear="all"/>
+		<% Site.find(:all, :order => :name, :conditions => {:disabled => false}).each_slice(5) do |sites| %>
+			<div class="platform_select">
+				<% sites.each do |site| %>
+					<%= check_box_tag 'sites[]', site.id, params[site.id], :class => 'check', :id => 'sites'+site.id.to_s %>
+					<label for="sites<%=site.id%>"><%= site.name %></label>
+					<br/>
+				<% end %>
+			</div>
+		<% end %>
+	<% end %>
+	<br clear="all"/>
+</div>

@@ -1,7 +1,57 @@
 require 'fastercsv'
 
 class Shorturl::LogsController < ApplicationController
- 
+#  before_filter :login_required
+  
+  def index
+    if params[:commit]  # a report was requested
+      @results = {}
+      condSQL = ''
+      condParams = []
+      
+      unless params[:action_types].blank?
+        action_type = ActionType.find(params[:action_types])
+        @action_type = action_type.name
+        condSQL << 'actions.action_type_id = ? '
+        condParams.push action_type.id
+      else
+        @action_type = "All Actions"
+      end
+      
+      unless params[:created].blank? or params[:created] == 'all'
+        condSQL << '? < actions.created_at'
+        condParams.push (Date.today - params[:created].to_i)
+        if params[:created].to_i == 0
+          @created = 'Today'
+        else
+          @created = "Within the last #{params[:created]} days"
+        end
+      else
+        @created = "Any Time"
+      end
+      
+      unless params[:sites].nil? or params[:sites].empty?
+        sites = params[:sites].collect{|site_id| Site.find(site_id)}
+        site_ids = sites.collect{|site| site.id}.join(',')
+        condSQL << "actions.site_id IN (#{site_ids})"
+        @sites = sites.collect{|site| site.name}.join(', ')
+      else
+        @sites = "All Sites"
+      end
+      
+      @results[:num_actions] = Action.count(:conditions => [condSQL] + condParams)
+      # weird rails bug: if both of these are enabled, we get ArgumentError "Shorturl is not missing constant Log!"
+      # but if either one is enabled by itself, it works fine. WTF?
+#      @results[:num_clicks] =       Log.count(:joins => 'INNER JOIN redirects ON logs.redirect_id = redirects.id INNER JOIN actions ON redirects.url = actions.url', :conditions => [condSQL] + condParams)
+      @results[:unique_referrers] = Log.count(:joins => 'INNER JOIN redirects ON logs.redirect_id = redirects.id INNER JOIN actions ON redirects.url = actions.url', :conditions => [condSQL] + condParams, :distinct => true, :select => 'logs.referrer')
+      # potentially interesting fields:
+      # logs.referrer
+      # logs.created_at
+    else
+      @results = nil
+    end
+  end
+  
   def show
     @logs = ["nothing"] # Shorturl::Log.find(:all)
 
