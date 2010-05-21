@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 38) do
+ActiveRecord::Schema.define(:version => 41) do
 
   create_table "action_sources", :force => true do |t|
     t.string   "name"
@@ -142,9 +142,12 @@ ActiveRecord::Schema.define(:version => 38) do
     t.integer  "redirect_id"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.string   "ip_address"
+    t.integer  "action_id"
   end
 
   add_index "logs", ["redirect_id", "referrer"], :name => "index_logs_on_redirect_id_and_referrer"
+  add_index "logs", ["action_id"], :name => "index_logs_on_action_id"
 
   create_table "redirects", :force => true do |t|
     t.string   "cookie"

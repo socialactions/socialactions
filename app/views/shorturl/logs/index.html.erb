@@ -3,14 +3,14 @@
 <% unless @results.nil? %>
 	<div id="report_results">
 		<h2>Report Results</h2>
-		<table>
-			<tr>
-				<th>Action Type: </th>
-				<td><%= @action_type %></td>
-			</tr>
+		<table id="criteria">
 			<tr>
 				<th>Created: </th>
 				<td><%= @created %></td>
+			</tr>
+			<tr>
+				<th>Action Types: </th>
+				<td><%= @action_types %></td>
 			</tr>
 			<tr>
 				<th>Sites: </th>
@@ -18,9 +18,10 @@
 			</tr>
 		</table>
 		<h2>Statistics:</h2>
-		<br/><%= @results[:num_actions] %> matching actions.
+		<%= @results[:num_actions] %> matching actions.
 		<br/><%= @results[:num_clicks] %> total clicks.
-		<br/><%= @results[:unique_referrers] %> unique referrers.
+		<br/><%= @results[:unique_referrers] %> unique click sources (i.e. URLs linking to Actions).
+		<br/><%= @results[:unique_ipaddresses] %> unique IP Addresses (roughly corresponds to number of people).
 		<br/>
 	</div>
 <% end %>
@@ -30,32 +31,53 @@
 		<h2>Statistics Report</h2>
 	</div>
 	<% form_tag( {:controller => '/shorturl/logs', :action => 'index'}, :method => 'get') do |f| %>
-		<table border="0" cellpadding="0" cellspacing="0">
-     		<tr class="first">
-				<td>Type of Action:</td>
-				<td><%= select_tag :action_types, options_for_select(options_for_action_type_select('All actions'), params[:action_types]) %>
-       			<td>Created:
-         				<%= select_tag :created, options_for_select(options_for_created_select, params[:created]) %>
-				</td>
-			</tr>
-			<tr>
-				<td colspan="3" align="center"><%= submit_tag "Generate Report" %>
-				</td>
-			</tr>
-		</table>
-		
-		<%= check_box_tag 'select_all_sites', '1', false, :id => 'select_all_sites' %>
-		<label for="select_all_sites"><b>Select/Unselect all</b></label>
+		<div style="float:right">
+			<%= submit_tag "Generate Report" %>
+		</div>
 		<br clear="all"/>
-		<% Site.find(:all, :order => :name, :conditions => {:disabled => false}).each_slice(5) do |sites| %>
-			<div class="platform_select">
-				<% sites.each do |site| %>
-					<%= check_box_tag 'sites[]', site.id, params[site.id], :class => 'check', :id => 'sites'+site.id.to_s %>
-					<label for="sites<%=site.id%>"><%= site.name %></label>
+		Filter on:
+		<ul>
+			<li>Action's Created Date:
+				<br/>
+				From: <%= text_field_tag 'created_from', @created_from, :size => 10 %>
+				To: <%= text_field_tag 'created_to', @created_to, :size => 10 %>
+			</li>
+			<li><%= link_to_function 'Action Types', %($("#action_types_filter").toggle()) %>
+				<div id="action_types_filter" style="display:none">
+					<b>Action Types:</b>
+					[none selected = include all]
 					<br/>
-				<% end %>
-			</div>
-		<% end %>
-	<% end %>
+					<%= check_box_tag 'select_all_action_types', '1', params[:select_all_action_types] == '1', :id => 'select_all_action_types' %>
+					<label for="select_all_action_types"><b>Select/Unselect all</b></label>
+					<br clear="all"/>
+					<% ActionType.find(:all, :order => :name).each do |action_type| %>
+						<%= check_box_tag 'action_types[]', action_type.id, !params[:action_types].nil? && params[:action_types].include?(action_type.id.to_s), :class => 'check', :id => 'action_types' %>
+						<label for="action_types<%=action_type.id%>"><%= action_type.name %></label>
+						<br/>
+					<% end %>
+				</div>
+			</li>
+			<li>
+				<%= link_to_function 'Sites', %($("#sites_filter").toggle();) %>
+				<div id="sites_filter" style="display:none">
+					<b>Sites:</b>
+					[none selected = include all]
+					<br/>
+					<%= check_box_tag 'select_all_sites', '1', params[:select_all_sites] == '1', :id => 'select_all_sites' %>
+					<label for="select_all_sites"><b>Select/Unselect all</b></label>
+					<br clear="all"/>
+					<% Site.find(:all, :order => :name, :conditions => {:disabled => false}).each_slice(5) do |sites| %>
+						<div class="platform_select">
+							<% sites.each do |site| %>
+								<%= check_box_tag 'sites[]', site.id, !params[:sites].nil? && params[:sites].include?(site.id.to_s), :class => 'check', :id => 'sites' %>
+								<label for="sites<%=site.id%>"><%= site.name %></label>
+								<br/>
+							<% end %>
+						</div>
+					<% end %>
+				</div>
+			</li>
+		</ul>
+	<% end %> <%# end form %>
 	<br clear="all"/>
 </div>

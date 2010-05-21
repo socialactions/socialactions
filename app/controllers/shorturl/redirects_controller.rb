@@ -7,8 +7,9 @@ class Shorturl::RedirectsController < ApplicationController
     if @redirect.nil? || @redirect.url.nil? || @redirect.blank?
       render :file => "#{RAILS_ROOT}/public/404.html", :status => 404
     else
-      Shorturl::Log.new(:redirect_id => @redirect.id, :referrer => request.env["HTTP_REFERER"]).save
       actions = Action.find(:all, :conditions => {:redirect_id => @redirect.id})
+      action_id = (actions.empty? ? nil : actions.first.id)
+      Shorturl::Log.new(:redirect_id => @redirect.id, :referrer => request.env["HTTP_REFERER"], :ip_address => request.env["REMOTE_ADDR"], :action_id => action_id).save
       if !actions.empty?
         actions.each do |action|
           #Action.increment_counter(:hit_count, action.id)

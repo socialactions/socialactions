@@ -12,6 +12,14 @@ $(document).ready(function()
 					//alert("got here " + this.value)
 					this.checked = checked_status;
 				});
-			});					
+			});
+			$("#select_all_action_types").click(function()				
+			{
+				var checked_status = this.checked;
+				$("input[@id=action_types]").each(function()
+				{
+					this.checked = checked_status;
+				});
+			});
 		});
 		

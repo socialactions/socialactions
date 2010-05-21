@@ -1,40 +1,60 @@
 require 'fastercsv'
 
 class Shorturl::LogsController < ApplicationController
-#  before_filter :login_required
+  before_filter :login_required
   
   def index
+    # set defaults
+    @created_to = params[:created_to]
+    if @created_to.blank?
+      @created_to = Date.today.to_s
+    end
+    @created_from = params[:created_from]
+    if @created_from.blank?
+      @created_from = (Date.today << 6).to_s  # last 6 months
+    end
+    if params[:action_types].nil?
+      # select all by default
+      params[:action_types] = ActionType.find(:all).collect{|at| at.id.to_s}
+      params[:select_all_action_types] = '1'
+    end
+    if params[:sites].nil?
+      # select all by default
+      params[:sites] = Site.find(:all).collect{|s| s.id.to_s}
+      params[:select_all_sites] = '1'
+    end
     if params[:commit]  # a report was requested
       @results = {}
       condSQL = ''
       condParams = []
+
+      # actions' created date
+      condSQL << 'actions.created_at BETWEEN ? AND ?'
+      condParams.push @created_from, @created_to
+      @created = "Between #{@created_from} and #{@created_to}"
       
-      unless params[:action_types].blank?
-        action_type = ActionType.find(params[:action_types])
-        @action_type = action_type.name
-        condSQL << 'actions.action_type_id = ? '
-        condParams.push action_type.id
-      else
-        @action_type = "All Actions"
-      end
-      
-      unless params[:created].blank? or params[:created] == 'all'
-        condSQL << '? < actions.created_at'
-        condParams.push (Date.today - params[:created].to_i)
-        if params[:created].to_i == 0
-          @created = 'Today'
+      unless params[:action_types].nil? or params[:action_types].empty?
+        action_types = params[:action_types].collect{|action_type_id| ActionType.find(action_type_id)}
+        action_type_ids = action_types.collect{|action_type| action_type.id}.join(',')
+        condSQL << " AND actions.action_type_id IN (#{action_type_ids})"
+        if(action_types.length == ActionType.count)
+          @action_types = "All Action Types"
         else
-          @created = "Within the last #{params[:created]} days"
+          @action_types = action_types.collect{|action_type| action_type.name}.join(', ')
         end
       else
-        @created = "Any Time"
+        @action_types = "All Action Types"
       end
       
       unless params[:sites].nil? or params[:sites].empty?
         sites = params[:sites].collect{|site_id| Site.find(site_id)}
         site_ids = sites.collect{|site| site.id}.join(',')
-        condSQL << "actions.site_id IN (#{site_ids})"
-        @sites = sites.collect{|site| site.name}.join(', ')
+        condSQL << " AND actions.site_id IN (#{site_ids})"
+        if(sites.length == Site.count)
+          @sites = "All Sites"
+        else
+          @sites = sites.collect{|site| site.name}.join(', ')
+        end
       else
         @sites = "All Sites"
       end
@@ -42,10 +62,12 @@ class Shorturl::LogsController < ApplicationController
       @results[:num_actions] = Action.count(:conditions => [condSQL] + condParams)
       # weird rails bug: if both of these are enabled, we get ArgumentError "Shorturl is not missing constant Log!"
       # but if either one is enabled by itself, it works fine. WTF?
-#      @results[:num_clicks] =       Log.count(:joins => 'INNER JOIN redirects ON logs.redirect_id = redirects.id INNER JOIN actions ON redirects.url = actions.url', :conditions => [condSQL] + condParams)
-      @results[:unique_referrers] = Log.count(:joins => 'INNER JOIN redirects ON logs.redirect_id = redirects.id INNER JOIN actions ON redirects.url = actions.url', :conditions => [condSQL] + condParams, :distinct => true, :select => 'logs.referrer')
+      #joinSQL = 'INNER JOIN redirects ON logs.redirect_id = redirects.id INNER JOIN actions ON redirects.url = actions.url'
+      joinSQL = 'INNER JOIN actions ON logs.action_id = actions.id'
+      @results[:num_clicks] =       Shorturl::Log.count(:joins => joinSQL, :conditions => [condSQL] + condParams)
+      @results[:unique_referrers] = Shorturl::Log.count(:joins => joinSQL, :conditions => [condSQL] + condParams, :distinct => true, :select => 'logs.referrer')
+      @results[:unique_ipaddresses] = Shorturl::Log.count(:joins => joinSQL, :conditions => [condSQL] + condParams, :distinct => true, :select => 'logs.ip_address')
       # potentially interesting fields:
-      # logs.referrer
       # logs.created_at
     else
       @results = nil
