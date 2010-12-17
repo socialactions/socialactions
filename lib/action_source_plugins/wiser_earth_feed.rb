@@ -140,6 +140,8 @@ module WiserEarthFeed
     #  action.organization_ein = entry.oa_organization.oa_ein
     #end
     
+    action.extract_entities
+    
     action.save!
   end # populate_action
 

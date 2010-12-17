@@ -13,11 +13,11 @@ class ActionType < ActiveRecord::Base
   
   def self.find_all_as_id_array
     action_types = self.find(:all)
-    arrary_of_ids = []
+    array_of_ids = []
     action_types.each do |action_type|
-      arrary_of_ids << action_type.id
+      array_of_ids << action_type.id
     end
-    arrary_of_ids
+    array_of_ids
   end
   
   def self.json_options

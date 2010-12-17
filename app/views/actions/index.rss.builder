@@ -13,8 +13,8 @@ xml.rss :version => "2.0", 'xmlns:atom' => 'http://www.w3.org/2005/Atom', 'xmlns
         xml.category    action.action_type.name
         xml.description sanitize(action.description)
         xml.pubDate     action.created_at.strftime("%Y-%m-%dT%H:%M:%SZ")
-        xml.link        action.url # action_url(action)
-        xml.guid        action.url # action_url(action)
+        xml.link        proxy_action_url(action)
+        xml.guid        proxy_action_url(action)
         xml.dcterms :alternative, action.subtitle unless action.subtitle.blank?
         unless action.initiator_name.blank?
           xml.atom :author do

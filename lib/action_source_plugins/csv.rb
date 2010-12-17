@@ -83,6 +83,8 @@ module Csv
     # "site_id","int(11)","YES","","",""
     # "action_type_id","int(11)","YES","","",""
     
+    action.extract_entities
+    
     action.save!
   end # populate_action
 

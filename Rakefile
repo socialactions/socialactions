@@ -8,3 +8,10 @@ require 'rake/testtask'
 require 'rake/rdoctask'
 
 require 'tasks/rails'
+
+begin
+  # require sunspot rake tasks
+  require 'sunspot/rails/tasks'
+rescue LoadError
+  # Fail silently, if gem is not present it will be caught when environment.rb is processed
+end

@@ -19,7 +19,15 @@ module ApplicationHelper
   def options_for_plugin_name_select(defaultStr)
     [[defaultStr, '']] + ActionSource.array_of_plugin_name_arrays
   end
-  
+
+	def options_for_order_select
+		[
+			['Relevance', ''],
+			['Most recent', 'created_at'],
+			['Popularity', 'popularity']
+		]
+	end
+
   def options_for_created_select
     [
      ['Any Time', 'all'],
@@ -38,7 +46,7 @@ module ApplicationHelper
   end
 
   def feed_url
-    formatted_actions_url(:atom, search_params_readable).gsub('&amp;', '&')
+    formatted_actions_url(:atom, get_search_params_readable).gsub('&amp;', '&')
   end
   
 end

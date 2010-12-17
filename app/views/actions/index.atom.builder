@@ -26,7 +26,7 @@ xml.feed(:xmlns => 'http://www.w3.org/2005/Atom',
         end
       end
       xml.content sanitize(action.description), :type => 'html'
-      xml.link :href => action.url # action_url(action)
+      xml.link :href => proxy_action_url(action)
       unless action.goal_amount.blank? and action.goal_type.blank? and action.goal_completed.blank? and action.goal_number_of_contributors.blank?
         xml.oa :goal do
           xml.oa :amount, action.goal_amount unless action.goal_amount.blank?

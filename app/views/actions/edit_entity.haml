@@ -1,0 +1,39 @@
+- @new_entity ||= false
+= render :partial => 'action', :locals => {:action => @action}
+
+- if @new_entity
+  %h4 New Entity:
+- else
+  %h4 Edit Entity:
+.entity
+  - action = @new_entity ? 'create_entity' : 'update_entity'
+  - form_for @action, :url => {:action => action}, :html => {:method => :put} do |form|
+    = form.error_messages
+    - unless @new_entity
+      = hidden_field_tag "entity[type]", @entity[:type]
+      = hidden_field_tag "entity[orig_name]", @entity[:name]
+    %dl
+      %dt Type:
+      - unless @new_entity
+        %dd.entity-type= @entity[:type].singularize.humanize
+      - else
+        %dd= select_tag "entity[type]", options_for_select([['Keyword', 'keywords'], ['RDF URI', 'rdf_uris']])
+      %dt Name:
+      %dd= text_field_tag "entity[name]", @entity[:name], :size => 60
+      - if @entity[:type] == 'geolocations'
+        %dt Latitude:
+        %dd= text_field_tag "entity[latitude]", @entity[:latitude], :size => 12
+        %dt Longitude:
+        %dd= text_field_tag "entity[longitude]", @entity[:longitude], :size => 12
+
+      %dt Relevance:
+      %dd= text_field_tag "entity[relevance]", @entity[:relevance], :size => 12
+      %dt Confidence:
+      %dd= text_field_tag "entity[confidence]", @entity[:confidence], :size => 12
+    - unless @new_entity
+      = submit_tag "Update"
+    - else
+      = submit_tag "Create"
+
+  - unless @new_entity
+    = button_to "Delete", {:action => 'delete_entity', :id => @action.id, 'entity[type]' => @entity[:type], 'entity[name]' => CGI.escape(@entity[:name])}, :method => :delete, :confirm => "Delete entity?"

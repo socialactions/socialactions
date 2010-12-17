@@ -1,6 +1,8 @@
 class Shorturl::Log < ActiveRecord::Base
  
   attr_accessor :slug
+
+  include LoggedDeletion
   
   def slug
     @slug ||= Base62.encode(redirect_id)

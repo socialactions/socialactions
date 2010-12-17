@@ -4,7 +4,10 @@
   - if @search.q
     %h2 Results
   = page_entries_info @actions if @search.q
-  = render :partial => 'action', :collection => @actions
+  =# render :partial => 'action', :collection => @actions
+  - @result.each_hit_with_result do |hit, action|
+    = render :partial => 'action', :locals => {:action => action, :hit => hit}
+
   = will_paginate @actions
 
       

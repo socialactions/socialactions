@@ -3,46 +3,97 @@ class Search < ActiveRecord::BaseWithoutTable
   #column :created, :integer
   column :limit, :integer
   column :order, :string
-  column :match, :string
+  #column :match, :string
+  column :coordinates, :string
+  column :distance, :string
   column :show_disabled, :boolean
   column :show_only_disabled, :boolean
-  attr_accessor :sites, :kind, :ip_address
+  attr_accessor :sites, :exclude_sites
+  attr_accessor :kind, :ip_address
   attr_accessor :created
   attr_accessor :action_types, :exclude_action_types
   
   validates_inclusion_of :created, :in => %w{ 30 14 7 2 1 }
   
-  Ultrasphinx::Search.excerpting_options = HashWithIndifferentAccess.new({
-    :before_match => '<strong>',
-    :after_match => '</strong>',
-    :chunk_separator => "...",
-    :limit => 200,
-    :around => 3,
-    :content_methods => [['title'],['description']]
-  })
-  
-  VALID_SORT_FIELDS = ['title' , 'description', 'site_id', 'latitude', 'longitude', 'created_at', 'updated_at',
-                        'hit_count', 'location', 'subtitle', 'goal_completed', 'goal_amount', 
-                        'goal_type', 'goal_number_of_contributors', 'initiator_name', 'initiator_url', 'initiator_email', 'expires_at',
-                        'dcterms_valid', 'platform_name', 'platform_url', 'platform_email', 'embed_widget', 
-                        'organization_name', 'organization_email', 'tags', 'ein']
+  VALID_SORT_FIELDS = [
+    :title, :created_at, :updated_at, :expires_at, :hit_count, :location, :site_id,
+    :goal_amount, :goal_completed, :goal_number_of_contributors,
+    :longitude, :latitude
+  ]
 
-  def results(page)
+  def result(page)
     validate_input
     
-    if kind == 'map'
+    if false && kind == 'map'
       # figure out google map thing
       # Action.find(:all, :origin => [current_latitude, current_longitude], :conditions => build_conditions)
     else
       # TODO figure out random for sort_by
-      Ultrasphinx::Search.new(
-                                {:query => build_query,
-                                 :weights => {:title => 12, :description => 12},
-                                 :per_page => limit,
-                                 :page => page || 1,
-                                 :filters => build_filters
-                                }.merge(build_sort)
-                              ).run
+      search = Sunspot.search Action do
+        # Note block_uri_tokenization workaround: see comment in string_ext.rb
+        kwds = q.to_s.downcase.block_uri_tokenization.gsub(/\^\d+/, '')
+        keywords kwds do
+          highlight :title
+          highlight :stripped_description, :max_snippets => 3, :fragment_size => 200
+        end
+
+        adjust_solr_params do |params|
+          # Make posts 90 days old 1/2 the score
+          params[:bf] = "recip(ms(NOW,created_at_dt),1.28e-10,1,1)"
+
+          raw_tokens = q.to_s.downcase.block_uri_tokenization.
+            scan(/\"[^\"]+\"|[^\W\"]+/).
+            map{|s| '"' + s.strip.gsub(/"|^[+-]|\^\d+$/, '').gsub(/\^\d+$/, '') + '"'}
+          params[:bq] = "all_text_texts:(#{raw_tokens.join(' OR ')})"
+          params[:mm] = "0"
+
+          if RAILS_ENV == 'development'
+            params[:debugQuery]= 'true'
+          end
+        end
+
+        paginate :page => page || 1, :per_page => limit
+
+        if show_disabled.nil? || show_disabled == false
+          without :disabled, true
+        end
+        if !show_only_disabled.nil? && show_only_disabled == true
+          with :disabled, true
+        end
+
+        self.created = 'all' if created.blank?
+        if created != 'all'
+          self.created = created.to_i
+          start_time = created == 0 ? Time.now.midnight : created.days.ago
+          with(:created_at).greater_than start_time
+        end
+
+        if sites.length > 0 && exclude_sites.length == 0
+          with(:site_id).any_of sites
+        elsif exclude_sites.length > 0 && sites.length == 0
+          without(:site_id).any_of exclude_sites
+        end
+
+        if action_types.length > 0 && exclude_action_types.length == 0
+          with(:action_type_id).any_of(action_types)
+        elsif exclude_action_types.length > 0 && action_types.length == 0
+          without(:action_type_id).any_of(exclude_action_types)
+        end
+
+        sort_order = order.blank? ? nil : order.to_s.downcase.to_sym
+        if q.blank? && sort_order.blank? || sort_order == :date
+          order_by :created_at, :desc
+        elsif sort_order == :relevance || sort_order.blank?
+          # Default
+        elsif sort_order == :popularity
+          order_by :hit_count, :desc
+        elsif VALID_SORT_FIELDS.include?(sort_order)
+          order_by sort_order, :desc
+        else
+          raise 'unsupported value for order'
+        end
+      end
+      search
     end
   end
   
@@ -55,65 +106,12 @@ class Search < ActiveRecord::BaseWithoutTable
     output.join(', ')
   end
   
-  def build_query
-    query = q
-    if match =='any'
-      query = query.to_s.scan(/("[^"]*"|[^\s]+)/).join(' OR ')
-    elsif !match.blank? and match != 'all'
-      raise 'unknown value for match'
-    end
-
-    query
-  end
-  
-  def build_filters
-    filters = {}
-    if show_disabled.nil? || show_disabled == false
-      filters['disabled'] = 0
-    end
-    if !show_only_disabled.nil? && show_only_disabled == true
-      filters['disabled'] = 1
-    end
-    if sites.length > 0
-      filters['site_id'] = sites
-    end
-
-    self.created = 'all' if created.blank?
-    if created != 'all'
-      self.created = created.to_i
-      start_time = created == 0 ? Time.today.to_i : created.days.ago.to_i
-      filters['created_at'] = start_time..Time.now.to_i
-    end
-    
-    if action_types.length > 0 && exclude_action_types.length == 0
-      filters['action_type_id'] = action_types
-    elsif exclude_action_types.length > 0 && action_types.length == 0
-      filters['action_type_id'] = ActionType.find_all_as_id_array.delete_if do |type_id| 
-        exclude_action_types.include?(type_id.to_s)
-      end
-    end
-
-    filters
-  end
-  
-  def build_sort
-    sort = {}
-    
-    if order == 'relevance' or order.blank?
-        sort[:sort_mode] = 'relevance'
-        sort[:sort_by] = nil
-    elsif VALID_SORT_FIELDS.include?(order)
-        sort[:sort_mode] = 'descending'
-        sort[:sort_by] = order
-    else
-        raise 'unknown value for order'
-    end
-    
-    sort
-  end
-  
   def sites
     @sites ||= []
+  end
+
+  def exclude_sites
+    @exclude_sites ||= []
   end
 
   def has_site?(site)
@@ -124,15 +122,19 @@ class Search < ActiveRecord::BaseWithoutTable
   def action_types
     @action_types ||= []
   end
-  
+
   def exclude_action_types
     @exclude_action_types ||= []
   end
-  
+
 private
   def validate_input
-    if action_types.length > 0 && exclude_action_types.length > 0 
+    if action_types.length > 0 && exclude_action_types.length > 0
       raise 'Can\'t designate action types and excluded action types in the same request!'
+    end
+
+    if sites.length > 0 && exclude_sites.length > 0
+      raise 'Can\'t designate sites and excluded sites in the same request!'
     end
   end
   

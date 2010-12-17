@@ -23,6 +23,7 @@ class DonationsController < ApplicationController
     end
 
     # TODO: encapsulate this in controller or model method...
+    require 'soap/rpc/driver'
     soap = SOAP::RPC::Driver.new(DONATENOW_AUTH['API_URL'], 'http://www.networkforgood.org/partnerdonationservice', 'http://www.networkforgood.org/partnerdonationservice/MakeCCDonation')
 
     #soap.wiredump_file_base = "#{RAILS_ROOT}/log"

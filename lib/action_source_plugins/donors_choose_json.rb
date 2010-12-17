@@ -19,6 +19,8 @@ module DonorsChooseJson
       action.image_url = proposal['imageURL']
       action.subtitle = proposal['fulfillmentTrailer']
 
+      action.extract_entities
+      
       action.save!
     end
     

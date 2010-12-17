@@ -1,5 +1,5 @@
 # This file is auto-generated from the current state of the database. Instead of editing this file, 
-# please use the migrations feature of ActiveRecord to incrementally modify your database, and
+# please use the migrations feature of Active Record to incrementally modify your database, and
 # then regenerate this schema definition.
 #
 # Note that this schema.rb definition is the authoritative source for your database schema. If you need
@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 41) do
+ActiveRecord::Schema.define(:version => 20101117183732) do
 
   create_table "action_sources", :force => true do |t|
     t.string   "name"
@@ -76,11 +76,16 @@ ActiveRecord::Schema.define(:version => 41) do
     t.string   "location_postalcode"
     t.boolean  "disabled"
     t.date     "disabled_on"
+    t.text     "entities_json"
+    t.text     "annotated_descriptoin"
+    t.text     "nlp_json"
+    t.text     "entities"
+    t.text     "nlp_result"
   end
 
   add_index "actions", ["id"], :name => "index_actions_on_id", :unique => true
-  add_index "actions", ["url"], :name => "index_actions_on_url"
   add_index "actions", ["redirect_id"], :name => "index_actions_on_redirect_id"
+  add_index "actions", ["url"], :name => "index_actions_on_url"
 
   create_table "api_keys", :force => true do |t|
     t.string   "name"
@@ -128,13 +133,6 @@ ActiveRecord::Schema.define(:version => 41) do
     t.datetime "last_accessed"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.string   "tag_finder"
-    t.integer  "site_id"
-    t.string   "location_finder"
-    t.integer  "action_type_id"
-    t.boolean  "needs_updating"
-    t.boolean  "is_donorschoose_json", :default => false
-    t.boolean  "donations",            :default => false, :null => false
   end
 
   create_table "logs", :force => true do |t|
@@ -146,8 +144,8 @@ ActiveRecord::Schema.define(:version => 41) do
     t.integer  "action_id"
   end
 
-  add_index "logs", ["redirect_id", "referrer"], :name => "index_logs_on_redirect_id_and_referrer"
   add_index "logs", ["action_id"], :name => "index_logs_on_action_id"
+  add_index "logs", ["redirect_id", "referrer"], :name => "index_logs_on_redirect_id_and_referrer"
 
   create_table "redirects", :force => true do |t|
     t.string   "cookie"
@@ -156,8 +154,8 @@ ActiveRecord::Schema.define(:version => 41) do
     t.datetime "updated_at"
   end
 
-  add_index "redirects", ["id", "cookie", "url"], :name => "index_redirects_on_id_and_cookie_and_url", :unique => true
   add_index "redirects", ["cookie", "url"], :name => "index_redirects_on_cookie_and_url", :unique => true
+  add_index "redirects", ["id", "cookie", "url"], :name => "index_redirects_on_id_and_cookie_and_url", :unique => true
 
   create_table "sites", :force => true do |t|
     t.string   "name"

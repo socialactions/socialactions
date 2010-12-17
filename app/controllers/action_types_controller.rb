@@ -14,7 +14,7 @@ class ActionTypesController < ApplicationController
         store_location
         format.html { redirect_to :controller => 'login', :action => 'new' }
       end
-      format.xml  { render :xml => @action_types }
+#      format.xml  { render :xml => @action_types }
       format.json  { render :json => @action_types.to_json(ActionType.json_options)}
     end
   end
@@ -38,7 +38,7 @@ class ActionTypesController < ApplicationController
 
     respond_to do |format|
       format.html # new.html.erb
-      format.xml  { render :xml => @action_type }
+#      format.xml  { render :xml => @action_type }
     end
   end
 
@@ -56,10 +56,10 @@ class ActionTypesController < ApplicationController
       if @action_type.save
         flash[:notice] = 'ActionType was successfully created.'
         format.html { redirect_to(@action_type) }
-        format.xml  { render :xml => @action_type, :status => :created, :location => @action_type }
+#        format.xml  { render :xml => @action_type, :status => :created, :location => @action_type }
       else
         format.html { render :action => "new" }
-        format.xml  { render :xml => @action_type.errors, :status => :unprocessable_entity }
+#        format.xml  { render :xml => @action_type.errors, :status => :unprocessable_entity }
       end
     end
   end
@@ -73,10 +73,10 @@ class ActionTypesController < ApplicationController
       if @action_type.update_attributes(params[:action_type])
         flash[:notice] = 'ActionType was successfully updated.'
         format.html { redirect_to(@action_type) }
-        format.xml  { head :ok }
+#        format.xml  { head :ok }
       else
         format.html { render :action => "edit" }
-        format.xml  { render :xml => @action_type.errors, :status => :unprocessable_entity }
+#        format.xml  { render :xml => @action_type.errors, :status => :unprocessable_entity }
       end
     end
   end
@@ -89,7 +89,7 @@ class ActionTypesController < ApplicationController
 
     respond_to do |format|
       format.html { redirect_to(action_types_url) }
-      format.xml  { head :ok }
+#      format.xml  { head :ok }
     end
   end
 end

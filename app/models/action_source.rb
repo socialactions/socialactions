@@ -90,4 +90,18 @@ class ActionSource < ActiveRecord::Base
     plugin_name_arrays
   end
   
+  def self.find_all_as_id_array
+    action_sources = self.find(:all)
+    array_of_ids = []
+    action_sources.each do |action_source|
+      array_of_ids << action_source.id
+    end
+    array_of_ids
+  end
+
+  def self.json_options
+    { :only => [:name,
+                :id]
+    }
+  end
 end

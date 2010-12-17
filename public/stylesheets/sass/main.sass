@@ -53,6 +53,9 @@ p
   a
     :float right
 
+#footer
+  clear: both
+
 .platform_select 
   :width 170px
   :float left
@@ -72,7 +75,10 @@ p
   :margin-top 5px
   :margin-bottom 5px
   :font-size 120%
-  :display block
+  :display inline
+
+.action-title-details, .action-link
+  :font-size 80%
 
 .action-url 
   :margin-top 10px
@@ -83,7 +89,7 @@ p
 
 .action-url a:hover 
 
-.action-created, .action-type 
+.action-created, .action-type, .action-score
   :color #693
 
 .action-hitcount, .action-referrercount
@@ -93,7 +99,15 @@ p
 .action-description
   :clear both
   :margin-top 5px
- 
+
+table.entities
+  th, td
+    :padding-left 0.3em
+    :padding-right 0.3em
+
+td.entity-score, td.entity-confidence, td.entity-relevance
+  :text-align right
+
 .report-this-action
   :float right
   :display inline

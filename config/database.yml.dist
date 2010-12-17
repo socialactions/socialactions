@@ -1,9 +1,9 @@
 development: &development
   adapter: mysql
   database: socialactions_development
-  username: root
+  username:
   password: 
-  host: 127.0.0.1
+  host:
 
 test:
   <<: *development

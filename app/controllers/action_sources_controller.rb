@@ -5,6 +5,7 @@ class ActionSourcesController < ApplicationController
   
   # GET /action_sources
   # GET /action_sources.xml
+  # GET /action_sources.json
   def index
     @action_sources = ActionSource.find(:all, :include => :site, :order => 'sites.name,action_sources.name')
 
@@ -21,7 +22,7 @@ class ActionSourcesController < ApplicationController
 
     respond_to do |format|
       format.html # show.html.erb
-      format.xml  { render :xml => @action_source }
+#      format.xml  { render :xml => @action_source }
     end
   end
 

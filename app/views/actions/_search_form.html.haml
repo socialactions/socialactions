@@ -4,9 +4,11 @@
     = text_field_tag :q, @search.q, :size => 22, :id => 'q_basic'
     Created:
     = select_tag :created, options_for_select(options_for_created_select, @search.created)
+    Order:
+    = select_tag :order, options_for_select(options_for_order_select, @search.order)
     &nbsp;
     = submit_tag 'Search'
-  = link_to_function('Advanced search...', '$("#q_advanced").val($("#q_basic").val()); $("#search_advanced").toggle(); $("#search_basic").toggle();')
+  = link_to_function('Advanced...', '$("#q_advanced").val($("#q_basic").val()); $("#search_advanced").toggle(); $("#search_basic").toggle();')
 
 #search_advanced.search_box{:style => 'display: none;'}
   #firstrow
@@ -28,12 +30,14 @@
         %td Type of Action:
         %td= select_tag :action_types, options_for_select(options_for_action_type_select('All actions'), @search.action_types)
         %td
+          Order:
+          = select_tag :order, options_for_select(options_for_order_select, @search.order)
           Created:
           = select_tag :created, options_for_select(options_for_created_select, @search.created)
     = check_box_tag 'select_all_sites', '1', true, :id => 'select_all_sites' 
     %b
       Select/Unselect all
-    %br{:clear => 'all'}/
+    %br{:clear => 'all'}
     - Site.find(:all, :order => :name, :conditions => {:disabled => false}).each_slice(5) do |sites|
       .platform_select
         - sites.each do |site|
@@ -41,5 +45,5 @@
           = site.name
           %br/
           
-  %br{:clear => 'all'}/
+  %br{:clear => 'all'}
   

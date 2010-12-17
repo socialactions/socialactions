@@ -1,4 +1,6 @@
 #!/bin/sh
-rake ultrasphinx:daemon:start
-script/server -p 3002
-rake ultrasphinx:daemon:stop
+#rake ultrasphinx:daemon:start
+rake sunspot:solr:start
+script/server -p 3000
+#rake ultrasphinx:daemon:stop
+rake sunspot:solr:stop

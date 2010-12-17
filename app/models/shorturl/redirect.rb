@@ -1,9 +1,6 @@
 require 'base62'
 
 class Shorturl::Redirect < ActiveRecord::Base
-  # See config/environments for self.domain
-  # self.domain = "http://localhost/"
-  
   attr_accessor :slug
   
   attr_accessor :logs
@@ -46,10 +43,6 @@ class Shorturl::Redirect < ActiveRecord::Base
   
   def self.find_by_cookie_and_url(params)
     return find(:first, :conditions => { :cookie => params[:cookie], :url => params[:url] })
-  end
-  
-  def self.domain
-    REDIRECT_DOMAIN
   end
   
 end

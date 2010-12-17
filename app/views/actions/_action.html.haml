@@ -1,11 +1,21 @@
+- hit ||= nil
+
 - if logged_in? || !action.disabled
   %div[action]
-    = link_to action.title, action.url, :class => 'action-title'
+    .action-title-line
+      =# link_to action.title, action.url, :class => 'action-title'
+      - title = (hit.highlight(:title).format {|word| "<strong>#{word}</strong>"}) rescue action.title
+      = link_to title, proxy_action_url(action), :class => 'action-title'
+      - if logged_in? && params[:action] == 'index'
+        = link_to "(Details)", action_path(action), :class => 'action-title-details'
   
     .action-description
       %div{ :class => 'report-this-action' }
         = mail_to "feedback@socialactions.com", "Report this action", :title => 'Report this action', :subject => "This action may be inappropriate", :cc => action.site.abuse_email, :body => "#{url_for :action => 'show', :id => action.id, :only_path => false}"
-      = sanitize(action.description)
+      .description
+        - description = hit.present? && (highlight = hit.highlight(:stripped_description)) && highlight.format {|word| "<strong>#{word}</strong>"}
+        - description = action.stripped_description[0, 200] if description.blank?
+        = description
     - if action.action_source
       - if action.action_source.respond_to? 'donations?' and action.action_source.donations? and controller.controller_name == 'actions'
         .donations
@@ -13,7 +23,7 @@
       .action-details
         %span.action-type= action.action_type.name
         created
-        %span.action-created= action.created_at.to_s(:default)
+        %span.action-created= action.created_at.blank? ? 'n/a' : action.created_at.to_s(:default)
         on
         = link_to action.site.name, action.site.url
         %span.action-hitcount 
@@ -22,11 +32,71 @@
         %span.action-referrercount 
           unique referrers:
         = action.referrer_count
+      - if logged_in? && hit.present? && hit.score.present?
+        .action-details2
+          %span.action-score
+            score:
+          = hit.score
+      .action-links
         - if logged_in?
-          - if action.disabled
-            = link_to "Enable", {:controller => 'actions', :action => 'enable', :id => action.id}, :style => 'color: red'
-          - else
-            = link_to "Disable", {:controller => 'actions', :action => 'disable', :id => action.id}, :style => 'color: red'
+          - if params[:action] == 'index' || params[:action] == 'show'
+            - if action.disabled
+              =# link_to "Enable", enable_action_path(action), :style => 'color: red'
+              = button_to "Enable", {:action => 'enable', :id => action.id}, :method => :put, :confirm => "Enable action?"
+            - else
+              =# link_to "Disable", disable_action_path(action), :style => 'color: red'
+              = button_to "Disable", {:action => 'disable', :id => action.id}, :method => :put, :confirm => "Disable action?"
+          - if params[:action] == 'show'
+            =# link_to "Rescan", rescan_action_path(action), :title => "Perform entity extraction on content"
+            = button_to "Rescan", {:action => 'rescan', :id => action.id}, :method => :put, :confirm => "Rescan?"
+
+        %h4{:style => "display: inline"}
+          - count = action.entities_count
+          = "Entities (#{count == 0 ? 'None' : count})"
+        - unless action.entities.empty?
+          %a{:href => '#', :onclick => "javascript: $(this).parents('.action:first').find('.entities').toggle(); return false;"} show/hide
+          %table.entities{:style => "#{params[:action] == 'index' ? 'display: none' : nil}"}
+            %tr
+              %th Score
+              %th Relevance
+              %th Confidence
+              %th Name
+            - action.entities.each do |entity_type, entities|
+              - entities.each do |entity|
+                %tr.entity
+                  %td.entity-score= sprintf "%.4f", entity['score']
+                  %td.entity-relevance= sprintf "%.4f", entity['relevance'] unless entity['relevance'].blank?
+                  %td.entity-confidence= sprintf "%.4f", entity['confidence'] unless entity['confidence'].blank?
+                  %td.entity-name
+
+                    - links = []
+
+                    - if entity_type == 'rdf_uris'
+                      = link_to entity['name'], entity['name'], :target => "_blank"
+                      - links << capture do
+                        = link_to "search", actions_path + "?q=#{CGI.escape(entity['name'])}", :title => 'Seach for this RDF URI', :class => 'action-link'
+
+                    - elsif entity_type == 'geolocations'
+                      = entity['name']
+                      - links << capture do
+                        = link_to "map", entity['map_uri'], :class => 'action-link', :target => "_blank"
+                        = link_to "search", actions_path + "?location=#{entity['latitude']},#{entity['longitude']}", :title => 'Seach near this location', :class => 'action-link'
+
+                    - else
+                      = entity['name']
+                      - links << capture do
+                        = link_to "search", actions_path + "?q=#{CGI.escape('"' + entity['name'] + '"')}", :title => 'Seach for this keyword', :class => 'action-link'
+
+                    - if params[:action] == 'show'
+                      - links << capture do
+                        = link_to "edit", edit_entity_path(action, entity_type, entity), :class => 'action-link'
+
+                    - unless links.empty?
+                      = "[#{links.join(' ').strip}]"
+
+        - if params['action'] == 'show'
+          = button_to "New entity", {:action => 'new_entity', :id => @action.id}, :method => :get
+
     - else
       - if RAILS_ENV == 'development'
         %span{ :style => 'color: red' }
