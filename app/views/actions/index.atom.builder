@@ -35,7 +35,6 @@ xml.feed(:xmlns => 'http://www.w3.org/2005/Atom',
           xml.oa :numberOfContributors, action.goal_number_of_contributors unless action.goal_number_of_contributors.blank?
         end
       end
-      xml.dcterms :valid, action.dcterms_valid unless action.dcterms_valid.blank?
       xml.category :term => action.action_type.name, :scheme => 'http://socialactions.com/action_types'
       action.tags.each do |tag|
         xml.category :term => tag

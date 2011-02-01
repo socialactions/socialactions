@@ -17,7 +17,6 @@ xml.actions do
       xml.initiator_url action.initiator_url
       xml.initiator_email action.initiator_email
       xml.expires_at action.expires_at
-      xml.dcterms_valid action.dcterms_valid
       xml.platform_name action.platform_name
       xml.platform_url action.platform_url
       xml.platform_email action.platform_email

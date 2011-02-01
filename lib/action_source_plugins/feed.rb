@@ -42,7 +42,6 @@ module Feed
       action.goal_number_of_contributors = entry.oa_goal.oa_numberofcontributors
     end
     
-    action.dcterms_valid = entry.dcterms_valid
     if entry.dcterms_valid and entry.dcterms_valid.match(/(^|;)\s*end=([^;]+)/)
       action.expires_at = $2
     end

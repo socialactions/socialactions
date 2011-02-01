@@ -53,7 +53,7 @@ module Csv
     # import text & number fields as-isfor each field listed here, we will import data from the CSV into the new record
     ['description', 'url', 'title', 'created_at', 'updated_at', 'latitude', 'longitude', 'location', 'short_url', 
       'image_url', 'subtitle', 'goal_completed', 'goal_amount', 'goal_type', 'goal_number_of_contributors', 
-      'initiator_name', 'initiator_url', 'initiator_email', 'expires_at', 'dcterms_valid', 'platform_name', 
+      'initiator_name', 'initiator_url', 'initiator_email', 'expires_at', 'platform_name',
       'platform_url', 'platform_email', 'embed_widget', 'organization_name', 'organization_url', 
       'organization_email', 'organization_ein', 'tags', 'redirect_id', 'hit_count', 
       'location_city', 'location_country', 'location_state', 'location_postalcode', 'disabled'].each do |field|

@@ -42,7 +42,6 @@ class Action < ActiveRecord::Base
     string :platform_email
     string :organization_name
     string :organization_email
-    string :dcterms_valid
     string :ein, :using => :organization_ein
   end
 
@@ -74,7 +73,7 @@ class Action < ActiveRecord::Base
   end
 
 	named_scope :expired,
-		:conditions => "(disabled = 0 OR disabled IS NULL) AND dcterms_valid IS NULL AND NOW() > expires_at"
+		:conditions => "(disabled = 0 OR disabled IS NULL) AND NOW() > expires_at"
 
 	named_scope :long_disabled,
 		:conditions => "disabled = 1 AND TIMESTAMPDIFF(DAY, disabled_on, NOW()) > 30"
@@ -132,7 +131,6 @@ class Action < ActiveRecord::Base
                 :initiator_url,
                 :initiator_email,
                 :expires_at,
-                :dcterms_valid,
                 :platform_name,
                 :platform_url,
                 :platform_email,

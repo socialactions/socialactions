@@ -8,7 +8,6 @@ module DonorsChooseJson
     json['proposals'].each do |proposal|
       action = actions.find_or_create_by_url(proposal['proposalURL'])
       action.expires_at = proposal['expirationDate']
-      action.dcterms_valid = "end=" + proposal['expirationDate'].xmlschema
       action.description = proposal['shortDescription']
       action.title = proposal['title']
       action.goal_amount = proposal['totalPrice']
