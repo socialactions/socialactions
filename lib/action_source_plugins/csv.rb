@@ -59,7 +59,7 @@ module Csv
       'location_city', 'location_country', 'location_state', 'location_postalcode', 'disabled'].each do |field|
       
       # if there's no data, don't bother setting this field
-      next if entry.field(field).blank? or entry.field(field).strip.blank?
+      next if field.blank? or entry.field(field).blank? or entry.field(field).strip.blank?
       
       value = entry.field(field).strip
 
