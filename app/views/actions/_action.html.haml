@@ -5,7 +5,7 @@
     .action-title-line
       =# link_to action.title, action.url, :class => 'action-title'
       - title = (hit.highlight(:title).format {|word| "<strong>#{word}</strong>"}) rescue action.title
-      = link_to title, proxy_action_url(action), :class => 'action-title'
+      = link_to title, action.url, :class => 'action-title'
       - if logged_in? && params[:action] == 'index'
         = link_to "(Details)", action_path(action), :class => 'action-title-details'
   

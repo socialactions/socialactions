@@ -64,7 +64,7 @@ class Action < ActiveRecord::Base
 
 
   before_create :look_for_tags, :look_for_location, :geocode_lookup
-  before_save :update_short_url, :denormalize, :maybe_reextract_entities
+  before_save :update_short_url, :denormalize
 
   before_validation :set_defaults
   def set_defaults
@@ -117,7 +117,7 @@ class Action < ActiveRecord::Base
     { :only => [:id,
                 :title,
                 :description, 
-                :url,  
+                :url,
                 :location, 
                 :latitude,
                 :longitude,
@@ -385,6 +385,22 @@ protected
     end
 
     str
+  end
+
+  # Use the short_url if present
+  # Note:
+  #   REDIRECT_PREFIX is defined in config/environments/{env}.rb
+  #   Idea is to have a different (sub)domain for these short URI's
+  def proxy_action_url
+    self.short_url.present? ? REDIRECT_PREFIX + self.short_url : self.url
+  end
+
+  def url
+    if self.disabled
+      ""
+    else
+      self.proxy_action_url
+    end
   end
 
 end

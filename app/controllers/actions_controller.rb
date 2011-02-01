@@ -45,7 +45,7 @@ class ActionsController < ApplicationController
     if @actions.empty?
       redirect_to(:back)
     else
-      redirect_to @template.proxy_action_url(@actions.first)
+      redirect_to @actions.first.url
     end
   end
   
