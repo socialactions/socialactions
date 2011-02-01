@@ -1,0 +1,4 @@
+#! /bin/bash
+
+rake db:mysql:export[production,/var/www/socialactions/backup/socialactions_production.`date '+%w'`.sql.gz]
+#rake db:mysql:export[production,/var/www/socialactions/backup/socialactions_production.`date '+%Y%m%d%H%M%S'`.sql.gz]
