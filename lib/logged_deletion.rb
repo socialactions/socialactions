@@ -9,7 +9,7 @@ module LoggedDeletion
     attr_accessor :deleted_record_logger
     
     def get_deleted_record_logger
-      unless self.deleted_record_logger.present?
+      if self.deleted_record_logger.nil?
         path = File.join(RAILS_ROOT, "../persistent_logs/deleted_#{self.to_s.underscore.gsub(/\//, '_')}-#{RAILS_ENV}.json")
         self.deleted_record_logger = ActiveSupport::BufferedLogger.new path
         self.deleted_record_logger.auto_flushing = true
@@ -32,3 +32,9 @@ module LoggedDeletion
   end
 
 end
+
+require 'shorturl/log'
+class Shorturl::Log
+	include LoggedDeletion
+end
+Shorturl::Log.get_deleted_record_logger
