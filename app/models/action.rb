@@ -294,7 +294,7 @@ class Action < ActiveRecord::Base
   end
 
   def update_short_url
-    if url.blank?
+    if self[:url].blank?
       warn "short_url for Action##{self.id} didn't work, url is blank"
       return
     end
@@ -392,7 +392,7 @@ protected
   #   REDIRECT_PREFIX is defined in config/environments/{env}.rb
   #   Idea is to have a different (sub)domain for these short URI's
   def proxy_action_url
-    self.short_url.present? ? REDIRECT_PREFIX + self.short_url : self.url
+    self.short_url.present? ? REDIRECT_PREFIX + self.short_url : self[:url]
   end
 
   def url
