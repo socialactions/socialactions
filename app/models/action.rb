@@ -309,6 +309,22 @@ class Action < ActiveRecord::Base
     end
   end
 
+  # Use the short_url if present
+  # Note:
+  #   REDIRECT_PREFIX is defined in config/environments/{env}.rb
+  #   Idea is to have a different (sub)domain for these short URI's
+  def proxy_action_url
+    self.short_url.present? ? REDIRECT_PREFIX + self.short_url : self[:url]
+  end
+
+  def url
+    if self.disabled
+      ""
+    else
+      self.proxy_action_url
+    end
+  end
+
 protected
   def fix_quoted_html(text)
     text.gsub(/\&lt;/, '<').gsub(/\&gt;/, '>')
@@ -385,22 +401,6 @@ protected
     end
 
     str
-  end
-
-  # Use the short_url if present
-  # Note:
-  #   REDIRECT_PREFIX is defined in config/environments/{env}.rb
-  #   Idea is to have a different (sub)domain for these short URI's
-  def proxy_action_url
-    self.short_url.present? ? REDIRECT_PREFIX + self.short_url : self[:url]
-  end
-
-  def url
-    if self.disabled
-      ""
-    else
-      self.proxy_action_url
-    end
   end
 
 end

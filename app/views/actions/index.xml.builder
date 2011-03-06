@@ -4,7 +4,7 @@ xml.actions do
     xml.action do
       xml.title action.title
       xml.description sanitize(action.description)
-      xml.url proxy_action_url(action)
+      xml.url action.proxy_action_url
       xml.latitude action.latitude
       xml.longitude action.longitude
       xml.image_url action.image_url
