@@ -17,6 +17,7 @@ class ApplicationController < ActionController::Base
 
   def get_search_params
     #params[:order] = 'created_at' if params[:order].blank?
+    params.delete(:match) # a piece from legacy code for backwards compatibility
     params[:limit] = '10' if params[:limit].blank? || params[:limit].to_i <= 0
     params[:limit] = '50' if params[:limit].to_i > 50
     params[:show_disabled] = logged_in? ? 'true' : 'false'
