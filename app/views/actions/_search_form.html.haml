@@ -25,7 +25,7 @@
         %td
           = submit_tag 'Search'
           &nbsp;
-          = submit_tag 'Google Map', :onclick => "$('#new_search').attr('action', '#{map_index_path}')", :disabled => true
+          = submit_tag 'Google Map', :onclick => "$('#new_search').attr('action', '#{url_for :controller => "map", :action => "index"}')", :disabled => true
       %tr
         %td Type of Action:
         %td= select_tag :action_types, options_for_select(options_for_action_type_select('All actions'), @search.action_types)
