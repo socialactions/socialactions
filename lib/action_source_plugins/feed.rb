@@ -15,7 +15,7 @@ module Feed
   end
   
   def populate_action(entry)
-    action = actions.find_or_create_by_url(entry.link)
+    action = actions.find_or_initialize_by_url(entry.link)
     action.title = entry.title # TODO: handle text vs. html here
     action.url = entry.link
     action.description = description_for(entry)
@@ -54,9 +54,10 @@ module Feed
         action.action_type = ActionType.find_by_name(action_type_category.term)
       end
       
-      action.tags = entry.tags.reject{ |t| 
-        t.scheme == 'http://socialactions.com/action_types'
-      }.map{|t| Tag.find_or_create_by_name(t.term) }
+      # need to sort out how to store tags, right now all of them are NULLs
+      # action.tags = entry.tags.reject{ |t| 
+      #   t.scheme == 'http://socialactions.com/action_types'
+      # }.map{|t| Tag.find_or_create_by_name(t.term) }
     end
     
     if entry.oa_location
