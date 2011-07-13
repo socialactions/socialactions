@@ -56,7 +56,7 @@ module Feed
       
       action.tags = entry.tags.reject{ |t| 
         t.scheme == 'http://socialactions.com/action_types'
-      }.map{|t| t.term}
+      }.map{|t| Tag.find_or_create_by_name(t.term) }
     end
     
     if entry.oa_location
