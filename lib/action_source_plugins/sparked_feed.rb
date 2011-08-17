@@ -26,27 +26,30 @@ module SparkedFeed
   end
   
   def populate_action(entry)
-    url = entry.find("url").first.content
-    
-    action = actions.find_or_create_by_url(url)
-    action.url = url
+    begin
+      url = entry.find("url").first.content
+      
+      action = actions.find_or_create_by_url(url)
+      action.url = url
 
-    action.title = entry.find("title").first.content
-    action.description = entry.find("description").first.content
-    action.expires_at = Date.parse(entry.find("deadline").first.content)
+      action.title = entry.find("title").first.content
+      action.description = entry.find("description").first.content
+      action.expires_at = Date.parse(entry.find("deadline").first.content)
 
 
-    action.initiator_name = "#{entry.find("seeker/firstName").first.content} #{entry.find("seeker/lastName").first.content}"
-    action.initiator_url = entry.find("seeker/sparkedProfileUrl").first.content unless entry.find("seeker/sparkedProfileUrl").first.nil?
+      action.initiator_name = "#{entry.find("seeker/firstName").first.content} #{entry.find("seeker/lastName").first.content}"
+      action.initiator_url = entry.find("seeker/sparkedProfileUrl").first.content unless entry.find("seeker/sparkedProfileUrl").first.nil?
 
-    action.organization_name = entry.find("seeker/orgName").first.content unless entry.find("seeker/orgName").first.nil?
-    action.organization_url = entry.find("seeker/orgUrl").first.content unless entry.find("seeker/orgUrl").first.nil?
+      action.organization_name = entry.find("seeker/orgName").first.content unless entry.find("seeker/orgName").first.nil?
+      action.organization_url = entry.find("seeker/orgUrl").first.content unless entry.find("seeker/orgUrl").first.nil?
 
-    action.location = entry.find("seeker/location").first.content unless entry.find("seeker/location").first.nil?
-    
-    action.extract_entities
-    
-    action.save!
+      action.location = entry.find("seeker/location").first.content unless entry.find("seeker/location").first.nil?
+      
+      action.extract_entities
+      
+      action.save!
+    rescue
+    end
 
   end # populate_action
 
