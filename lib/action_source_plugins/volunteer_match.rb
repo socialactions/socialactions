@@ -61,8 +61,8 @@ module VolunteerMatch
 
       action.title = entry["title"]
       action.description = entry["description"]
-      # action.created_at = Time.mktime(*ParseDate.parsedate(entry["created"]))
-      action.created_at = Time.now
+      action.created_at = Time.mktime(*ParseDate.parsedate(entry["created"]))
+      # action.created_at = Time.now
 
       if !entry["parentOrg"].nil?
         action.organization_name = entry["parentOrg"]["name"]
