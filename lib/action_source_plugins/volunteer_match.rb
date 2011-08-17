@@ -31,7 +31,7 @@ module VolunteerMatch
         'Authorization' => 'WSSE profile="UsernameToken"',
         'X-WSSE' => 'UsernameToken Username="' + api_username + '", PasswordDigest="' + password + '", Nonce="' + nonce +' ", Created="' + now + '"'
     }
-    path = URI.escape('/api/call?action=searchOpportunities&query={"virtual": true, "sortCriteria": "update", "numberOfResults": 10, "fieldsToDisplay": ["title", "description", "vmUrl", "updated", "created", "parentOrg"]}')
+    path = URI.escape('/api/call?action=searchOpportunities&query={"virtual": true, "sortCriteria": "update", "numberOfResults": 20, "fieldsToDisplay": ["title", "description", "vmUrl", "updated", "created", "parentOrg"]}')
 
     result = ""
     http.get(path, headers) do |chunk|
