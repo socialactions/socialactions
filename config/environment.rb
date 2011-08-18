@@ -38,6 +38,7 @@ Rails::Initializer.run do |config|
   # http://groups.google.com/group/ruby-sunspot/msg/16aa28f4d52e21da
   config.gem 'nokogiri'
 
+  config.gem 'oink'
 
   # Only load the plugins named here, in the order given (default is alphabetical).
   # :all can be used as a placeholder for all plugins not explicitly named
@@ -57,6 +58,11 @@ Rails::Initializer.run do |config|
   # The default locale is :en and all translations from config/locales/*.rb,yml are auto loaded.
   # config.i18n.load_path += Dir[Rails.root.join('my', 'locales', '*.{rb,yml}')]
   # config.i18n.default_locale = :de
+
+
+  require 'hodel_3000_compliant_logger'
+  config.logger = Hodel3000CompliantLogger.new(config.log_path)
+
 
   config.after_initialize do
     #require 'moneta/memcache'
