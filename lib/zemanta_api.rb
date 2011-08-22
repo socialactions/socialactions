@@ -37,7 +37,7 @@ class ZemantaApi
   end
 
   def query text, args = {}
-    p "Quering Zemanta..."
+    print "Quering Zemanta..."
     begin
       params = @@default_query_params
       params.merge! args[:params] if args.include? :params
@@ -76,6 +76,8 @@ class ZemantaApi
         
         response.body
       end
+
+      print "done.\n"
 
       require 'json'
       JSON.parse body
