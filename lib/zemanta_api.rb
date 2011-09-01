@@ -37,10 +37,12 @@ class ZemantaApi
   end
 
   def query text, args = {}
-    print "Quering Zemanta..."
+    p "Quering Zemanta..."
     begin
       params = @@default_query_params
       params.merge! args[:params] if args.include? :params
+      
+      p "params merged"
 
       if text.is_a?(Array)
         params[:text] = ''
@@ -55,20 +57,30 @@ class ZemantaApi
         raise "Invalid text parameter"
       end
 
+     
       require 'api_cache'
       require 'digest/md5'
       cache_key = Digest::MD5.hexdigest(@@api_uri + params.inspect)
+
+      p "got cache key"
+
       body = APICache.get(cache_key, API_CACHE_OPTIONS.merge({})) do
+        p "posting to API"
         response = Net::HTTP.post_form URI.parse(@@api_uri), params
+        p "done"
+      
         if @@config[:verbose] || nil
           logger.info 'Zemanta::query ' + params.inspect
           logger.info 'Zemanta::query response code ' + response.code
           logger.info 'Zemanta::query response body ' + response.body
         end
+        
 
         unless response.code == '200'
+          p "unsuccessful"
           raise "Unsuccessful request, response code #{response.code}"
         end
+        
 
         if response.body.blank?
           raise "No response body received"
