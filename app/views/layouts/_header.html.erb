@@ -15,9 +15,9 @@
 	  <div id="admin-nav">
 	  	<%= link_to 'Actions', :controller => 'actions', :action => 'index' %> |
 		<%= link_to 'Only Disabled Actions', :controller => 'actions', :action => 'index', :show_only_disabled => 'true' %> |
-	    <%= link_to 'Action Sources', :controller => 'action_sources', :action => 'index' %> |
+	    <%= link_to 'Feeds / APIs', :controller => 'action_sources', :action => 'index' %> |
 		<%= link_to 'Action Types', :controller => 'action_types', :action => 'index' %> |
-		<%= link_to 'Sites', :controller => 'sites', :action => 'index' %> |
+		<%= link_to 'Action Sources', :controller => 'sites', :action => 'index' %> |
 		<%= link_to 'API Keys', :controller => 'api_keys', :action => 'index' %> |
 		<%= link_to 'Logout', login_path, :method => 'delete' %>
 	  </div>

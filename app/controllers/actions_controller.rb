@@ -14,7 +14,7 @@ class ActionsController < ApplicationController
       json_array = []
 
       if params[:just_stats].nil?
-        search_result.hits.each{|h| h.result.score = h.score}
+        search_result.hits.each{|h| h.result.score = h.score unless h.result.nil?}
         json_array = search_result.hits.map{|h| h.result}
       else
         json_array = [{:result_count => search_result.total, :page_count => (search_result.total / @search.limit.to_i + 1)}]
