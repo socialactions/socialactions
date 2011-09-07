@@ -3,28 +3,4 @@ SocialActions API
 
 Deployment notes:
 
-There is currently no automated deployment, i.e. capistrano. In order to deploy
-a new release, use the following steps:
-
-# Install the new source in a datecoded directory
-  $ mkdir YYMMDD (replace with datecode)
-  $ cd YYMMDD
-  # Extract tar and/or checkout from git
-
-# Copy config files into new release
-  $ cp ../current/config/database.yml config
-  $ cp ../current/config/application.yml config
-
-# Take down previous version (note this is not a very friendly site take-down,
-  would be a good idea to use a "under maintenance redirect")
-  $ cd ../current
-  $ RAILS_ENV=produciton rake sunspot:solr:stop
-  $ cd ..
-  $ rm -f current
-
-# Bring up new version
-  $ cd YYMMDD
-  $ RAILS_ENV=produciton rake sunspot:solr:start
-  $ cd ..
-  $ ln -s YYMMDD current
-  $ sudo apachectl graceful
+SocialActions now uses Capistrano for deployment. Just use cap:deploy to deploy and cap:restart_solr to restart the search engine.
