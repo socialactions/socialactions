@@ -10,7 +10,8 @@ module LoggedDeletion
     
     def get_deleted_record_logger
       if self.deleted_record_logger.nil?
-        path = File.join(RAILS_ROOT, "../persistent_logs/deleted_#{self.to_s.underscore.gsub(/\//, '_')}-#{RAILS_ENV}.json")
+        #path = File.join(RAILS_ROOT, "../persistent_logs/deleted_#{self.to_s.underscore.gsub(/\//, '_')}-#{RAILS_ENV}.json")
+        path = File.join(RAILS_ROOT, "log/persistent_logs/deleted_#{self.to_s.underscore.gsub(/\//, '_')}-#{RAILS_ENV}.json")
         self.deleted_record_logger = ActiveSupport::BufferedLogger.new path
         self.deleted_record_logger.auto_flushing = true
       end

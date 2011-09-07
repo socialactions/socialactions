@@ -15,7 +15,7 @@
 
 <div id="existing_site">
   <p>
-    <%= f.label :site_id %><br />
+    <%= f.label :site_id, "Action Source" %><br />
     <%= select_tag 'action_source[site_id]', options_for_select(options_for_site_select('-- select site --'), @action_source.site_id) %>
     (<%= link_to_function 'OR create new site', '$("#existing_site").toggle(); $("#new_site").toggle(); $("#site_name").val(""); $("#site_url").val("");' %>)
   </p>
