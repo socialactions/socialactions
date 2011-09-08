@@ -27,7 +27,8 @@ Rails::Initializer.run do |config|
   # Also, malloc errors were occurring
   #
   #config.gem 'libxml-ruby', :version => '1.1.4', :lib => 'libxml'
-  config.gem 'libxml-ruby', :version => '0.8.3', :lib => 'libxml'
+  #config.gem 'libxml-ruby', :version => '0.8.3', :lib => 'libxml'
+  config.gem 'libxml-ruby', :lib => 'libxml'
   config.gem 'soap4r', :version => '1.5.8', :lib => 'soap/soap.rb'
   config.gem 'sunspot_rails', :lib => 'sunspot/rails', :version => '1.1.0'
   config.gem 'api_cache', :version => '0.2.0'
