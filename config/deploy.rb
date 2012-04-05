@@ -5,6 +5,11 @@ set :scm, "git"
 set :scm_verbose, true
 set :branch, "master"
 
+set :rvm_ruby_string, 'ree'     
+require "rvm/capistrano"   
+set :rvm_type, :system
+set :rvm_bin_path, "/usr/local/bin"
+
 set :deploy_to, "/var/www/socialactions/"
 set :user, "socialactions"  # The server's user for deploys
 set :use_sudo, false
