@@ -56,11 +56,12 @@ protected
         json
       end
     end
-    render({:content_type => :js, :text => response}.merge(options))
+
+    render ({:js => response}).merge(options)
   end
 
   def sanitize_var(var)
-    var.gsub(/ /,'').gub(/\./,'')
+    var.gsub(/ /,'').gsub(/\./,'') if !var.nil?
   end
 
 end

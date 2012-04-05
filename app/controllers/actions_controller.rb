@@ -35,6 +35,8 @@ class ActionsController < ApplicationController
     rescue Exception => exc
       # not the best rescue ever, as it always assumes status 400
       headers['Content-Type'] = 'text/plain'
+      logger.warn "FFFFFUUUUU"
+      logger.warn exc
       render :text => exc.to_s, :status=>400
     end
   end

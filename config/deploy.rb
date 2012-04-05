@@ -19,26 +19,26 @@ role :db,  "search.socialactions.com", :primary => true # This is where Rails mi
 namespace :deploy do
   desc "Symlink shared configs and folders on each release."
   task :symlink_shared do
-    run "rm -Rf #{current_path}/config/database.yml"
-    run "ln -nfs #{shared_path}/config/database.yml #{current_path}/config/"
+    run "rm -Rf #{release_path}/config/database.yml"
+    run "ln -nfs #{shared_path}/config/database.yml #{release_path}/config/"
 
-    run "rm -Rf #{current_path}/config/application.yml"
-    run "ln -nfs #{shared_path}/config/application.yml #{current_path}/config/"
+    run "rm -Rf #{release_path}/config/application.yml"
+    run "ln -nfs #{shared_path}/config/application.yml #{release_path}/config/"
 
-    run "rm -Rf #{current_path}/solr"
-    run "ln -nfs #{shared_path}/solr #{current_path}/"
+    run "rm -Rf #{release_path}/solr"
+    run "ln -nfs #{shared_path}/solr #{release_path}/"
   end  
 
   desc "Restart Application"
   task :restart, :roles => :app do
-    run "touch #{current_release}/tmp/restart.txt"
+    run "cd #{release_path} && thin restart -O -C config/thin.yml"
   end
 
 
   desc "Restart SOLR"
   task :restart_solr, :roles => :app do
-    run "cd #{current_path}; RAILS_ENV=production #{rake} sunspot:solr:stop"
-    run "cd #{current_path}; RAILS_ENV=production #{rake} sunspot:solr:start"
+    run "cd #{release_path}; RAILS_ENV=production #{rake} sunspot:solr:stop"
+    run "cd #{release_path}; RAILS_ENV=production #{rake} sunspot:solr:start"
   end
 end
 

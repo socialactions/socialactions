@@ -1,0 +1,15 @@
+development:
+  solr:
+    hostname: localhost
+    port: 15023
+    min_memory: 512M
+    max_memory: 1G
+
+
+production:
+  solr:
+    hostname: localhost
+    port: 8983
+    min_memory: 512M
+    max_memory: 1G
+
